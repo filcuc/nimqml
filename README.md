@@ -1,10 +1,17 @@
-NimQml
-======
+# NimQML
 
-Qml bindings for the Nim programming language
+QML binding for the Nim programming language
 
-WARNING
-=======
+## Requirements
+* [DOtherside](https://github.com/filcuc/DOtherSide) 0.4.5 or higher
+* [Nim](http://nim-lang.org/) 0.11.2 or higher
 
-The given repo is just a copy of https://github.com/filcuc/DOtherSide
-and is provided for simple interfacing with the Nimble package manager
+## Build instructions
+* Compile and Install DOtherside in your system PATH (i.e. /usr/lib)
+* nimble install nimqml
+
+## Examples
+* The examples can be built by executing the following command
+* nimble compile -l:-lDOtherSide main.nim
+
+This invokes the nim compiler asking to link the DOtherSide lib

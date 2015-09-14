@@ -1,4 +1,4 @@
-include NimQmlTypes
+include private.nimqmltypes
 
 ## NimQml aims to provide binding to the QML for the Nim programming language
 ##
@@ -11,29 +11,29 @@ include NimQmlTypes
 ## when a finalzier will be run, or if, indeed, it will run at all.
 
 type QMetaType* {.pure.} = enum ## \
-  ## Qt metatypes values used for specifing the 
+  ## Qt metatypes values used for specifing the
   ## signals and slots argument and return types.
   ##
   ## This enum mimic the QMetaType::Type C++ enum
-  UnknownType = cint(0), 
+  UnknownType = cint(0),
   Bool = cint(1),
-  Int = cint(2), 
-  QString = cint(10), 
+  Int = cint(2),
+  QString = cint(10),
   VoidStar = cint(31),
   QObjectStar = cint(39),
-  QVariant = cint(41), 
+  QVariant = cint(41),
   Void = cint(43),
 
 var qobjectRegistry = initTable[ptr QObjectObj, bool]()
 
-template debugMsg(message: string) = 
+template debugMsg(message: string) =
   {.push warning[user]: off.} # workaround to remove warnings; this won't be needed soon
   when defined(debug):
     {.pop.}
     echo "NimQml: ", message
   else:
     {.pop.}
-  
+
 template debugMsg(typeName: string, procName: string) =
   {.push warning[user]: off.} # workaround to remove warnings; this won't be needed soon
   when defined(debug):
@@ -43,9 +43,9 @@ template debugMsg(typeName: string, procName: string) =
     message &= procName
     debugMsg(message)
   else:
-    {.pop.}  
+    {.pop.}
 
-template debugMsg(typeName: string, procName: string, userMessage: string) = 
+template debugMsg(typeName: string, procName: string, userMessage: string) =
   {.push warning[user]: off.} # workaround to remove warnings; this won't be needed soon
   when defined(debug):
     {.pop.}
@@ -70,46 +70,46 @@ template newWithCondFinalizer(variable: expr, finalizer: expr) =
     new(variable)
 
 # QVariant
-proc dos_qvariant_create(variant: var RawQVariant) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qvariant_create_int(variant: var RawQVariant, value: cint) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qvariant_create_bool(variant: var RawQVariant, value: bool) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qvariant_create_string(variant: var RawQVariant, value: cstring) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qvariant_create_qobject(variant: var RawQVariant, value: RawQObject) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qvariant_create_qvariant(variant: var RawQVariant, value: RawQVariant) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qvariant_create_float(variant: var RawQVariant, value: cfloat) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qvariant_create_double(variant: var RawQVariant, value: cdouble) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qvariant_delete(variant: RawQVariant) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qvariant_isnull(variant: RawQVariant, isNull: var bool) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qvariant_toInt(variant: RawQVariant, value: var cint) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qvariant_toBool(variant: RawQVariant, value: var bool) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qvariant_toString(variant: RawQVariant, value: var cstring, length: var cint) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qvariant_setInt(variant: RawQVariant, value: cint) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qvariant_setBool(variant: RawQVariant, value: bool) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qvariant_setString(variant: RawQVariant, value: cstring) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qvariant_assign(leftValue: RawQVariant, rightValue: RawQVariant) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qvariant_toFloat(variant: RawQVariant, value: var cfloat) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qvariant_setFloat(variant: RawQVariant, value: float)  {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qvariant_toDouble(variant: RawQVariant, value: var cdouble) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qvariant_setDouble(variant: RawQVariant, value: cdouble) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qvariant_setQObject(variant: RawQVariant, value: RawQObject) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_chararray_delete(rawCString: cstring) {.cdecl, dynlib:"libDOtherSide.so", importc.}
+proc dos_qvariant_create(variant: var RawQVariant) {.cdecl, importc.}
+proc dos_qvariant_create_int(variant: var RawQVariant, value: cint) {.cdecl, importc.}
+proc dos_qvariant_create_bool(variant: var RawQVariant, value: bool) {.cdecl, importc.}
+proc dos_qvariant_create_string(variant: var RawQVariant, value: cstring) {.cdecl, importc.}
+proc dos_qvariant_create_qobject(variant: var RawQVariant, value: RawQObject) {.cdecl, importc.}
+proc dos_qvariant_create_qvariant(variant: var RawQVariant, value: RawQVariant) {.cdecl, importc.}
+proc dos_qvariant_create_float(variant: var RawQVariant, value: cfloat) {.cdecl, importc.}
+proc dos_qvariant_create_double(variant: var RawQVariant, value: cdouble) {.cdecl, importc.}
+proc dos_qvariant_delete(variant: RawQVariant) {.cdecl, importc.}
+proc dos_qvariant_isnull(variant: RawQVariant, isNull: var bool) {.cdecl, importc.}
+proc dos_qvariant_toInt(variant: RawQVariant, value: var cint) {.cdecl, importc.}
+proc dos_qvariant_toBool(variant: RawQVariant, value: var bool) {.cdecl, importc.}
+proc dos_qvariant_toString(variant: RawQVariant, value: var cstring) {.cdecl, importc.}
+proc dos_qvariant_setInt(variant: RawQVariant, value: cint) {.cdecl, importc.}
+proc dos_qvariant_setBool(variant: RawQVariant, value: bool) {.cdecl, importc.}
+proc dos_qvariant_setString(variant: RawQVariant, value: cstring) {.cdecl, importc.}
+proc dos_qvariant_assign(leftValue: RawQVariant, rightValue: RawQVariant) {.cdecl, importc.}
+proc dos_qvariant_toFloat(variant: RawQVariant, value: var cfloat) {.cdecl, importc.}
+proc dos_qvariant_setFloat(variant: RawQVariant, value: float)  {.cdecl, importc.}
+proc dos_qvariant_toDouble(variant: RawQVariant, value: var cdouble) {.cdecl, importc.}
+proc dos_qvariant_setDouble(variant: RawQVariant, value: cdouble) {.cdecl, importc.}
+proc dos_qvariant_setQObject(variant: RawQVariant, value: RawQObject) {.cdecl, importc.}
+proc dos_chararray_delete(rawCString: cstring) {.cdecl, importc.}
 
 proc create*(variant: QVariant) =
   ## Create a new QVariant
   dos_qvariant_create(variant.data)
   variant.deleted = false
 
-proc create*(variant: QVariant, value: cint) = 
+proc create*(variant: QVariant, value: cint) =
   ## Create a new QVariant given a cint value
   dos_qvariant_create_int(variant.data, value)
   variant.deleted = false
 
 proc create*(variant: QVariant, value: bool) =
-  ## Create a new QVariant given a bool value  
+  ## Create a new QVariant given a bool value
   dos_qvariant_create_bool(variant.data, value)
   variant.deleted = false
 
-proc create*(variant: QVariant, value: string) = 
+proc create*(variant: QVariant, value: string) =
   ## Create a new QVariant given a string value
   dos_qvariant_create_string(variant.data, value)
   variant.deleted = false
@@ -124,7 +124,7 @@ proc create*(variant: QVariant, value: RawQVariant) =
   ## The inner value of the QVariant is copied
   dos_qvariant_create_qvariant(variant.data, value)
   variant.deleted = false
-  
+
 proc create*(variant: QVariant, value: cfloat) =
   ## Create a new QVariant given a cfloat value
   dos_qvariant_create_float(variant.data, value)
@@ -134,8 +134,8 @@ proc create*(variant: QVariant, value: QVariant) =
   ## Create a new QVariant given another QVariant.
   ## The inner value of the QVariant is copied
   create(variant, value.data)
-  
-proc delete*(variant: QVariant) = 
+
+proc delete*(variant: QVariant) =
   ## Delete a QVariant
   if not variant.deleted:
     debugMsg("QVariant", "delete")
@@ -144,7 +144,7 @@ proc delete*(variant: QVariant) =
     variant.deleted = true
 
 proc newQVariant*(): QVariant =
-  ## Return a new QVariant  
+  ## Return a new QVariant
   newWithCondFinalizer(result, delete)
   result.create()
 
@@ -182,23 +182,23 @@ proc newQVariant*(value: float): QVariant =
   ## Return a new QVariant given a float
   newWithCondFinalizer(result, delete)
   result.create(value)
-  
-proc isNull*(variant: QVariant): bool = 
+
+proc isNull*(variant: QVariant): bool =
   ## Return true if the QVariant value is null, false otherwise
   dos_qvariant_isnull(variant.data, result)
 
-proc intVal*(variant: QVariant): int = 
+proc intVal*(variant: QVariant): int =
   ## Return the QVariant value as int
   var rawValue: cint
   dos_qvariant_toInt(variant.data, rawValue)
   result = rawValue.cint
 
-proc `intVal=`*(variant: QVariant, value: int) = 
+proc `intVal=`*(variant: QVariant, value: int) =
   ## Sets the QVariant value int value
   var rawValue = value.cint
   dos_qvariant_setInt(variant.data, rawValue)
 
-proc boolVal*(variant: QVariant): bool = 
+proc boolVal*(variant: QVariant): bool =
   ## Return the QVariant value as bool
   dos_qvariant_toBool(variant.data, result)
 
@@ -214,7 +214,7 @@ proc floatVal*(variant: QVariant): float =
 
 proc `floatVal=`*(variant: QVariant, value: float) =
   ## Sets the QVariant float value
-  dos_qvariant_setFloat(variant.data, value.cfloat)  
+  dos_qvariant_setFloat(variant.data, value.cfloat)
 
 proc doubleVal*(variant: QVariant): cdouble =
   ## Return the QVariant value as double
@@ -224,48 +224,47 @@ proc doubleVal*(variant: QVariant): cdouble =
 
 proc `doubleVal=`*(variant: QVariant, value: cdouble) =
   ## Sets the QVariant double value
-  dos_qvariant_setDouble(variant.data, value)  
-  
-proc stringVal*(variant: QVariant): string = 
+  dos_qvariant_setDouble(variant.data, value)
+
+proc stringVal*(variant: QVariant): string =
   ## Return the QVariant value as string
   var rawCString: cstring
-  var rawCStringLength: cint
-  dos_qvariant_toString(variant.data, rawCString, rawCStringLength)
+  dos_qvariant_toString(variant.data, rawCString)
   result = $rawCString
   dos_chararray_delete(rawCString)
 
-proc `stringVal=`*(variant: QVariant, value: string) = 
+proc `stringVal=`*(variant: QVariant, value: string) =
   ## Sets the QVariant string value
   dos_qvariant_setString(variant.data, value)
 
 proc `qobjectVal=`*(variant: QVariant, value: QObject) =
   ## Sets the QVariant qobject value
   dos_qvariant_setQObject(variant.data, value.data.RawQObject)
-  
+
 proc assign*(leftValue: QVariant, rightValue: QVariant) =
   ## Assign a QVariant with another. The inner value of the QVariant is copied
-  dos_qvariant_assign(leftValue.data, rightValue.data)  
+  dos_qvariant_assign(leftValue.data, rightValue.data)
 
 # QQmlApplicationEngine
-proc dos_qqmlapplicationengine_create(engine: var RawQQmlApplicationEngine) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qqmlapplicationengine_load(engine: RawQQmlApplicationEngine, filename: cstring) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qqmlapplicationengine_context(engine: RawQQmlApplicationEngine, context: var QQmlContext) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qqmlapplicationengine_delete(engine: RawQQmlApplicationEngine) {.cdecl, dynlib:"libDOtherSide.so", importc.}
+proc dos_qqmlapplicationengine_create(engine: var RawQQmlApplicationEngine) {.cdecl, importc.}
+proc dos_qqmlapplicationengine_load(engine: RawQQmlApplicationEngine, filename: cstring) {.cdecl, importc.}
+proc dos_qqmlapplicationengine_context(engine: RawQQmlApplicationEngine, context: var QQmlContext) {.cdecl, importc.}
+proc dos_qqmlapplicationengine_delete(engine: RawQQmlApplicationEngine) {.cdecl, importc.}
 
-proc create*(engine: QQmlApplicationEngine) = 
+proc create*(engine: QQmlApplicationEngine) =
   ## Create an new QQmlApplicationEngine
   dos_qqmlapplicationengine_create(engine.data)
   engine.deleted = false
-  
-proc load*(engine: QQmlApplicationEngine, filename: cstring) = 
-  ## Load the given Qml file 
+
+proc load*(engine: QQmlApplicationEngine, filename: cstring) =
+  ## Load the given Qml file
   dos_qqmlapplicationengine_load(engine.data, filename)
 
 proc rootContext*(engine: QQmlApplicationEngine): QQmlContext =
   ## Return the engine root context
   dos_qqmlapplicationengine_context(engine.data, result)
 
-proc delete*(engine: QQmlApplicationEngine) = 
+proc delete*(engine: QQmlApplicationEngine) =
   ## Delete the given QQmlApplicationEngine
   if not engine.deleted:
     debugMsg("QQmlApplicationEngine", "delete")
@@ -274,24 +273,24 @@ proc delete*(engine: QQmlApplicationEngine) =
     engine.deleted = true
 
 proc newQQmlApplicationEngine*(): QQmlApplicationEngine =
-  ## Return a new QQmlApplicationEngine    
+  ## Return a new QQmlApplicationEngine
   newWithCondFinalizer(result, delete)
   result.create()
 
 # QQmlContext
-proc dos_qqmlcontext_setcontextproperty(context: QQmlContext, propertyName: cstring, propertyValue: RawQVariant) {.cdecl, dynlib:"libDOtherSide.so", importc.}
+proc dos_qqmlcontext_setcontextproperty(context: QQmlContext, propertyName: cstring, propertyValue: RawQVariant) {.cdecl, importc.}
 
-proc setContextProperty*(context: QQmlContext, propertyName: string, propertyValue: QVariant) = 
+proc setContextProperty*(context: QQmlContext, propertyName: string, propertyValue: QVariant) =
   ## Sets a new property with the given value
   dos_qqmlcontext_setcontextproperty(context, propertyName, propertyValue.data)
 
 # QApplication
-proc dos_qapplication_create() {.cdecl, dynlib: "libDOtherSide.so", importc.}
-proc dos_qapplication_exec() {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qapplication_quit() {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qapplication_delete() {.cdecl, dynlib:"libDOtherSide.so", importc.}
+proc dos_qapplication_create() {.cdecl, importc.}
+proc dos_qapplication_exec() {.cdecl, importc.}
+proc dos_qapplication_quit() {.cdecl, importc.}
+proc dos_qapplication_delete() {.cdecl, importc.}
 
-proc create*(application: QApplication) = 
+proc create*(application: QApplication) =
   ## Create a new QApplication
   dos_qapplication_create()
   application.deleted = false
@@ -301,10 +300,10 @@ proc exec*(application: QApplication) =
   dos_qapplication_exec()
 
 proc quit*(application: QApplication) =
-  ## Quit the Qt event loop  
+  ## Quit the Qt event loop
   dos_qapplication_quit()
-  
-proc delete*(application: QApplication) = 
+
+proc delete*(application: QApplication) =
   ## Delete the given QApplication
   if not application.deleted:
     debugMsg("QApplication", "delete")
@@ -312,17 +311,17 @@ proc delete*(application: QApplication) =
     application.deleted = true
 
 proc newQApplication*(): QApplication =
-  ## Return a new QApplication  
+  ## Return a new QApplication
   newWithCondFinalizer(result, delete)
   result.create()
 
 # QGuiApplication
-proc dos_qguiapplication_create() {.cdecl, dynlib: "libDOtherSide.so", importc.}
-proc dos_qguiapplication_exec() {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qguiapplication_quit() {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qguiapplication_delete() {.cdecl, dynlib:"libDOtherSide.so", importc.}
+proc dos_qguiapplication_create() {.cdecl, importc.}
+proc dos_qguiapplication_exec() {.cdecl, importc.}
+proc dos_qguiapplication_quit() {.cdecl, importc.}
+proc dos_qguiapplication_delete() {.cdecl, importc.}
 
-proc create*(application: QGuiApplication) = 
+proc create*(application: QGuiApplication) =
   ## Create a new QApplication
   dos_qguiapplication_create()
   application.deleted = false
@@ -332,10 +331,10 @@ proc exec*(application: QGuiApplication) =
   dos_qguiapplication_exec()
 
 proc quit*(application: QGuiApplication) =
-  ## Quit the Qt event loop  
+  ## Quit the Qt event loop
   dos_qguiapplication_quit()
-  
-proc delete*(application: QGuiApplication) = 
+
+proc delete*(application: QGuiApplication) =
   ## Delete the given QApplication
   if not application.deleted:
     debugMsg("QApplication", "delete")
@@ -343,10 +342,10 @@ proc delete*(application: QGuiApplication) =
     application.deleted = true
 
 proc newQGuiApplication*(): QGuiApplication =
-  ## Return a new QApplication  
+  ## Return a new QApplication
   newWithCondFinalizer(result, delete)
   result.create()
-  
+
 # QObject
 type RawQVariantArray {.unchecked.} = array[0..0, RawQVariant]
 type RawQVariantArrayPtr = ptr RawQVariantArray
@@ -372,13 +371,13 @@ proc toCIntSeq(metaTypes: openarray[QMetaType]): seq[cint] =
     result.add(cint(metaType))
 
 type QObjectCallBack = proc(nimobject: ptr QObjectObj, slotName: RawQVariant, numArguments: cint, arguments: RawQVariantArrayPtr) {.cdecl.}
-    
-proc dos_qobject_create(qobject: var RawQObject, nimobject: ptr QObjectObj, qobjectCallback: QObjectCallBack) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qobject_delete(qobject: RawQObject) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qobject_slot_create(qobject: RawQObject, slotName: cstring, argumentsCount: cint, argumentsMetaTypes: ptr cint, slotIndex: var cint) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qobject_signal_create(qobject: RawQObject, signalName: cstring, argumentsCount: cint, argumentsMetaTypes: ptr cint, signalIndex: var cint) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qobject_signal_emit(qobject: RawQObject, signalName: cstring, argumentsCount: cint, arguments: ptr RawQVariant) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qobject_property_create(qobject: RawQObject, propertyName: cstring, propertyType: cint, readSlot: cstring, writeSlot: cstring, notifySignal: cstring) {.cdecl, dynlib:"libDOtherSide.so", importc.}
+
+proc dos_qobject_create(qobject: var RawQObject, nimobject: ptr QObjectObj, qobjectCallback: QObjectCallBack) {.cdecl, importc.}
+proc dos_qobject_delete(qobject: RawQObject) {.cdecl, importc.}
+proc dos_qobject_slot_create(qobject: RawQObject, slotName: cstring, argumentsCount: cint, argumentsMetaTypes: ptr cint, slotIndex: var cint) {.cdecl, importc.}
+proc dos_qobject_signal_create(qobject: RawQObject, signalName: cstring, argumentsCount: cint, argumentsMetaTypes: ptr cint, signalIndex: var cint) {.cdecl, importc.}
+proc dos_qobject_signal_emit(qobject: RawQObject, signalName: cstring, argumentsCount: cint, arguments: ptr RawQVariant) {.cdecl, importc.}
+proc dos_qobject_property_create(qobject: RawQObject, propertyName: cstring, propertyType: cint, readSlot: cstring, writeSlot: cstring, notifySignal: cstring) {.cdecl, importc.}
 
 method onSlotCalled*(nimobject: QObject, slotName: string, args: openarray[QVariant]) =
   ## Called from the NimQml bridge when a slot is called from Qml.
@@ -409,8 +408,8 @@ proc create*(qobject: QObject) =
   let qobjectPtr = addr(qobject[])
   dos_qobject_create(qobject.data, qobjectPtr, qobjectCallback)
   qobjectRegistry[qobjectPtr] = true
-  
-proc delete*(qobject: QObject) = 
+
+proc delete*(qobject: QObject) =
   ## Delete the given QObject
   if not qobject.deleted:
     debugMsg("QObject", "delete")
@@ -419,27 +418,27 @@ proc delete*(qobject: QObject) =
     dos_qobject_delete(qobject.data)
     qobject.data = nil.RawQObject
     qobject.deleted = true
-  
+
 proc newQObject*(): QObject =
   ## Return a new QObject
   newWithCondFinalizer(result, delete)
   result.create()
 
 proc registerSlot*(qobject: QObject,
-                   slotName: string, 
+                   slotName: string,
                    metaTypes: openarray[QMetaType]) =
   ## Register a slot in the QObject with the given name and signature
   # Copy the metatypes array
   var copy = toCIntSeq(metatypes)
-  var index: cint 
+  var index: cint
   dos_qobject_slot_create(qobject.data, slotName, cint(copy.len), addr(copy[0].cint), index)
   qobject.slots[slotName] = index
 
 proc registerSignal*(qobject: QObject,
-                     signalName: string, 
+                     signalName: string,
                      metatypes: openarray[QMetaType]) =
   ## Register a signal in the QObject with the given name and signature
-  var index: cint 
+  var index: cint
   if metatypes.len > 0:
     var copy = toCIntSeq(metatypes)
     dos_qobject_signal_create(qobject.data, signalName, copy.len.cint, addr(copy[0].cint), index)
@@ -448,10 +447,10 @@ proc registerSignal*(qobject: QObject,
   qobject.signals[signalName] = index
 
 proc registerProperty*(qobject: QObject,
-                       propertyName: string, 
-                       propertyType: QMetaType, 
-                       readSlot: string, 
-                       writeSlot: string, 
+                       propertyName: string,
+                       propertyType: QMetaType,
+                       readSlot: string,
+                       writeSlot: string,
                        notifySignal: string) =
   ## Register a property in the QObject with the given name and type.
   assert propertyName != nil, "property name cannot be nil"
@@ -463,25 +462,25 @@ proc registerProperty*(qobject: QObject,
 
 proc emit*(qobject: QObject, signalName: string, args: openarray[QVariant] = []) =
   ## Emit the signal with the given name and values
-  if args.len > 0: 
+  if args.len > 0:
     var copy = args.toRawVariantSeq
     dos_qobject_signal_emit(qobject.data, signalName, copy.len.cint, addr(copy[0]))
   else:
     dos_qobject_signal_emit(qobject.data, signalName, 0, nil)
 
 # QQuickView
-proc dos_qquickview_create(view: var RawQQuickView) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qquickview_delete(view: RawQQuickView) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qquickview_show(view: RawQQuickView) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qquickview_source(view: RawQQuickView, filename: var cstring, length: var int) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qquickview_set_source(view: RawQQuickView, filename: cstring) {.cdecl, dynlib:"libDOtherSide.so", importc.}
+proc dos_qquickview_create(view: var RawQQuickView) {.cdecl, importc.}
+proc dos_qquickview_delete(view: RawQQuickView) {.cdecl, importc.}
+proc dos_qquickview_show(view: RawQQuickView) {.cdecl, importc.}
+proc dos_qquickview_source(view: RawQQuickView, filename: var cstring, length: var int) {.cdecl, importc.}
+proc dos_qquickview_set_source(view: RawQQuickView, filename: cstring) {.cdecl, importc.}
 
 proc create(view: var QQuickView) =
   ## Create a new QQuickView
   dos_qquickview_create(view.data)
   view.deleted = false
 
-proc source(view: QQuickView): cstring = 
+proc source(view: QQuickView): cstring =
   ## Return the source Qml file loaded by the view
   var length: int
   dos_qquickview_source(view.data, result, length)
@@ -490,8 +489,8 @@ proc `source=`(view: QQuickView, filename: cstring) =
   ## Sets the source Qml file laoded by the view
   dos_qquickview_set_source(view.data, filename)
 
-proc show(view: QQuickView) = 
-  ## Sets the view visible 
+proc show(view: QQuickView) =
+  ## Sets the view visible
   dos_qquickview_show(view.data)
 
 proc delete(view: QQuickView) =
@@ -503,20 +502,20 @@ proc delete(view: QQuickView) =
     view.deleted = true
 
 proc newQQuickView*(): QQuickView =
-  ## Return a new QQuickView  
+  ## Return a new QQuickView
   newWithCondFinalizer(result, delete)
   result.create()
 
 # QModelIndex
-proc dos_qmodelindex_create(modelIndex: var RawQModelIndex) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qmodelindex_delete(modelIndex: RawQModelIndex) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qmodelindex_row(modelIndex: RawQModelIndex, row: var cint) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qmodelindex_column(modelIndex: RawQModelIndex, column: var cint) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qmodelindex_isValid(modelIndex: RawQModelIndex, column: var bool) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qmodelindex_data(modelIndex: RawQModelIndex, role: cint, data: RawQVariant) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qmodelindex_parent(modelIndex: RawQModelIndex, parent: RawQModelIndex) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qmodelindex_child(modelIndex: RawQModelIndex, row: cint, column: cint, parent: RawQModelIndex) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qmodelindex_sibling(modelIndex: RawQModelIndex, row: cint, column: cint, sibling: RawQModelIndex) {.cdecl, dynlib:"libDOtherSide.so", importc.}
+proc dos_qmodelindex_create(modelIndex: var RawQModelIndex) {.cdecl, importc.}
+proc dos_qmodelindex_delete(modelIndex: RawQModelIndex) {.cdecl, importc.}
+proc dos_qmodelindex_row(modelIndex: RawQModelIndex, row: var cint) {.cdecl, importc.}
+proc dos_qmodelindex_column(modelIndex: RawQModelIndex, column: var cint) {.cdecl, importc.}
+proc dos_qmodelindex_isValid(modelIndex: RawQModelIndex, column: var bool) {.cdecl, importc.}
+proc dos_qmodelindex_data(modelIndex: RawQModelIndex, role: cint, data: RawQVariant) {.cdecl, importc.}
+proc dos_qmodelindex_parent(modelIndex: RawQModelIndex, parent: RawQModelIndex) {.cdecl, importc.}
+proc dos_qmodelindex_child(modelIndex: RawQModelIndex, row: cint, column: cint, parent: RawQModelIndex) {.cdecl, importc.}
+proc dos_qmodelindex_sibling(modelIndex: RawQModelIndex, row: cint, column: cint, sibling: RawQModelIndex) {.cdecl, importc.}
 
 proc create*(modelIndex: var QModelIndex) =
   ## Create a new QModelIndex
@@ -527,7 +526,7 @@ proc create*(modelIndex: var QModelIndex, rawQModelIndex: RawQModelIndex) =
   ## Create a new QModelIndex
   modelIndex.data = rawQModelIndex
   modelIndex.deleted = false
-  
+
 proc delete*(modelIndex: QModelIndex) =
   ## Delete the given QModelIndex
   if not modelIndex.deleted:
@@ -559,7 +558,7 @@ proc isValid*(modelIndex: QModelIndex): bool =
   dos_qmodelindex_isValid(modelIndex.data, result)
 
 proc data*(modelIndex: QModelIndex, role: cint): QVariant =
-  ## Return the model data associated to the given role  
+  ## Return the model data associated to the given role
   result = newQVariant()
   dos_qmodelindex_data(modelIndex.data, role, result.data)
 
@@ -579,10 +578,10 @@ proc sibling*(modelIndex: QModelIndex, row: cint, column: cint): QModelIndex =
   dos_qmodelindex_sibling(modelIndex.data, row, column, result.data)
 
 # QHashIntByteArray
-proc dos_qhash_int_qbytearray_create(qHash: var RawQHashIntByteArray) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qhash_int_qbytearray_delete(qHash: RawQHashIntByteArray) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qhash_int_qbytearray_insert(qHash: RawQHashIntByteArray, key: int, value: cstring) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qhash_int_qbytearray_value(qHash: RawQHashIntByteArray, key: int, value: var cstring) {.cdecl, dynlib:"libDOtherSide.so", importc.}
+proc dos_qhash_int_qbytearray_create(qHash: var RawQHashIntByteArray) {.cdecl, importc.}
+proc dos_qhash_int_qbytearray_delete(qHash: RawQHashIntByteArray) {.cdecl, importc.}
+proc dos_qhash_int_qbytearray_insert(qHash: RawQHashIntByteArray, key: int, value: cstring) {.cdecl, importc.}
+proc dos_qhash_int_qbytearray_value(qHash: RawQHashIntByteArray, key: int, value: var cstring) {.cdecl, importc.}
 
 proc create*(qHash: var QHashIntByteArray) =
   ## Create the QHash
@@ -593,7 +592,7 @@ proc create*(qHash: var QHashIntByteArray) =
 proc delete*(qHash: QHashIntByteArray) =
   ## Delete the QHash
   if not qHash.deleted:
-    debugMsg("QHashIntByteArray", "delete")  
+    debugMsg("QHashIntByteArray", "delete")
     dos_qhash_int_qbytearray_delete(qHash.data)
     qHash.deleted = true
 
@@ -602,17 +601,17 @@ proc insert*(qHash: QHashIntByteArray, key: int, value: cstring) =
   dos_qhash_int_qbytearray_insert(qHash.data, key, value)
 
 proc value*(qHash: QHashIntByteArray, key: int): string =
-  ## Return the value associated at the given key  
+  ## Return the value associated at the given key
   var rawString: cstring
   dos_qhash_int_qbytearray_value(qHash.data, key, rawString)
   result = $rawString
   dos_chararray_delete(rawString)
 
 proc newQHashIntQByteArray*(): QHashIntByteArray =
-  ## Create a new QHashIntQByteArray  
+  ## Create a new QHashIntQByteArray
   newWithCondFinalizer(result, delete)
   result.create()
-  
+
 # QAbstractListModel
 type
   RowCountCallback = proc(modelObject: ptr QAbstractListModelObj, rawIndex: RawQModelIndex, result: var cint) {.cdecl.}
@@ -632,25 +631,25 @@ proc dos_qabstractlistmodel_create(model: var RawQAbstractListModel,
                                    setDataCallback: SetDataCallBack,
                                    roleNamesCallback: RoleNamesCallback,
                                    flagsCallback: FlagsCallback,
-                                   headerDataCallback: HeaderDataCallback) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qabstractlistmodel_delete(model: RawQAbstractListModel) {.cdecl, dynlib:"libDOtherSide.so", importc.}
+                                   headerDataCallback: HeaderDataCallback) {.cdecl, importc.}
+proc dos_qabstractlistmodel_delete(model: RawQAbstractListModel) {.cdecl, importc.}
 proc dos_qabstractlistmodel_beginInsertRows(model: RawQAbstractListModel,
                                             parentIndex: RawQModelIndex,
                                             first: cint,
-                                            last: cint) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qabstractlistmodel_endInsertRows(model: RawQAbstractListModel) {.cdecl, dynlib:"libDOtherSide.so", importc.}
+                                            last: cint) {.cdecl, importc.}
+proc dos_qabstractlistmodel_endInsertRows(model: RawQAbstractListModel) {.cdecl, importc.}
 proc dos_qabstractlistmodel_beginRemoveRows(model: RawQAbstractListModel,
                                             parentIndex: RawQModelIndex,
                                             first: cint,
-                                            last: cint) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qabstractlistmodel_endRemoveRows(model: RawQAbstractListModel) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qabstractlistmodel_beginResetModel(model: RawQAbstractListModel) {.cdecl, dynlib:"libDOtherSide.so", importc.}
-proc dos_qabstractlistmodel_endResetModel(model: RawQAbstractListModel) {.cdecl, dynlib:"libDOtherSide.so", importc.}
+                                            last: cint) {.cdecl, importc.}
+proc dos_qabstractlistmodel_endRemoveRows(model: RawQAbstractListModel) {.cdecl, importc.}
+proc dos_qabstractlistmodel_beginResetModel(model: RawQAbstractListModel) {.cdecl, importc.}
+proc dos_qabstractlistmodel_endResetModel(model: RawQAbstractListModel) {.cdecl, importc.}
 proc dos_qabstractlistmodel_dataChanged(model: RawQAbstractListModel,
                                         parentLeft: RawQModelIndex,
                                         bottomRight: RawQModelIndex,
                                         rolesArrayPtr: ptr cint,
-                                        rolesArrayLength: cint) {.cdecl, dynlib:"libDOtherSide.so", importc.}
+                                        rolesArrayLength: cint) {.cdecl, importc.}
 
 method rowCount*(model: QAbstractListModel, index: QModelIndex): cint =
   ## Return the model's row count
@@ -671,11 +670,11 @@ proc columnCountCallback(modelObject: ptr QAbstractListModelObj, rawIndex: RawQM
   let model = cast[QAbstractListModel](modelObject)
   let index = newQModelIndex(rawIndex)
   result = model.columnCount(index)
-  
+
 method data*(model: QAbstractListModel, index: QModelIndex, role: cint): QVariant =
   ## Return the data at the given model index and role
-  return nil  
-  
+  return nil
+
 proc dataCallback(modelObject: ptr QAbstractListModelObj, rawIndex: RawQModelIndex, role: cint, result: RawQVariant) {.cdecl, exportc.} =
   debugMsg("QAbstractListModel", "dataCallback")
   let model = cast[QAbstractListModel](modelObject)
@@ -687,7 +686,7 @@ proc dataCallback(modelObject: ptr QAbstractListModelObj, rawIndex: RawQModelInd
 
 method setData*(model: QAbstractListModel, index: QModelIndex, value: QVariant, role: cint): bool =
   ## Sets the data at the given index and role. Return true on success, false otherwise
-  return false 
+  return false
 
 proc setDataCallback(modelObject: ptr QAbstractListModelObj, rawIndex: RawQModelIndex, rawQVariant: RawQVariant,  role: cint, result: var bool) {.cdecl, exportc.} =
   debugMsg("QAbstractListModel", "setDataCallback")
@@ -695,17 +694,17 @@ proc setDataCallback(modelObject: ptr QAbstractListModelObj, rawIndex: RawQModel
   let index = newQModelIndex(rawIndex)
   let variant = newQVariant(rawQVariant)
   result = model.setData(index, variant, role)
-    
+
 method roleNames*(model: QAbstractListModel): Table[cint, cstring] =
-  ## Return the model role names  
+  ## Return the model role names
   result = initTable[cint, cstring]()
 
 proc roleNamesCallback(modelObject: ptr QAbstractListModelObj, hash: RawQHashIntByteArray) {.cdecl, exportc.} =
   debugMsg("QAbstractListModel", "roleNamesCallback")
   let model = cast[QAbstractListModel](modelObject)
   let table = model.roleNames()
-  for pair in table.pairs:
-    dos_qhash_int_qbytearray_insert(hash, pair.key, pair.val)
+  for key, val in table.pairs:
+    dos_qhash_int_qbytearray_insert(hash, key, val)
 
 method flags*(model: QAbstractListModel, index: QModelIndex): QtItemFlag =
   ## Return the item flags and the given index
@@ -728,7 +727,7 @@ proc headerDataCallback(modelObject: ptr QAbstractListModelObj, section: cint, o
   if variant != nil:
     dos_qvariant_assign(result, variant.data)
     variant.delete
-    
+
 proc create*(model: var QAbstractListModel) =
   ## Create a new QAbstractListModel
   debugMsg("QAbstractListModel", "create")
@@ -756,7 +755,7 @@ proc newQAbstractListModel*(): QAbstractListModel =
   result.create()
 
 proc beginInsertRows*(model: QAbstractListModel, parentIndex: QModelIndex, first: int, last: int) =
-  ## Notify the view that the model is about to inserting the given number of rows 
+  ## Notify the view that the model is about to inserting the given number of rows
   dos_qabstractlistmodel_beginInsertRows(model.data.RawQAbstractListModel, parentIndex.data, first.cint, last.cint)
 
 proc endInsertRows*(model: QAbstractListModel) =
@@ -764,7 +763,7 @@ proc endInsertRows*(model: QAbstractListModel) =
   dos_qabstractlistmodel_endInsertRows(model.data.RawQAbstractListModel)
 
 proc beginRemoveRows*(model: QAbstractListModel, parentIndex: QModelIndex, first: int, last: int) =
-  ## Notify the view that the model is about to remove the given number of rows 
+  ## Notify the view that the model is about to remove the given number of rows
   dos_qabstractlistmodel_beginRemoveRows(model.data.RawQAbstractListModel, parentIndex.data, first.cint, last.cint)
 
 proc endRemoveRows*(model: QAbstractListModel) =
@@ -785,5 +784,6 @@ proc dataChanged*(model: QAbstractListModel,
                  roles: seq[cint]) =
   ## Notify the view that the model data changed
   var copy = roles
-  dos_qabstractlistmodel_dataChanged(model.data.RawQAbstractListModel, topLeft.data, bottomRight.data, copy[0].addr, copy.len.cint)  
-  
+  dos_qabstractlistmodel_dataChanged(model.data.RawQAbstractListModel, topLeft.data, bottomRight.data, copy[0].addr, copy.len.cint)
+
+include private.nimqmlmacros
