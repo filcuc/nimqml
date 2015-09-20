@@ -15,3 +15,6 @@ QML binding for the Nim programming language
 * nimble compile -l:-lDOtherSide main.nim
 
 This invokes the nim compiler asking to link the DOtherSide lib
+
+## Documentation
+The project documentation can be read [here](http://filcuc.github.io/nimqml/)
