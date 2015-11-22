@@ -27,46 +27,22 @@ type QMetaType* {.pure.} = enum ## \
 var qobjectRegistry = initTable[ptr QObjectObj, bool]()
 
 template debugMsg(message: string) =
-  {.push warning[user]: off.} # workaround to remove warnings; this won't be needed soon
   when defined(debug):
-    {.pop.}
     echo "NimQml: ", message
-  else:
-    {.pop.}
 
 template debugMsg(typeName: string, procName: string) =
-  {.push warning[user]: off.} # workaround to remove warnings; this won't be needed soon
   when defined(debug):
-    {.pop.}
     var message = typeName
     message &= ": "
     message &= procName
     debugMsg(message)
-  else:
-    {.pop.}
-
-template debugMsg(typeName: string, procName: string, userMessage: string) =
-  {.push warning[user]: off.} # workaround to remove warnings; this won't be needed soon
-  when defined(debug):
-    {.pop.}
-    var message = typeName
-    message &= ": "
-    message &= procName
-    message &= " "
-    message &= userMessage
-    debugMsg(message)
-  else:
-    {.pop.}
 
 template newWithCondFinalizer(variable: expr, finalizer: expr) =
   ## calls ``new`` but only setting a finalizer when ``nimqml_use_finalizers``
   ## is defined
-  {.push warning[user]: off.} # workaround to remove warnings; this won't be needed soon
   when defined(nimqml_use_finalizers):
-    {.pop.}
     new(variable, finalizer)
   else:
-    {.pop.}
     new(variable)
 
 # QVariant
