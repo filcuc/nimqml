@@ -3,21 +3,18 @@ import QtQuick.Controls 1.2
 import QtQuick.Layouts 1.1
 import QtQuick.Window 2.1
 
-ApplicationWindow
-{
+ApplicationWindow {
     width: 400
     height: 300
     title: "AbstractItemModel"
     Component.onCompleted: visible = true
 
-    Component
-    {
+    Component {
         id: myListModelDelegate
         Label { text: "Name:" + name }
     }
-    
-    ListView
-    {
+ 
+    ListView {
         anchors.fill: parent
         model: myListModel
         delegate: myListModelDelegate
