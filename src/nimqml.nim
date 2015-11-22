@@ -360,7 +360,7 @@ proc dos_qobject_signal_create(qobject: RawQObject, signalName: cstring, argumen
 proc dos_qobject_signal_emit(qobject: RawQObject, signalName: cstring, argumentsCount: cint, arguments: ptr RawQVariant) {.cdecl, importc.}
 proc dos_qobject_property_create(qobject: RawQObject, propertyName: cstring, propertyType: cint, readSlot: cstring, writeSlot: cstring, notifySignal: cstring) {.cdecl, importc.}
 
-method onSlotCalled*(nimobject: QObject, slotName: string, args: openarray[QVariant]) =
+method onSlotCalled*(nimobject: QObject, slotName: string, args: openarray[QVariant]) {.base.} =
   ## Called from the NimQml bridge when a slot is called from Qml.
   ## Subclasses can override the given method for handling the slot call
   discard()
@@ -632,7 +632,7 @@ proc dos_qabstractlistmodel_dataChanged(model: RawQAbstractListModel,
                                         rolesArrayPtr: ptr cint,
                                         rolesArrayLength: cint) {.cdecl, importc.}
 
-method rowCount*(model: QAbstractListModel, index: QModelIndex): cint =
+method rowCount*(model: QAbstractListModel, index: QModelIndex): cint {.base.} = 
   ## Return the model's row count
   return 0
 
@@ -642,7 +642,7 @@ proc rowCountCallback(modelObject: ptr QAbstractListModelObj, rawIndex: RawQMode
   let index = newQModelIndex(rawIndex)
   result = model.rowCount(index)
 
-method columnCount*(model: QAbstractListModel, index: QModelIndex): cint =
+method columnCount*(model: QAbstractListModel, index: QModelIndex): cint {.base.} =
   ## Return the model's column count
   return 1
 
@@ -652,7 +652,7 @@ proc columnCountCallback(modelObject: ptr QAbstractListModelObj, rawIndex: RawQM
   let index = newQModelIndex(rawIndex)
   result = model.columnCount(index)
 
-method data*(model: QAbstractListModel, index: QModelIndex, role: cint): QVariant =
+method data*(model: QAbstractListModel, index: QModelIndex, role: cint): QVariant {.base.} =
   ## Return the data at the given model index and role
   return nil
 
@@ -665,7 +665,7 @@ proc dataCallback(modelObject: ptr QAbstractListModelObj, rawIndex: RawQModelInd
     dos_qvariant_assign(result, variant.data)
     variant.delete
 
-method setData*(model: QAbstractListModel, index: QModelIndex, value: QVariant, role: cint): bool =
+method setData*(model: QAbstractListModel, index: QModelIndex, value: QVariant, role: cint): bool {.base.} =
   ## Sets the data at the given index and role. Return true on success, false otherwise
   return false
 
@@ -676,7 +676,7 @@ proc setDataCallback(modelObject: ptr QAbstractListModelObj, rawIndex: RawQModel
   let variant = newQVariant(rawQVariant)
   result = model.setData(index, variant, role)
 
-method roleNames*(model: QAbstractListModel): Table[cint, cstring] =
+method roleNames*(model: QAbstractListModel): Table[cint, cstring] {.base.} =
   ## Return the model role names
   result = initTable[cint, cstring]()
 
@@ -687,7 +687,7 @@ proc roleNamesCallback(modelObject: ptr QAbstractListModelObj, hash: RawQHashInt
   for key, val in table.pairs:
     dos_qhash_int_qbytearray_insert(hash, key, val)
 
-method flags*(model: QAbstractListModel, index: QModelIndex): QtItemFlag =
+method flags*(model: QAbstractListModel, index: QModelIndex): QtItemFlag {.base.} =
   ## Return the item flags and the given index
   return QtItemFlag.None
 
@@ -697,7 +697,7 @@ proc flagsCallback(modelObject: ptr QAbstractListModelObj, rawIndex: RawQModelIn
   let index = newQModelIndex(rawIndex)
   result = model.flags(index).cint
 
-method headerData*(model: QAbstractListModel, section: cint, orientation: QtOrientation, role: cint): QVariant =
+method headerData*(model: QAbstractListModel, section: cint, orientation: QtOrientation, role: cint): QVariant {.base.} =
   ## Returns the data for the given role and section in the header with the specified orientation
   return nil
 

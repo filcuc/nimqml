@@ -7,4 +7,4 @@ description   = "abstractitemmodel"
 license       = "MIT"
 
 [Deps]
-Requires: "nim >= 0.11.2, nimqml >= 0.4.5"
+Requires: "nim >= 0.12.1, nimqml >= 0.4.7"

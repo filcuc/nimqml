@@ -4,7 +4,7 @@ QML binding for the Nim programming language
 
 ## Requirements
 * [DOtherside](https://github.com/filcuc/DOtherSide) 0.4.5 or higher
-* [Nim](http://nim-lang.org/) 0.11.2 or higher
+* [Nim](http://nim-lang.org/) 0.12.1 or higher
 
 ## Build instructions
 * Compile and Install DOtherside in your system PATH (i.e. /usr/lib)
