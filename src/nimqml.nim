@@ -106,6 +106,11 @@ proc create*(variant: QVariant, value: cfloat) =
   dos_qvariant_create_float(variant.data, value)
   variant.deleted = false
 
+proc create*(variant: QVariant, value: cdouble) =
+  ## Create a new QVariant given a cdouble value
+  dos_qvariant_create_double(variant.data, value)
+  variant.deleted = false
+
 proc create*(variant: QVariant, value: QVariant) =
   ## Create a new QVariant given another QVariant.
   ## The inner value of the QVariant is copied
@@ -451,25 +456,25 @@ proc dos_qquickview_show(view: RawQQuickView) {.cdecl, importc.}
 proc dos_qquickview_source(view: RawQQuickView, filename: var cstring, length: var int) {.cdecl, importc.}
 proc dos_qquickview_set_source(view: RawQQuickView, filename: cstring) {.cdecl, importc.}
 
-proc create(view: var QQuickView) =
+proc create*(view: var QQuickView) =
   ## Create a new QQuickView
   dos_qquickview_create(view.data)
   view.deleted = false
 
-proc source(view: QQuickView): cstring =
+proc source*(view: QQuickView): cstring =
   ## Return the source Qml file loaded by the view
   var length: int
   dos_qquickview_source(view.data, result, length)
 
-proc `source=`(view: QQuickView, filename: cstring) =
+proc `source=`*(view: QQuickView, filename: cstring) =
   ## Sets the source Qml file laoded by the view
   dos_qquickview_set_source(view.data, filename)
 
-proc show(view: QQuickView) =
+proc show*(view: QQuickView) =
   ## Sets the view visible
   dos_qquickview_show(view.data)
 
-proc delete(view: QQuickView) =
+proc delete*(view: QQuickView) =
   ## Delete the given QQuickView
   if not view.deleted:
     debugMsg("QQuickView", "delete")
