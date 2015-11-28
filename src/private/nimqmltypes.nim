@@ -1,7 +1,7 @@
 import tables
 
-type 
-  RawQVariant = distinct pointer 
+type
+  RawQVariant = distinct pointer
   QVariant* = ref object of RootObj ## A QVariant
     data: RawQVariant
     deleted: bool
@@ -10,13 +10,13 @@ type
   QQmlApplicationEngine* = ref object of RootObj ## A QQmlApplicationEngine
     data: RawQQmlApplicationEngine
     deleted: bool
-  
+
   QApplication* = ref object of RootObj ## A QApplication 
     deleted: bool
 
   QGuiApplication* = ref object of RootObj ## A QGuiApplication
-    deleted: bool  
-    
+    deleted: bool
+
   RawQObject = distinct pointer
   QObjectObj = object of RootObj
     data: RawQObject
@@ -33,7 +33,7 @@ type
   RawQAbstractListModel = distinct pointer
   QAbstractListModelObj = object of QObjectObj
   QAbstractListModel* = ref QAbstractListModelObj ## A QAbstractListModel
-  
+
   RawQQuickView = distinct pointer 
   QQuickView = ref object of RootObj ## A QQuickView
     data: RawQQuickView
@@ -53,7 +53,7 @@ type
   QHashIntByteArray* = ref QHashIntByteArrayObj ## A QHash<int,QByteArray>
 
   QtItemFlag* {.pure.} = enum 
-    None = 0.cint, 
+    None = 0.cint,
     IsSelectable = 1.cint,
     IsEditable = 2.cint,
     IsDragEnabled = 4.cint,
@@ -62,7 +62,7 @@ type
     IsEnabled = 32.cint,
     IsTristate = 64.cint,
     NeverHasChildren = 128.cint
-  
+
   QtOrientation {.pure.} = enum
     Horizontal = 1.cint,
     Vertical = 2.cint

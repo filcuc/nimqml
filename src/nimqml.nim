@@ -37,14 +37,6 @@ template debugMsg(typeName: string, procName: string) =
     message &= procName
     debugMsg(message)
 
-template newWithCondFinalizer(variable: expr, finalizer: expr) =
-  ## calls ``new`` but only setting a finalizer when ``nimqml_use_finalizers``
-  ## is defined
-  when defined(nimqml_use_finalizers):
-    new(variable, finalizer)
-  else:
-    new(variable)
-
 # QVariant
 proc dos_qvariant_create(variant: var RawQVariant) {.cdecl, importc.}
 proc dos_qvariant_create_int(variant: var RawQVariant, value: cint) {.cdecl, importc.}
@@ -126,42 +118,42 @@ proc delete*(variant: QVariant) =
 
 proc newQVariant*(): QVariant =
   ## Return a new QVariant
-  newWithCondFinalizer(result, delete)
+  new(result, delete)
   result.create()
 
 proc newQVariant*(value: cint): QVariant =
   ## Return a new QVariant given a cint
-  newWithCondFinalizer(result, delete)
+  new(result, delete)
   result.create(value)
 
 proc newQVariant*(value: bool): QVariant  =
   ## Return a new QVariant given a bool
-  newWithCondFinalizer(result, delete)
+  new(result, delete)
   result.create(value)
 
 proc newQVariant*(value: string): QVariant  =
   ## Return a new QVariant given a string
-  newWithCondFinalizer(result, delete)
+  new(result, delete)
   result.create(value)
 
 proc newQVariant*(value: QObject): QVariant  =
   ## Return a new QVariant given a QObject
-  newWithCondFinalizer(result, delete)
+  new(result, delete)
   result.create(value)
 
 proc newQVariant*(value: RawQVariant): QVariant =
   ## Return a new QVariant given a raw QVariant pointer
-  newWithCondFinalizer(result, delete)
+  new(result, delete)
   result.create(value)
 
 proc newQVariant*(value: QVariant): QVariant =
   ## Return a new QVariant given another QVariant
-  newWithCondFinalizer(result, delete)
+  new(result, delete)
   result.create(value)
 
 proc newQVariant*(value: float): QVariant =
   ## Return a new QVariant given a float
-  newWithCondFinalizer(result, delete)
+  new(result, delete)
   result.create(value)
 
 proc isNull*(variant: QVariant): bool =
@@ -255,7 +247,7 @@ proc delete*(engine: QQmlApplicationEngine) =
 
 proc newQQmlApplicationEngine*(): QQmlApplicationEngine =
   ## Return a new QQmlApplicationEngine
-  newWithCondFinalizer(result, delete)
+  new(result, delete)
   result.create()
 
 # QQmlContext
@@ -293,7 +285,7 @@ proc delete*(application: QApplication) =
 
 proc newQApplication*(): QApplication =
   ## Return a new QApplication
-  newWithCondFinalizer(result, delete)
+  new(result, delete)
   result.create()
 
 # QGuiApplication
@@ -324,7 +316,7 @@ proc delete*(application: QGuiApplication) =
 
 proc newQGuiApplication*(): QGuiApplication =
   ## Return a new QApplication
-  newWithCondFinalizer(result, delete)
+  new(result, delete)
   result.create()
 
 # QObject
@@ -402,7 +394,7 @@ proc delete*(qobject: QObject) =
 
 proc newQObject*(): QObject =
   ## Return a new QObject
-  newWithCondFinalizer(result, delete)
+  new(result, delete)
   result.create()
 
 proc registerSlot*(qobject: QObject,
@@ -484,7 +476,7 @@ proc delete*(view: QQuickView) =
 
 proc newQQuickView*(): QQuickView =
   ## Return a new QQuickView
-  newWithCondFinalizer(result, delete)
+  new(result, delete)
   result.create()
 
 # QModelIndex
@@ -518,12 +510,12 @@ proc delete*(modelIndex: QModelIndex) =
 
 proc newQModelIndex*(): QModelIndex =
   ## Return a new QModelIndex
-  newWithCondFinalizer(result, delete)
+  new(result, delete)
   result.create()
 
 proc newQModelIndex*(rawQModelIndex: RawQModelIndex): QModelIndex =
   ## Return a new QModelIndex given a raw index
-  newWithCondFinalizer(result, delete)
+  new(result, delete)
   result.create(rawQModelIndex)
 
 proc row*(modelIndex: QModelIndex): cint =
@@ -590,7 +582,7 @@ proc value*(qHash: QHashIntByteArray, key: int): string =
 
 proc newQHashIntQByteArray*(): QHashIntByteArray =
   ## Create a new QHashIntQByteArray
-  newWithCondFinalizer(result, delete)
+  new(result, delete)
   result.create()
 
 # QAbstractListModel
@@ -732,7 +724,7 @@ proc delete*(model: QAbstractListModel) =
 
 proc newQAbstractListModel*(): QAbstractListModel =
   ## Return a new QAbstractListModel
-  newWithCondFinalizer(result, delete)
+  new(result, delete)
   result.create()
 
 proc beginInsertRows*(model: QAbstractListModel, parentIndex: QModelIndex, first: int, last: int) =
