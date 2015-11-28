@@ -7,4 +7,4 @@ description   = "contactapp"
 license       = "MIT"
 
 [Deps]
-Requires: "nim >= 0.12.1, nimqml >= 0.4.7"
+Requires: "nim >= 0.12.1, nimqml >= 0.4.8"

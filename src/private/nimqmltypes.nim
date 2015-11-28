@@ -11,7 +11,7 @@ type
     data: RawQQmlApplicationEngine
     deleted: bool
 
-  QApplication* = ref object of RootObj ## A QApplication 
+  QApplication* = ref object of RootObj ## A QApplication
     deleted: bool
 
   QGuiApplication* = ref object of RootObj ## A QGuiApplication
@@ -34,7 +34,7 @@ type
   QAbstractListModelObj = object of QObjectObj
   QAbstractListModel* = ref QAbstractListModelObj ## A QAbstractListModel
 
-  RawQQuickView = distinct pointer 
+  RawQQuickView = distinct pointer
   QQuickView = ref object of RootObj ## A QQuickView
     data: RawQQuickView
     deleted: bool
@@ -52,7 +52,7 @@ type
     deleted: bool
   QHashIntByteArray* = ref QHashIntByteArrayObj ## A QHash<int,QByteArray>
 
-  QtItemFlag* {.pure.} = enum 
+  QtItemFlag* {.pure.} = enum
     None = 0.cint,
     IsSelectable = 1.cint,
     IsEditable = 2.cint,
@@ -66,3 +66,17 @@ type
   QtOrientation {.pure.} = enum
     Horizontal = 1.cint,
     Vertical = 2.cint
+
+  QMetaType* {.pure.} = enum ## \
+    ## Qt metatypes values used for specifing the
+    ## signals and slots argument and return types.
+    ##
+    ## This enum mimic the QMetaType::Type C++ enum
+    UnknownType = cint(0),
+    Bool = cint(1),
+    Int = cint(2),
+    QString = cint(10),
+    VoidStar = cint(31),
+    QObjectStar = cint(39),
+    QVariant = cint(41),
+    Void = cint(43),

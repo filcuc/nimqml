@@ -6,19 +6,15 @@ import typetraits
 import tables
 
 template debug(body: stmt): stmt =
-  {.push warning[user]: off.}
   when defined(debug):
-    {.pop.}
     body
-  else:
-    {.pop.}
 
 let nimFromQtVariant {.compileTime.} = {
   "int" : "intVal",
   "string" : "stringVal",
   "bool" : "boolVal",
   "float" : "floatVal",
-  "QObject" : "qobjectVal",                                      
+  "QObject" : "qobjectVal",
 }.toTable
 
 let nim2QtMeta {.compileTime.} = {
@@ -26,14 +22,14 @@ let nim2QtMeta {.compileTime.} = {
     "int" : "Int",
     "string" : "QString",
     "pointer" : "VoidStar",
-    "QObject" : "QObjectStar",                              
+    "QObject" : "QObjectStar",
     "QVariant": "QVariant",
     "" : "Void", # no return, which is represented by an nnkEmpty node
 }.toTable
 
 proc getNodeOf*(tree: NimNode, kind: NimNodeKind): NimNode {.compileTime.} =
   ## recursively looks for a node of kind, ``kind``, in the tree provided as ``tree``
-  ## Returns the first node that satisfies this condition 
+  ## Returns the first node that satisfies this condition
   for i in 0.. <tree.len:
     var child = tree[i]
     if child.kind == kind:
@@ -44,16 +40,16 @@ proc getNodeOf*(tree: NimNode, kind: NimNodeKind): NimNode {.compileTime.} =
 
 static:
   type Context* = ref object of RootObj
-  type NullContext* = ref object of Context  
+  type NullContext* = ref object of Context
 
 type NodeModifier*[T] = proc(context: T, a: var NimNode): NimNode
 
 # had to remove type bound on hook due to recent regression with generics
-proc hookOnNode*[T](context: T, code: NimNode, hook: NodeModifier, 
+proc hookOnNode*[T](context: T, code: NimNode, hook: NodeModifier,
     recursive: bool = false): NimNode {.compileTime.} =
   ## Iterates over the tree, ``code``, calling ``hook`` on each ``NimNode``
   ## encountered. If ``recursive`` is true, it will recurse over the tree, otherwise
-  ## it will only visit ``code``'s children. ``hook`` should return a replacement for 
+  ## it will only visit ``code``'s children. ``hook`` should return a replacement for
   ## the node that was passed in via it's return value. `hook` may return nil to remove
   ## the node from the tree.
   if code.len == 0:
@@ -67,23 +63,23 @@ proc hookOnNode*[T](context: T, code: NimNode, hook: NodeModifier,
     if child != nil:
       newCode.add child
   return newCode
-  
-proc removeOpenSym*(context: NullContext, 
+
+proc removeOpenSym*(context: NullContext,
   a: var NimNode): NimNode {.compileTime.} =
-  ## replaces: ``nnkOpenSymChoice`` and ``nnkSym`` nodes with idents 
-  ## corresponding to the symbols string representation. 
-  if a.kind == nnkOpenSymChoice: 
+  ## replaces: ``nnkOpenSymChoice`` and ``nnkSym`` nodes with idents
+  ## corresponding to the symbols string representation.
+  if a.kind == nnkOpenSymChoice:
     return ident($a[0].symbol)
   elif a.kind == nnkSym:
-    return ident($a.symbol)  
+    return ident($a.symbol)
   return a
-  
-proc newTemplate*(name = newEmptyNode(); 
-    params: openArray[NimNode] = [newEmptyNode()];  
+
+proc newTemplate*(name = newEmptyNode();
+    params: openArray[NimNode] = [newEmptyNode()];
     body: NimNode = newStmtList()): NimNode {.compileTime.} =
   ## shortcut for creating a new template
   ##
-  ## The ``params`` array must start with the return type of the template, 
+  ## The ``params`` array must start with the return type of the template,
   ## followed by a list of IdentDefs which specify the params.
   result = newNimNode(nnkTemplateDef).add(
     name,
@@ -94,14 +90,14 @@ proc newTemplate*(name = newEmptyNode();
     newEmptyNode(),
     body)
 
-#FIXME: changed parent, typ from typedesc to expr to workaround Nim issue #1874    
+#FIXME: changed parent, typ from typedesc to expr to workaround Nim issue #1874
 template declareSuperTemplate*(parent: expr, typ: expr): stmt =
   template superType*(ofType: typedesc[typ]): typedesc[parent] =
     parent
 
 proc getTypeName*(a: NimNode): NimNode {.compileTime.} =
-  ## returns the node containing the name of an object in a 
-  ## given type definition block 
+  ## returns the node containing the name of an object in a
+  ## given type definition block
   expectMinLen a, 1
   expectKind a, nnkTypeDef
   var testee = a
@@ -149,7 +145,7 @@ proc genSuperTemplate*(typeDecl: NimNode): NimNode {.compileTime.} =
   let typeName = getTypeName(typeDecl)
   if inheritStmt == nil: error("you must declare a super type for " & $typeName)
   # ident of superType (have to deal with generics)
-  let superType = if inheritStmt[0].kind == nnkIdent: inheritStmt[0] 
+  let superType = if inheritStmt[0].kind == nnkIdent: inheritStmt[0]
     else: inheritStmt[0].getNodeOf(nnkIdent)
   let superTemplate = getAst declareSuperTemplate(superType, typeName)
   result = superTemplate[0]
@@ -180,9 +176,9 @@ proc removePragma*(pragma: NimNode, toRemove: string): NimNode {.compileTime.} =
     let child = pragma[i]
     if $child.getPragmaName == toRemove:
       continue
-    result.add child 
+    result.add child
   if result.len == 0:
-    return newEmptyNode() 
+    return newEmptyNode()
 
 proc hasPragma*(node: NimNode, pragmaName: string): bool {.compileTime.} =
   ## Returns ``true`` iff the method, or proc definition: ``node``, has a pragma
@@ -199,17 +195,17 @@ proc hasPragma*(node: NimNode, pragmaName: string): bool {.compileTime.} =
 
 proc getArgType*(arg: NimNode): NimNode  {.compileTime.} =
   ## returns the ``NimNode`` representing a parameters type
-  if arg[1].kind == nnkIdent: 
-    arg[1] 
-  else: 
+  if arg[1].kind == nnkIdent:
+    arg[1]
+  else:
     arg[1].getNodeOf(nnkIdent)
 
 proc getArgName*(arg: NimNode): NimNode  {.compileTime.} =
   ## returns the ``NimNode`` representing a parameters name
-  if arg[0].kind == nnkIdent: 
-    arg[0] 
-  else: 
-    arg[0].getNodeOf(nnkIdent)    
+  if arg[0].kind == nnkIdent:
+    arg[0]
+  else:
+    arg[0].getNodeOf(nnkIdent)
 
 proc addSignalBody(signal: NimNode): NimNode {.compileTime.} =
   # e.g: produces: emit(MyQObject, "nameChanged")
@@ -229,7 +225,7 @@ proc addSignalBody(signal: NimNode): NimNode {.compileTime.} =
   result.add newCall("emit", args)
 
 #FIXME: changed typ from typedesc to expr to workaround Nim issue #1874
-# This is declared dirty so that identifers are not bound to symbols. 
+# This is declared dirty so that identifers are not bound to symbols.
 # The alternative is to use `removeOpenSym` as we did for `prototypeCreate`.
 # We should decide which method is preferable.
 template prototypeOnSlotCalled(typ: expr): stmt {.dirty.} =
@@ -249,7 +245,7 @@ proc doRemoveOpenSym(a: var NimNode): NimNode {.compileTime.} =
 proc templateBody*(a: NimNode): NimNode {.compileTime.} =
   expectKind a, nnkTemplateDef
   result = a[6]
-  
+
 proc genArgTypeArray(params: NimNode): NimNode {.compileTime.} =
   expectKind params, nnkFormalParams
   result = newNimNode(nnkBracket)
@@ -428,8 +424,8 @@ proc genOnSlotCalled(typ: NimNode, slots: seq[NimNode]): NimNode {.compileTime.}
   result.body.add caseStmt
 
 macro QtObject*(qtDecl: stmt): stmt {.immediate.} =
-  ## Generates boiler plate code for registering signals, slots 
-  ## and properties. 
+  ## Generates boiler plate code for registering signals, slots
+  ## and properties.
   ##
   ## Currently generates:
   ## - create: a method to register signal, slots and properties
@@ -439,7 +435,7 @@ macro QtObject*(qtDecl: stmt): stmt {.immediate.} =
   ##   appropiate method.
   ##
   ## Current limitations:
-  ## - only one type can be defined within the body of code sent to the 
+  ## - only one type can be defined within the body of code sent to the
   ##   the macro. It is assumed, but not checked, that somewhere in the
   ##   inheritance hierarchy this object derives from ``QObject``.
   ## - generics are not currently supported
@@ -460,7 +456,7 @@ macro QtObject*(qtDecl: stmt): stmt {.immediate.} =
         result.add it
       else:
         # may come in useful if we want to check objects inherit from QObject
-        #let superName = if superType.kind == nnkIdent: superType 
+        #let superName = if superType.kind == nnkIdent: superType
         #  else: superType.getNodeOf(nnkIdent)
         if typ != nil:
           error("you may not define more than one type " &
