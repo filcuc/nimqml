@@ -1,5 +1,5 @@
 type
-  CArray* {.unchecked.}[T] = array[0..0, T]
+  DosQMetaObject* = distinct pointer
 
   DosSignalDefinition* = object
     name*: cstring
@@ -13,7 +13,7 @@ type
   DosSlotDefinition* = object
     name*: cstring
     returnMetaType*: cint
-    paremetersCount*: cint
+    parametersCount*: cint
     parametersMetaTypes*: pointer
 
   DosSlotDefinitions* = object
@@ -31,11 +31,21 @@ type
     count*: cint
     definitions*: pointer
 
-proc dos_qmetaobject_create*(vptr: var pointer,
-                          superclassMetaObject: pointer,
-                          className: cstring,
-                          signalDefinitions: DosSignalDefinitions,
-                          slotDefinitions: DosSlotDefinitions,
-                          propertyDefinitions: DosPropertyDefinitions) {.cdecl, importc.}
+proc resetToNil*[T](x: var T) = x = nil.pointer.T
+proc isNil*[T](x: T): bool = x.pointer == nil
 
-proc dos_qmetaobject_delete*(vptr: var pointer) {.cdecl, importc.}
+# QObject
+proc dos_qobject_qmetaobject*(vptr: var DosQmetaObject) {.cdecl, importc.}
+
+# QAbstractListModel
+proc dos_qabstractlistmodel_qmetaobject*(vptr: var DosQmetaObject) {.cdecl importc.}
+
+# QMetaObject
+proc dos_qmetaobject_create*(vptr: var DosQmetaObject,
+                             superclassMetaObject: DosQMetaObject,
+                             className: cstring,
+                             signalDefinitions: DosSignalDefinitions,
+                             slotDefinitions: DosSlotDefinitions,
+                             propertyDefinitions: DosPropertyDefinitions) {.cdecl, importc.}
+
+proc dos_qmetaobject_delete*(vptr: DosQmetaObject) {.cdecl, importc.}
