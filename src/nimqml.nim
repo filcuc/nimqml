@@ -11,8 +11,11 @@ template debugMsg(typeName: string, procName: string) =
     message &= procName
     debugMsg(message)
 
+include private/dotherside.nim
+include private/nimqmltypes.nim
 include private/qmetaobject.nim
-
+include private/qvariant.nim
+include private/qobject.nim
 #include private.nimqmltypes
 #var qobjectRegistry = initTable[ptr QObjectObj, bool]()
 #include private/qvariant.nim
