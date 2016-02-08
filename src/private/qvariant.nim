@@ -1,43 +1,35 @@
 proc setup*(variant: QVariant) =
   ## Setup a new QVariant
   dos_qvariant_create(variant.vptr)
-  variant.vptr.resetToNil
 
 proc setup*(variant: QVariant, value: cint) =
   ## Setup a new QVariant given a cint value
   dos_qvariant_create_int(variant.vptr, value)
-  variant.vptr.resetToNil
 
 proc setup*(variant: QVariant, value: bool) =
   ## Setup a new QVariant given a bool value
   dos_qvariant_create_bool(variant.vptr, value)
-  variant.vptr.resetToNil
 
 proc setup*(variant: QVariant, value: string) =
   ## Setup a new QVariant given a string value
   dos_qvariant_create_string(variant.vptr, value)
-  variant.vptr.resetToNil
 
 proc setup*(variant: QVariant, value: QObject) =
   ## Setup a new QVariant given a QObject
   dos_qvariant_create_qobject(variant.vptr, value.vptr.DosQObject)
-  variant.vptr.resetToNil
 
 proc setup*(variant: QVariant, value: DosQVariant) =
   ## Setup a new QVariant given another QVariant.
   ## The inner value of the QVariant is copied
   dos_qvariant_create_qvariant(variant.vptr, value)
-  variant.vptr.resetToNil
 
 proc setup*(variant: QVariant, value: cfloat) =
   ## Setup a new QVariant given a cfloat value
   dos_qvariant_create_float(variant.vptr, value)
-  variant.vptr.resetToNil
 
 proc setup*(variant: QVariant, value: cdouble) =
   ## Setup a new QVariant given a cdouble value
   dos_qvariant_create_double(variant.vptr, value)
-  variant.vptr.resetToNil
 
 proc setup*(variant: QVariant, value: QVariant) =
   ## Setup a new QVariant given another QVariant.
