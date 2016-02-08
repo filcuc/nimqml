@@ -1,31 +1,34 @@
-# QQmlApplicationEngine
-proc dos_qqmlapplicationengine_create(engine: var RawQQmlApplicationEngine) {.cdecl, importc.}
-proc dos_qqmlapplicationengine_load(engine: RawQQmlApplicationEngine, filename: cstring) {.cdecl, importc.}
-proc dos_qqmlapplicationengine_context(engine: RawQQmlApplicationEngine, context: var QQmlContext) {.cdecl, importc.}
-proc dos_qqmlapplicationengine_delete(engine: RawQQmlApplicationEngine) {.cdecl, importc.}
+proc setup*(self: QQmlApplicationEngine) =
+  ## Setup a QQmlApplicationEngine
+  dos_qqmlapplicationengine_create(self.vptr)
 
-proc create*(engine: QQmlApplicationEngine) =
-  ## Create an new QQmlApplicationEngine
-  dos_qqmlapplicationengine_create(engine.data)
-  engine.deleted = false
+proc loadData(self:QQmlApplicationEngine, data: string) =
+  ## Load the given data
+  dos_qqmlapplicationengine_load_data(self.vptr, data.cstring)
 
-proc load*(engine: QQmlApplicationEngine, filename: cstring) =
+proc load*(self: QQmlApplicationEngine, filename: string) =
   ## Load the given Qml file
-  dos_qqmlapplicationengine_load(engine.data, filename)
+  dos_qqmlapplicationengine_load(self.vptr, filename.cstring)
 
-proc rootContext*(engine: QQmlApplicationEngine): QQmlContext =
-  ## Return the engine root context
-  dos_qqmlapplicationengine_context(engine.data, result)
+proc addImportPath*(self: QQmlApplicationEngine, path: string) =
+  ## Add an import path
+  dos_qqmlapplicationengine_add_import_path(self.vptr, path.cstring)
 
-proc delete*(engine: QQmlApplicationEngine) =
+proc setRootContextProperty(self: QQmlApplicationEngine, name: string, value: QVariant) =
+  ## Set a root context property
+  var context: DosQQmlContext
+  dos_qqmlapplicationengine_context(self.vptr, context)
+  dos_qqmlcontext_setcontextproperty(context, name.cstring, value.vptr)
+
+proc delete*(self: QQmlApplicationEngine) =
   ## Delete the given QQmlApplicationEngine
-  if not engine.deleted:
-    debugMsg("QQmlApplicationEngine", "delete")
-    dos_qqmlapplicationengine_delete(engine.data)
-    engine.data = nil.RawQQmlApplicationEngine
-    engine.deleted = true
+  debugMsg("QQmlApplicationEngine", "delete")
+  if self.vptr.isNil:
+    return
+  dos_qqmlapplicationengine_delete(self.vptr)
+  self.vptr.resetToNil
 
 proc newQQmlApplicationEngine*(): QQmlApplicationEngine =
   ## Return a new QQmlApplicationEngine
   new(result, delete)
-  result.create()
+  result.setup()

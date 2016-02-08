@@ -3,6 +3,8 @@ type
   DosQMetaObject* = distinct pointer
   DosQObject* = distinct pointer
   DosQVariant* = distinct pointer
+  DosQQmlContext* = distinct pointer
+  DosQQmlApplicationEngine* = distinct pointer
   DosQVariantArray* {.unchecked.} = array[0..0, DosQVariant]
   DosQMetaType = cint
   DosQMetaTypeArray* {.unchecked.} = array[0..0, DosQMetaType]
@@ -43,6 +45,17 @@ type
 # Conversion
 proc resetToNil*[T](x: var T) = x = nil.pointer.T
 proc isNil*[T](x: T): bool = x.pointer == nil
+
+# QQmlContext
+proc dos_qqmlcontext_setcontextproperty(context: DosQQmlContext, propertyName: cstring, propertyValue: DosQVariant) {.cdecl, importc.}
+
+# QQmlApplicationEngine
+proc dos_qqmlapplicationengine_create(engine: var DosQQmlApplicationEngine) {.cdecl, importc.}
+proc dos_qqmlapplicationengine_load(engine: DosQQmlApplicationEngine, filename: cstring) {.cdecl, importc.}
+proc dos_qqmlapplicationengine_load_data(engine: DosQQmlApplicationEngine, data: cstring) {.cdecl, importc.}
+proc dos_qqmlapplicationengine_add_import_path(engine: DosQQmlApplicationEngine, path: cstring) {.cdecl, importc.}
+proc dos_qqmlapplicationengine_context(engine: DosQQmlApplicationEngine, context: var DosQQmlContext) {.cdecl, importc.}
+proc dos_qqmlapplicationengine_delete(engine: DosQQmlApplicationEngine) {.cdecl, importc.}
 
 # QVariant
 proc dos_qvariant_create(variant: var DosQVariant) {.cdecl, importc.}
@@ -87,5 +100,4 @@ proc dos_qmetaobject_create*(vptr: var DosQmetaObject,
                              signalDefinitions: DosSignalDefinitions,
                              slotDefinitions: DosSlotDefinitions,
                              propertyDefinitions: DosPropertyDefinitions) {.cdecl, importc.}
-
 proc dos_qmetaobject_delete*(vptr: DosQmetaObject) {.cdecl, importc.}

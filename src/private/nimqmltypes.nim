@@ -7,6 +7,10 @@ type
     ## A QVariant
     vptr: DosQVariant
 
+  QQmlApplicationEngine* = ref object of RootObj ## \
+    ## A QQmlApplicationEngine
+    vptr: DosQQmlApplicationEngine
+
   QtItemFlag* {.pure.} = enum ## \
     ## Item flags
     ##
