@@ -46,6 +46,12 @@ type
 proc resetToNil*[T](x: var T) = x = nil.pointer.T
 proc isNil*[T](x: T): bool = x.pointer == nil
 
+# QApplication
+proc dos_qapplication_create() {.cdecl, importc.}
+proc dos_qapplication_exec() {.cdecl, importc.}
+proc dos_qapplication_quit() {.cdecl, importc.}
+proc dos_qapplication_delete() {.cdecl, importc.}
+
 # QQmlContext
 proc dos_qqmlcontext_setcontextproperty(context: DosQQmlContext, propertyName: cstring, propertyValue: DosQVariant) {.cdecl, importc.}
 

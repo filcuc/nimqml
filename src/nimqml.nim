@@ -17,6 +17,7 @@ include private/qmetaobject.nim
 include private/qvariant.nim
 include private/qobject.nim
 include private/qqmlapplicationengine.nim
+include private/qapplication.nim
 #include private.nimqmltypes
 #var qobjectRegistry = initTable[ptr QObjectObj, bool]()
 #include private/qvariant.nim

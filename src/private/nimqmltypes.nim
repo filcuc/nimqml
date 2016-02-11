@@ -11,6 +11,10 @@ type
     ## A QQmlApplicationEngine
     vptr: DosQQmlApplicationEngine
 
+  QApplication = ref object of RootObj ## \
+    ## A QApplication
+    deleted: bool
+
   QtItemFlag* {.pure.} = enum ## \
     ## Item flags
     ##
