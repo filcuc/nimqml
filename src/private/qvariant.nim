@@ -2,9 +2,9 @@ proc setup*(variant: QVariant) =
   ## Setup a new QVariant
   dos_qvariant_create(variant.vptr)
 
-proc setup*(variant: QVariant, value: cint) =
+proc setup*(variant: QVariant, value: int) =
   ## Setup a new QVariant given a cint value
-  dos_qvariant_create_int(variant.vptr, value)
+  dos_qvariant_create_int(variant.vptr, value.cint)
 
 proc setup*(variant: QVariant, value: bool) =
   ## Setup a new QVariant given a bool value
@@ -12,11 +12,11 @@ proc setup*(variant: QVariant, value: bool) =
 
 proc setup*(variant: QVariant, value: string) =
   ## Setup a new QVariant given a string value
-  dos_qvariant_create_string(variant.vptr, value)
+  dos_qvariant_create_string(variant.vptr, value.cstring)
 
 proc setup*(variant: QVariant, value: QObject) =
   ## Setup a new QVariant given a QObject
-  dos_qvariant_create_qobject(variant.vptr, value.vptr.DosQObject)
+  dos_qvariant_create_qobject(variant.vptr, value.vptr)
 
 proc setup*(variant: QVariant, value: DosQVariant) =
   ## Setup a new QVariant given another QVariant.
@@ -49,7 +49,7 @@ proc newQVariant*(): QVariant =
   new(result, delete)
   result.setup()
 
-proc newQVariant*(value: cint): QVariant =
+proc newQVariant*(value: int): QVariant =
   ## Return a new QVariant given a cint
   new(result, delete)
   result.setup(value)
@@ -82,7 +82,7 @@ proc newQVariant*(value: QVariant): QVariant =
 proc newQVariant*(value: float): QVariant =
   ## Return a new QVariant given a float
   new(result, delete)
-  result.setup(value)
+  result.setup(value.cfloat)
 
 proc isNull*(variant: QVariant): bool =
   ## Return true if the QVariant value is null, false otherwise
@@ -140,17 +140,17 @@ proc `stringVal=`*(variant: QVariant, value: string) =
 
 proc `qobjectVal=`*(variant: QVariant, value: QObject) =
   ## Sets the QVariant qobject value
-  dos_qvariant_setQObject(variant.vptr, value.vptr.DosQObject)
+  dos_qvariant_setQObject(variant.vptr, value.vptr)
 
 proc assign*(leftValue: QVariant, rightValue: QVariant) =
   ## Assign a QVariant with another. The inner value of the QVariant is copied
   dos_qvariant_assign(leftValue.vptr, rightValue.vptr)
 
-proc toQVariantSequence(a: openarray[DosQVariant]): seq[QVariant] =
+proc toQVariantSequence(a: ptr DosQVariantArray, length: cint): seq[QVariant] =
   ## Convert an array of DosQVariant to a sequence of QVariant
   result = @[]
-  for x in a:
-    result.add(newQVariant(x))
+  for i in 0..<length:
+    result.add(newQVariant(a[i]))
 
 proc delete(a: openarray[QVariant]) =
   ## Delete an array of QVariants

@@ -36,7 +36,7 @@ method onSlotCalled*(self: QObject, slotName: string, arguments: openarray[QVari
   ## Called from the dotherside library when a slot is called from Qml.
   discard()
 
-proc qobjectCallback(qobjectPtr: pointer, slotNamePtr: DosQVariant, numArguments: cint, dosArguments: ptr DosQVariantArray) {.cdecl, exportc.} =
+proc qobjectCallback(qobjectPtr: pointer, slotNamePtr: DosQVariant, dosArgumentsLength: cint, dosArguments: ptr DosQVariantArray) {.cdecl, exportc.} =
   ## Called from the dotherside library for invoking a slot
   let qobject = cast[QObject](qobjectPtr)
   GC_ref(qobject)
@@ -44,7 +44,7 @@ proc qobjectCallback(qobjectPtr: pointer, slotNamePtr: DosQVariant, numArguments
   let slotName = newQVariant(slotNamePtr)
   defer: slotName.delete
   # Retrieve arguments
-  let arguments = toQVariantSequence(dosArguments[])
+  let arguments = toQVariantSequence(dosArguments, dosArgumentsLength)
   defer: arguments.delete
   # Forward to args to the slot
   qobject.onSlotCalled(slotName.stringVal, arguments)
