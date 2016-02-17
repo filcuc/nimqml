@@ -71,3 +71,10 @@ type
     signals: seq[SignalDefinition]
     slots: seq[SlotDefinition]
     properties: seq[PropertyDefinition]
+
+  QUrl* = ref object of RootObj
+    vptr: DosQUrl
+
+  QUrlParsingMode {.pure.} = enum
+    Tolerant = 0.cint
+    Strict = 1.cint

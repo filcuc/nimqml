@@ -8,6 +8,7 @@ type
   DosQVariantArray* {.unchecked.} = array[0..0, DosQVariant]
   DosQMetaType = cint
   DosQMetaTypeArray* {.unchecked.} = array[0..0, DosQMetaType]
+  DosQUrl* = distinct pointer
 
   DosSignalDefinition* = object
     name*: cstring
@@ -107,3 +108,8 @@ proc dos_qmetaobject_create*(vptr: var DosQmetaObject,
                              slotDefinitions: DosSlotDefinitions,
                              propertyDefinitions: DosPropertyDefinitions) {.cdecl, importc.}
 proc dos_qmetaobject_delete*(vptr: DosQmetaObject) {.cdecl, importc.}
+
+# QUrl
+proc dos_qurl_create(vptr: var DosQUrl, url: cstring, parsingMode: cint) {.cdecl, importc.}
+proc dos_qurl_delete(vptr: DosQUrl) {.cdecl, importc.}
+proc dos_qurl_to_string(vptr: DosQUrl, str: var cstring) {.cdecl, importc.}
