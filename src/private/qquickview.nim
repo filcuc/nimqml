@@ -1,36 +1,29 @@
-proc dos_qquickview_create(view: var RawQQuickView) {.cdecl, importc.}
-proc dos_qquickview_delete(view: RawQQuickView) {.cdecl, importc.}
-proc dos_qquickview_show(view: RawQQuickView) {.cdecl, importc.}
-proc dos_qquickview_source(view: RawQQuickView, filename: var cstring, length: var int) {.cdecl, importc.}
-proc dos_qquickview_set_source(view: RawQQuickView, filename: cstring) {.cdecl, importc.}
+proc setup*(self: var QQuickView) =
+  ## Setup a new QQuickView
+  dos_qquickview_create(self.vptr)
 
-proc create*(view: var QQuickView) =
-  ## Create a new QQuickView
-  dos_qquickview_create(view.data)
-  view.deleted = false
-
-proc source*(view: QQuickView): cstring =
-  ## Return the source Qml file loaded by the view
-  var length: int
-  dos_qquickview_source(view.data, result, length)
-
-proc `source=`*(view: QQuickView, filename: cstring) =
-  ## Sets the source Qml file laoded by the view
-  dos_qquickview_set_source(view.data, filename)
-
-proc show*(view: QQuickView) =
-  ## Sets the view visible
-  dos_qquickview_show(view.data)
-
-proc delete*(view: QQuickView) =
+proc delete*(self: QQuickView) =
   ## Delete the given QQuickView
-  if not view.deleted:
-    debugMsg("QQuickView", "delete")
-    dos_qquickview_delete(view.data)
-    view.data = nil.RawQQuickView
-    view.deleted = true
+  if self.vptr.isNil:
+    return
+  debugMsg("QQuickView", "delete")
+  dos_qquickview_delete(self.vptr)
+  self.vptr.resetToNil
 
 proc newQQuickView*(): QQuickView =
   ## Return a new QQuickView
   new(result, delete)
-  result.create()
+  result.setup()
+
+proc source*(self: QQuickView): cstring =
+  ## Return the source Qml file loaded by the view
+  var length: int
+  dos_qquickview_source(self.vptr, result, length)
+
+proc `source=`*(self: QQuickView, filename: cstring) =
+  ## Sets the source Qml file laoded by the view
+  dos_qquickview_set_source(self.vptr, filename)
+
+proc show*(self: QQuickView) =
+  ## Sets the view visible
+  dos_qquickview_show(self.vptr)

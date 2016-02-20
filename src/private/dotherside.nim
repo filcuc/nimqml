@@ -9,6 +9,7 @@ type
   DosQMetaType = cint
   DosQMetaTypeArray* {.unchecked.} = array[0..0, DosQMetaType]
   DosQUrl* = distinct pointer
+  DosQQuickView* = distinct pointer
 
   DosSignalDefinition* = object
     name*: cstring
@@ -113,3 +114,12 @@ proc dos_qmetaobject_delete*(vptr: DosQmetaObject) {.cdecl, importc.}
 proc dos_qurl_create(vptr: var DosQUrl, url: cstring, parsingMode: cint) {.cdecl, importc.}
 proc dos_qurl_delete(vptr: DosQUrl) {.cdecl, importc.}
 proc dos_qurl_to_string(vptr: DosQUrl, str: var cstring) {.cdecl, importc.}
+
+# QQuickView
+proc dos_qquickview_create(view: var DosQQuickView) {.cdecl, importc.}
+proc dos_qquickview_delete(view: DosQQuickView) {.cdecl, importc.}
+proc dos_qquickview_show(view: DosQQuickView) {.cdecl, importc.}
+proc dos_qquickview_source(view: DosQQuickView, filename: var cstring, length: var int) {.cdecl, importc.}
+proc dos_qquickview_set_source(view: DosQQuickView, filename: cstring) {.cdecl, importc.}
+
+

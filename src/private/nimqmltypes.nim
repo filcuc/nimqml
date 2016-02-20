@@ -15,6 +15,10 @@ type
     ## A QApplication
     deleted: bool
 
+  QQuickView* = ref object of RootObj ## \
+    # A QQuickView
+    vptr: DosQQuickView
+
   QtItemFlag* {.pure.} = enum ## \
     ## Item flags
     ##
