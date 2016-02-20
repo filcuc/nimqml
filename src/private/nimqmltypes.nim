@@ -27,6 +27,10 @@ type
     # A QHash<int, QByteArray>
     vptr: DosQHashIntByteArray
 
+  QModelIndex* = ref object of RootObj ## \
+    # A QModelIndex
+    vptr: DosQModelIndex
+
   QtItemFlag* {.pure.} = enum ## \
     ## Item flags
     ##

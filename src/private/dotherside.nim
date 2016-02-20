@@ -11,6 +11,7 @@ type
   DosQUrl* = distinct pointer
   DosQQuickView* = distinct pointer
   DosQHashIntByteArray* = distinct pointer
+  DosQModelIndex = distinct pointer
 
   DosSignalDefinition* = object
     name*: cstring
@@ -134,4 +135,15 @@ proc dos_qhash_int_qbytearray_create(qHash: var DosQHashIntByteArray) {.cdecl, i
 proc dos_qhash_int_qbytearray_delete(qHash: DosQHashIntByteArray) {.cdecl, importc.}
 proc dos_qhash_int_qbytearray_insert(qHash: DosQHashIntByteArray, key: int, value: cstring) {.cdecl, importc.}
 proc dos_qhash_int_qbytearray_value(qHash: DosQHashIntByteArray, key: int, value: var cstring) {.cdecl, importc.}
+
+# QModelIndex
+proc dos_qmodelindex_create(modelIndex: var DosQModelIndex) {.cdecl, importc.}
+proc dos_qmodelindex_delete(modelIndex: DosQModelIndex) {.cdecl, importc.}
+proc dos_qmodelindex_row(modelIndex: DosQModelIndex, row: var cint) {.cdecl, importc.}
+proc dos_qmodelindex_column(modelIndex: DosQModelIndex, column: var cint) {.cdecl, importc.}
+proc dos_qmodelindex_isValid(modelIndex: DosQModelIndex, column: var bool) {.cdecl, importc.}
+proc dos_qmodelindex_data(modelIndex: DosQModelIndex, role: cint, data: DosQVariant) {.cdecl, importc.}
+proc dos_qmodelindex_parent(modelIndex: DosQModelIndex, parent: DosQModelIndex) {.cdecl, importc.}
+proc dos_qmodelindex_child(modelIndex: DosQModelIndex, row: cint, column: cint, parent: DosQModelIndex) {.cdecl, importc.}
+proc dos_qmodelindex_sibling(modelIndex: DosQModelIndex, row: cint, column: cint, sibling: DosQModelIndex) {.cdecl, importc.}
 

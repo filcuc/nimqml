@@ -22,9 +22,7 @@ include private/qguiapplication.nim
 include private/qurl.nim
 include private/qquickview.nim
 include private/qhashintbytearray.nim
-#include private.nimqmltypes
+include private/qmodelindex.nim
 #var qobjectRegistry = initTable[ptr QObjectObj, bool]()
-#include private/qguiapplication.nim
-#include private/qmodelindex.nim
 #include private/qabstractlistmodel.nim
 #include private.nimqmlmacros

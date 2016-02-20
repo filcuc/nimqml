@@ -1,70 +1,57 @@
-# QModelIndex
-proc dos_qmodelindex_create(modelIndex: var RawQModelIndex) {.cdecl, importc.}
-proc dos_qmodelindex_delete(modelIndex: RawQModelIndex) {.cdecl, importc.}
-proc dos_qmodelindex_row(modelIndex: RawQModelIndex, row: var cint) {.cdecl, importc.}
-proc dos_qmodelindex_column(modelIndex: RawQModelIndex, column: var cint) {.cdecl, importc.}
-proc dos_qmodelindex_isValid(modelIndex: RawQModelIndex, column: var bool) {.cdecl, importc.}
-proc dos_qmodelindex_data(modelIndex: RawQModelIndex, role: cint, data: RawQVariant) {.cdecl, importc.}
-proc dos_qmodelindex_parent(modelIndex: RawQModelIndex, parent: RawQModelIndex) {.cdecl, importc.}
-proc dos_qmodelindex_child(modelIndex: RawQModelIndex, row: cint, column: cint, parent: RawQModelIndex) {.cdecl, importc.}
-proc dos_qmodelindex_sibling(modelIndex: RawQModelIndex, row: cint, column: cint, sibling: RawQModelIndex) {.cdecl, importc.}
+proc setup*(self: var QModelIndex) =
+  ## Setup a new QModelIndex
+  dos_qmodelindex_create(self.vptr)
 
-proc create*(modelIndex: var QModelIndex) =
-  ## Create a new QModelIndex
-  dos_qmodelindex_create(modelIndex.data)
-  modelIndex.deleted = false
+proc setup*(self: var QModelIndex, vptr: DosQModelIndex) =
+  ## Setup a new QModelIndex
+  self.vptr = vptr
 
-proc create*(modelIndex: var QModelIndex, rawQModelIndex: RawQModelIndex) =
-  ## Create a new QModelIndex
-  modelIndex.data = rawQModelIndex
-  modelIndex.deleted = false
-
-proc delete*(modelIndex: QModelIndex) =
+proc delete*(self: QModelIndex) =
   ## Delete the given QModelIndex
-  if not modelIndex.deleted:
-    debugMsg("QModelIndex", "delete")
-    dos_qmodelindex_delete(modelIndex.data)
-    modelIndex.data = nil.RawQModelIndex
-    modelIndex.deleted = true
+  if not self.vptr.isNil:
+    return
+  debugMsg("QModelIndex", "delete")
+  dos_qmodelindex_delete(self.vptr)
+  self.vptr.resetToNil
 
 proc newQModelIndex*(): QModelIndex =
   ## Return a new QModelIndex
   new(result, delete)
-  result.create()
+  result.setup()
 
-proc newQModelIndex*(rawQModelIndex: RawQModelIndex): QModelIndex =
+proc newQModelIndex*(vptr: DosQModelIndex): QModelIndex =
   ## Return a new QModelIndex given a raw index
   new(result, delete)
-  result.create(rawQModelIndex)
+  result.setup(vptr)
 
-proc row*(modelIndex: QModelIndex): cint =
+proc row*(self: QModelIndex): cint =
   ## Return the index row
-  dos_qmodelindex_row(modelIndex.data, result)
+  dos_qmodelindex_row(self.vptr, result)
 
-proc column*(modelIndex: QModelIndex): cint =
+proc column*(self: QModelIndex): cint =
   ## Return the index column
-  dos_qmodelindex_column(modelIndex.data, result)
+  dos_qmodelindex_column(self.vptr, result)
 
-proc isValid*(modelIndex: QModelIndex): bool =
+proc isValid*(self: QModelIndex): bool =
   ## Return true if the index is valid, false otherwise
-  dos_qmodelindex_isValid(modelIndex.data, result)
+  dos_qmodelindex_isValid(self.vptr, result)
 
-proc data*(modelIndex: QModelIndex, role: cint): QVariant =
+proc data*(self: QModelIndex, role: cint): QVariant =
   ## Return the model data associated to the given role
   result = newQVariant()
-  dos_qmodelindex_data(modelIndex.data, role, result.data)
+  dos_qmodelindex_data(self.vptr, role, result.vptr)
 
-proc parent*(modelIndex: QModelIndex): QModelIndex =
+proc parent*(self: QModelIndex): QModelIndex =
   ## Return the parent index
   result = newQModelIndex()
-  dos_qmodelindex_parent(modelIndex.data, result.data)
+  dos_qmodelindex_parent(self.vptr, result.vptr)
 
-proc child*(modelIndex: QModelIndex, row: cint, column: cint): QModelIndex =
+proc child*(self: QModelIndex, row: cint, column: cint): QModelIndex =
   ## Return the child index associated to the given row and column
   result = newQModelIndex()
-  dos_qmodelindex_child(modelIndex.data, row, column, result.data)
+  dos_qmodelindex_child(self.vptr, row, column, result.vptr)
 
-proc sibling*(modelIndex: QModelIndex, row: cint, column: cint): QModelIndex =
+proc sibling*(self: QModelIndex, row: cint, column: cint): QModelIndex =
   ## Return the sibling index associated to the given row and column
   result = newQModelIndex()
-  dos_qmodelindex_sibling(modelIndex.data, row, column, result.data)
+  dos_qmodelindex_sibling(self.vptr, row, column, result.vptr)
