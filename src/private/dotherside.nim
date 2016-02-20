@@ -10,6 +10,7 @@ type
   DosQMetaTypeArray* {.unchecked.} = array[0..0, DosQMetaType]
   DosQUrl* = distinct pointer
   DosQQuickView* = distinct pointer
+  DosQHashIntByteArray* = distinct pointer
 
   DosSignalDefinition* = object
     name*: cstring
@@ -128,4 +129,9 @@ proc dos_qquickview_show(view: DosQQuickView) {.cdecl, importc.}
 proc dos_qquickview_source(view: DosQQuickView, filename: var cstring, length: var int) {.cdecl, importc.}
 proc dos_qquickview_set_source(view: DosQQuickView, filename: cstring) {.cdecl, importc.}
 
+# QHash<int, QByteArra>
+proc dos_qhash_int_qbytearray_create(qHash: var DosQHashIntByteArray) {.cdecl, importc.}
+proc dos_qhash_int_qbytearray_delete(qHash: DosQHashIntByteArray) {.cdecl, importc.}
+proc dos_qhash_int_qbytearray_insert(qHash: DosQHashIntByteArray, key: int, value: cstring) {.cdecl, importc.}
+proc dos_qhash_int_qbytearray_value(qHash: DosQHashIntByteArray, key: int, value: var cstring) {.cdecl, importc.}
 

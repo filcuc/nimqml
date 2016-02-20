@@ -23,6 +23,10 @@ type
     # A QQuickView
     vptr: DosQQuickView
 
+  QHashIntByteArray* = ref object of RootObj ## \
+    # A QHash<int, QByteArray>
+    vptr: DosQHashIntByteArray
+
   QtItemFlag* {.pure.} = enum ## \
     ## Item flags
     ##
