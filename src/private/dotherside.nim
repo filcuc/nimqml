@@ -54,6 +54,12 @@ proc dos_qapplication_exec() {.cdecl, importc.}
 proc dos_qapplication_quit() {.cdecl, importc.}
 proc dos_qapplication_delete() {.cdecl, importc.}
 
+# QGuiApplication
+proc dos_qguiapplication_create() {.cdecl, importc.}
+proc dos_qguiapplication_exec() {.cdecl, importc.}
+proc dos_qguiapplication_quit() {.cdecl, importc.}
+proc dos_qguiapplication_delete() {.cdecl, importc.}
+
 # QQmlContext
 proc dos_qqmlcontext_setcontextproperty(context: DosQQmlContext, propertyName: cstring, propertyValue: DosQVariant) {.cdecl, importc.}
 

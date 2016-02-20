@@ -15,6 +15,10 @@ type
     ## A QApplication
     deleted: bool
 
+  QGuiApplication = ref object of RootObj ## \
+    ## A QGuiApplication
+    deleted: bool
+
   QQuickView* = ref object of RootObj ## \
     # A QQuickView
     vptr: DosQQuickView
