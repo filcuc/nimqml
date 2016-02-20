@@ -1,12 +1,12 @@
-let staticMetaObjectInstance = newQObjectMetaObject()
+let qObjectStaticMetaObjectInstance = newQObjectMetaObject()
 
 proc staticMetaObject*(c: type QObject): QMetaObject =
   ## Return the metaObject of QObject
-  staticMetaObjectInstance
+  qObjectStaticMetaObjectInstance
 
 proc staticMetaObject*(self: QObject): QMetaObject =
   ## Return the metaObject of QObject
-  staticMetaObjectInstance
+  qObjectStaticMetaObjectInstance
 
 proc objectName*(self: QObject): string =
   ## Return the QObject name
