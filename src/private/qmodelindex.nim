@@ -2,7 +2,7 @@ proc setup*(self: var QModelIndex) =
   ## Setup a new QModelIndex
   dos_qmodelindex_create(self.vptr)
 
-proc setup*(self: var QModelIndex, vptr: DosQModelIndex) =
+proc setup(self: var QModelIndex, vptr: DosQModelIndex) =
   ## Setup a new QModelIndex
   self.vptr = vptr
 
@@ -19,7 +19,7 @@ proc newQModelIndex*(): QModelIndex =
   new(result, delete)
   result.setup()
 
-proc newQModelIndex*(vptr: DosQModelIndex): QModelIndex =
+proc newQModelIndex(vptr: DosQModelIndex): QModelIndex =
   ## Return a new QModelIndex given a raw index
   new(result, delete)
   result.setup(vptr)
