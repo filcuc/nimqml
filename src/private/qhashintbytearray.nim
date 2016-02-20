@@ -8,6 +8,7 @@ proc delete*(self: QHashIntByteArray) =
     return
   debugMsg("QHashIntByteArray", "delete")
   dos_qhash_int_qbytearray_delete(self.vptr)
+  self.vptr.resetToNil
 
 proc newQHashIntQByteArray*(): QHashIntByteArray =
   ## Create a new QHashIntQByteArray
