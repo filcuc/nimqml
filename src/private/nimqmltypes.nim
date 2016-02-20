@@ -34,6 +34,9 @@ type
     # A QModelIndex
     vptr: DosQModelIndex
 
+  QResource* = ref object of RootObj ## \
+    # A QResource
+
   QtItemFlag* {.pure.} = enum ## \
     ## Item flags
     ##

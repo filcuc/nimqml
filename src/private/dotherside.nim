@@ -188,3 +188,7 @@ proc dos_qabstractlistmodel_dataChanged(model: DosQAbstractListModel,
                                         bottomRight: DosQModelIndex,
                                         rolesArrayPtr: ptr cint,
                                         rolesArrayLength: cint) {.cdecl, importc.}
+
+# QResource
+proc dos_qresource_register(filename: cstring) {.cdecl, importc.}
+

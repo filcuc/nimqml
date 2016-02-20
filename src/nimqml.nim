@@ -24,5 +24,6 @@ include private/qquickview.nim
 include private/qhashintbytearray.nim
 include private/qmodelindex.nim
 include private/qabstractlistmodel.nim
+include private/qresource.nim
 #var qobjectRegistry = initTable[ptr QObjectObj, bool]()
 #include private.nimqmlmacros
