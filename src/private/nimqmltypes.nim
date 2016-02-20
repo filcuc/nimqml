@@ -3,6 +3,9 @@ type
     ## A QObject
     vptr: DosQObject
 
+  QAbstractListModel* = ref object of QObject ## \
+    ## A QAbstractListModel
+
   QVariant* = ref object of RootObj ## \
     ## A QVariant
     vptr: DosQVariant

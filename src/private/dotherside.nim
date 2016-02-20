@@ -1,5 +1,6 @@
 type
   NimQObject = pointer
+  NimQAbstractListModel = pointer
   DosQMetaObject* = distinct pointer
   DosQObject* = distinct pointer
   DosQVariant* = distinct pointer
@@ -12,6 +13,8 @@ type
   DosQQuickView* = distinct pointer
   DosQHashIntByteArray* = distinct pointer
   DosQModelIndex = distinct pointer
+  DosQAbstractListModel = distinct pointer
+
 
   DosSignalDefinition* = object
     name*: cstring
@@ -45,6 +48,13 @@ type
 
   DosQObjectCallBack = proc(nimobject: NimQObject, slotName: DosQVariant, numArguments: cint, arguments: ptr DosQVariantArray) {.cdecl.}
 
+  DosRowCountCallback    = proc(nimmodel: NimQAbstractListModel, rawIndex: DosQModelIndex, result: var cint) {.cdecl.}
+  DosColumnCountCallback = proc(nimmodel: NimQAbstractListModel, rawIndex: DosQModelIndex, result: var cint) {.cdecl.}
+  DosDataCallback        = proc(nimmodel: NimQAbstractListModel, rawIndex: DosQModelIndex, role: cint, result: DosQVariant) {.cdecl.}
+  DosSetDataCallback     = proc(nimmodel: NimQAbstractListModel, rawIndex: DosQModelIndex, value: DosQVariant, role: cint, result: var bool) {.cdecl.}
+  DosRoleNamesCallback   = proc(nimmodel: NimQAbstractListModel, result: DosQHashIntByteArray) {.cdecl.}
+  DosFlagsCallback       = proc(nimmodel: NimQAbstractListModel, index: DosQModelIndex, result: var cint) {.cdecl.}
+  DosHeaderDataCallback  = proc(nimmodel: NimQAbstractListModel, section: cint, orientation: cint, role: cint, result: DosQVariant) {.cdecl.}
 
 # Conversion
 proc resetToNil*[T](x: var T) = x = nil.pointer.T
@@ -147,3 +157,34 @@ proc dos_qmodelindex_parent(modelIndex: DosQModelIndex, parent: DosQModelIndex) 
 proc dos_qmodelindex_child(modelIndex: DosQModelIndex, row: cint, column: cint, parent: DosQModelIndex) {.cdecl, importc.}
 proc dos_qmodelindex_sibling(modelIndex: DosQModelIndex, row: cint, column: cint, sibling: DosQModelIndex) {.cdecl, importc.}
 
+# QAbstractListModel
+proc dos_qabstractlistmodel_create(model: var DosQAbstractListModel,
+                                   modelPtr: NimQAbstractListModel,
+                                   metaObject: DosQMetaObject,
+                                   qobjectCallback: DosQObjectCallBack,
+                                   rowCountCallback: DosRowCountCallback,
+                                   columnCountCallback: DosColumnCountCallback,
+                                   dataCallback: DosDataCallback,
+                                   setDataCallback: DosSetDataCallBack,
+                                   roleNamesCallback: DosRoleNamesCallback,
+                                   flagsCallback: DosFlagsCallback,
+                                   headerDataCallback: DosHeaderDataCallback) {.cdecl, importc.}
+
+proc dos_qabstractlistmodel_delete(model: DosQAbstractListModel) {.cdecl, importc.}
+proc dos_qabstractlistmodel_beginInsertRows(model: DosQAbstractListModel,
+                                            parentIndex: DosQModelIndex,
+                                            first: cint,
+                                            last: cint) {.cdecl, importc.}
+proc dos_qabstractlistmodel_endInsertRows(model: DosQAbstractListModel) {.cdecl, importc.}
+proc dos_qabstractlistmodel_beginRemoveRows(model: DosQAbstractListModel,
+                                            parentIndex: DosQModelIndex,
+                                            first: cint,
+                                            last: cint) {.cdecl, importc.}
+proc dos_qabstractlistmodel_endRemoveRows(model: DosQAbstractListModel) {.cdecl, importc.}
+proc dos_qabstractlistmodel_beginResetModel(model: DosQAbstractListModel) {.cdecl, importc.}
+proc dos_qabstractlistmodel_endResetModel(model: DosQAbstractListModel) {.cdecl, importc.}
+proc dos_qabstractlistmodel_dataChanged(model: DosQAbstractListModel,
+                                        parentLeft: DosQModelIndex,
+                                        bottomRight: DosQModelIndex,
+                                        rolesArrayPtr: ptr cint,
+                                        rolesArrayLength: cint) {.cdecl, importc.}
