@@ -1,4 +1,4 @@
-proc setup*(self: var QQuickView) =
+proc setup*(self: QQuickView) =
   ## Setup a new QQuickView
   dos_qquickview_create(self.vptr)
 

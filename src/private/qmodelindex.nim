@@ -1,8 +1,8 @@
-proc setup*(self: var QModelIndex) =
+proc setup*(self: QModelIndex) =
   ## Setup a new QModelIndex
   dos_qmodelindex_create(self.vptr)
 
-proc setup(self: var QModelIndex, vptr: DosQModelIndex) =
+proc setup(self: QModelIndex, vptr: DosQModelIndex) =
   ## Setup a new QModelIndex
   self.vptr = vptr
 

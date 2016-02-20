@@ -1,4 +1,4 @@
-proc setup*(self: var QHashIntByteArray) =
+proc setup*(self: QHashIntByteArray) =
   ## Setup the QHash
   dos_qhash_int_qbytearray_create(self.vptr)
 
