@@ -97,6 +97,6 @@ type
   QUrl* = ref object of RootObj
     vptr: DosQUrl
 
-  QUrlParsingMode {.pure.} = enum
+  QUrlParsingMode* {.pure.} = enum
     Tolerant = 0.cint
     Strict = 1.cint
