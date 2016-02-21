@@ -20,3 +20,12 @@ proc qmlRegisterType*[T](uri: string, major: int, minor: int, qmlName: string, c
                                               createCallback: creator, deleteCallback: deleter)
   dos_qdeclarative_qmlregistertype(dosQmlRegisterType.unsafeAddr, result)
   ctorTable[result] = proc(): QObject = ctor().QObject
+
+proc qmlRegisterSingletonType*[T](uri: string, major: int, minor: int, qmlName: string, ctor: proc(): T) {.cdecl.} =
+  var result: cint = 0
+  let metaObject: QMetaObject = T.staticMetaObject()
+  let dosQmlRegisterType = DosQmlRegisterType(major: major.cint, minor: minor.cint, uri: uri.cstring,
+                                              qml: qmlName.cstring, staticMetaObject: metaObject.vptr,
+                                              createCallback: creator, deleteCallback: deleter)
+  dos_qdeclarative_qmlregistersingletontype(dosQmlRegisterType.unsafeAddr, result)
+  ctorTable[result] = proc(): QObject = ctor().QObject

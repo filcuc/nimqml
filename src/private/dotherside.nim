@@ -205,3 +205,4 @@ proc dos_qresource_register(filename: cstring) {.cdecl, importc.}
 
 # QDeclarative
 proc dos_qdeclarative_qmlregistertype(value: ptr DosQmlRegisterType, result: var cint) {.cdecl, importc.}
+proc dos_qdeclarative_qmlregistersingletontype(value: ptr DosQmlRegisterType, result: var cint) {.cdecl, importc.}
