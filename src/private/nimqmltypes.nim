@@ -14,11 +14,11 @@ type
     ## A QQmlApplicationEngine
     vptr: DosQQmlApplicationEngine
 
-  QApplication = ref object of RootObj ## \
+  QApplication* = ref object of RootObj ## \
     ## A QApplication
     deleted: bool
 
-  QGuiApplication = ref object of RootObj ## \
+  QGuiApplication* = ref object of RootObj ## \
     ## A QGuiApplication
     deleted: bool
 

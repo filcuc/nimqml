@@ -1,50 +1,61 @@
 type
   NimQObject = pointer
   NimQAbstractListModel = pointer
-  DosQMetaObject* = distinct pointer
-  DosQObject* = distinct pointer
-  DosQVariant* = distinct pointer
-  DosQQmlContext* = distinct pointer
-  DosQQmlApplicationEngine* = distinct pointer
-  DosQVariantArray* {.unchecked.} = array[0..0, DosQVariant]
+  DosQMetaObject = distinct pointer
+  DosQObject = distinct pointer
+  DosQVariant = distinct pointer
+  DosQQmlContext = distinct pointer
+  DosQQmlApplicationEngine = distinct pointer
+  DosQVariantArray {.unchecked.} = array[0..0, DosQVariant]
   DosQMetaType = cint
-  DosQMetaTypeArray* {.unchecked.} = array[0..0, DosQMetaType]
-  DosQUrl* = distinct pointer
-  DosQQuickView* = distinct pointer
-  DosQHashIntByteArray* = distinct pointer
+  DosQMetaTypeArray {.unchecked.} = array[0..0, DosQMetaType]
+  DosQUrl = distinct pointer
+  DosQQuickView = distinct pointer
+  DosQHashIntByteArray = distinct pointer
   DosQModelIndex = distinct pointer
   DosQAbstractListModel = distinct pointer
 
+  DosSignalDefinition = object
+    name: cstring
+    parametersCount: cint
+    parametersMetaTypes: pointer
 
-  DosSignalDefinition* = object
-    name*: cstring
-    parametersCount*: cint
-    parametersMetaTypes*: pointer
+  DosSignalDefinitions = object
+    count: cint
+    definitions: pointer
 
-  DosSignalDefinitions* = object
-    count*: cint
-    definitions*: pointer
+  DosSlotDefinition = object
+    name: cstring
+    returnMetaType: cint
+    parametersCount: cint
+    parametersMetaTypes: pointer
 
-  DosSlotDefinition* = object
-    name*: cstring
-    returnMetaType*: cint
-    parametersCount*: cint
-    parametersMetaTypes*: pointer
+  DosSlotDefinitions = object
+    count: cint
+    definitions: pointer
 
-  DosSlotDefinitions* = object
-    count*: cint
-    definitions*: pointer
+  DosPropertyDefinition = object
+    name: cstring
+    propertyMetaType: cint
+    readSlot: cstring
+    writeSlot: cstring
+    notifySignal: cstring
 
-  DosPropertyDefinition* = object
-    name*: cstring
-    propertyMetaType*: cint
-    readSlot*: cstring
-    writeSlot*: cstring
-    notifySignal*: cstring
+  DosPropertyDefinitions = object
+    count: cint
+    definitions: pointer
 
-  DosPropertyDefinitions* = object
-    count*: cint
-    definitions*: pointer
+  DosCreateCallback = proc(id: cint, nimQObject: var NimQObject, dosQObject: var DosQObject) {.cdecl.}
+  DosDeleteCallback = proc(id: cint, nimQObject: NimQObject) {.cdecl.}
+
+  DosQmlRegisterType = object
+    major: cint
+    minor: cint
+    uri: cstring
+    qml: cstring
+    staticMetaObject: DosQMetaObject
+    createCallback: DosCreateCallback
+    deleteCallback: DosDeleteCallback
 
   DosQObjectCallBack = proc(nimobject: NimQObject, slotName: DosQVariant, numArguments: cint, arguments: ptr DosQVariantArray) {.cdecl.}
 
@@ -57,8 +68,8 @@ type
   DosHeaderDataCallback  = proc(nimmodel: NimQAbstractListModel, section: cint, orientation: cint, role: cint, result: DosQVariant) {.cdecl.}
 
 # Conversion
-proc resetToNil*[T](x: var T) = x = nil.pointer.T
-proc isNil*[T](x: T): bool = x.pointer == nil
+proc resetToNil[T](x: var T) = x = nil.pointer.T
+proc isNil[T](x: T): bool = x.pointer == nil
 
 # QApplication
 proc dos_qapplication_create() {.cdecl, importc.}
@@ -109,7 +120,7 @@ proc dos_qvariant_setQObject(variant: DosQVariant, value: DosQObject) {.cdecl, i
 proc dos_chararray_delete(str: cstring) {.cdecl, importc.}
 
 # QObject
-proc dos_qobject_qmetaobject*(vptr: var DosQmetaObject) {.cdecl, importc.}
+proc dos_qobject_qmetaobject(vptr: var DosQmetaObject) {.cdecl, importc.}
 proc dos_qobject_create(qobject: var DosQObject, nimobject: NimQObject, metaObject: DosQMetaObject, dosQObjectCallback: DosQObjectCallBack) {.cdecl, importc.}
 proc dos_qobject_objectName(qobject: DosQObject, result: var cstring) {.cdecl, importc.}
 proc dos_qobject_setObjectName(qobject: DosQObject, name: cstring) {.cdecl, importc.}
@@ -117,16 +128,16 @@ proc dos_qobject_signal_emit(qobject: DosQObject, signalName: cstring, arguments
 proc dos_qobject_delete(qobject: DosQObject) {.cdecl, importc.}
 
 # QAbstractListModel
-proc dos_qabstractlistmodel_qmetaobject*(vptr: var DosQmetaObject) {.cdecl importc.}
+proc dos_qabstractlistmodel_qmetaobject(vptr: var DosQmetaObject) {.cdecl importc.}
 
 # QMetaObject
-proc dos_qmetaobject_create*(vptr: var DosQmetaObject,
+proc dos_qmetaobject_create(vptr: var DosQmetaObject,
                              superclassMetaObject: DosQMetaObject,
                              className: cstring,
                              signalDefinitions: DosSignalDefinitions,
                              slotDefinitions: DosSlotDefinitions,
                              propertyDefinitions: DosPropertyDefinitions) {.cdecl, importc.}
-proc dos_qmetaobject_delete*(vptr: DosQmetaObject) {.cdecl, importc.}
+proc dos_qmetaobject_delete(vptr: DosQmetaObject) {.cdecl, importc.}
 
 # QUrl
 proc dos_qurl_create(vptr: var DosQUrl, url: cstring, parsingMode: cint) {.cdecl, importc.}
@@ -192,3 +203,5 @@ proc dos_qabstractlistmodel_dataChanged(model: DosQAbstractListModel,
 # QResource
 proc dos_qresource_register(filename: cstring) {.cdecl, importc.}
 
+# QDeclarative
+proc dos_qdeclarative_qmlregistertype(value: ptr DosQmlRegisterType, result: var cint) {.cdecl, importc.}
