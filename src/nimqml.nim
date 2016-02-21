@@ -26,5 +26,3 @@ include private/qmodelindex.nim
 include private/qabstractlistmodel.nim
 include private/qresource.nim
 include private/qdeclarative.nim
-#var qobjectRegistry = initTable[ptr QObjectObj, bool]()
-#include private.nimqmlmacros
