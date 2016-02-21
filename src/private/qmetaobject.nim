@@ -59,7 +59,9 @@ proc newQMetaObject*(superClass: QMetaObject, className: string,
                                             notifySignal: notifySignal)
     dosProperties.add(dosProperty)
 
+  let signals = DosSignalDefinitions(count: dosSignals.len.cint, definitions: if dosSignals.len > 0: dosSignals[0].unsafeAddr else: nil)
+  let slots = DosSlotDefinitions(count: dosSlots.len.cint, definitions: if dosSlots.len > 0: dosSlots[0].unsafeAddr else: nil)
+  let properties = DosPropertyDefinitions(count: dosProperties.len.cint, definitions: if dosProperties.len > 0: dosProperties[0].unsafeAddr else: nil)
+
   dos_qmetaobject_create(result.vptr, superClass.vptr, className.cstring,
-                         DosSignalDefinitions(count: dosSignals.len.cint, definitions: if dosSignals.len > 0: dosSignals[0].unsafeAddr else: nil),
-                         DosSlotDefinitions(count: dosSlots.len.cint, definitions: if dosSlots.len > 0: dosSlots[0].unsafeAddr else: nil),
-                         DosPropertyDefinitions(count: dosProperties.len.cint, definitions: if dosProperties.len > 0: dosProperties[0].unsafeAddr else: nil))
+                         signals.unsafeAddr, slots.unsafeAddr, properties.unsafeAddr)

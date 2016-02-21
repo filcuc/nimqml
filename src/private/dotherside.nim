@@ -134,9 +134,9 @@ proc dos_qabstractlistmodel_qmetaobject(vptr: var DosQmetaObject) {.cdecl import
 proc dos_qmetaobject_create(vptr: var DosQmetaObject,
                              superclassMetaObject: DosQMetaObject,
                              className: cstring,
-                             signalDefinitions: DosSignalDefinitions,
-                             slotDefinitions: DosSlotDefinitions,
-                             propertyDefinitions: DosPropertyDefinitions) {.cdecl, importc.}
+                             signalDefinitions: ptr DosSignalDefinitions,
+                             slotDefinitions: ptr DosSlotDefinitions,
+                             propertyDefinitions: ptr DosPropertyDefinitions) {.cdecl, importc.}
 proc dos_qmetaobject_delete(vptr: DosQmetaObject) {.cdecl, importc.}
 
 # QUrl
