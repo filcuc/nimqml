@@ -97,6 +97,7 @@ method onSlotCalled*(self: QAbstractListModel, slotName: string, arguments: open
 
 proc setup*(self: QAbstractListModel) =
   ## Setup a new QAbstractListModel
+  debugMsg("QAbstractListModel", "setup")
   dos_qabstractlistmodel_create(self.vptr.DosQAbstractListModel, addr(self[]), self.metaObject.vptr,
                                 qobjectCallback, rowCountCallback, columnCountCallback,
                                 dataCallback, setDataCallback, roleNamesCallback,
@@ -104,35 +105,43 @@ proc setup*(self: QAbstractListModel) =
 
 proc delete*(self: QAbstractListModel) =
   ## Delete the given QAbstractListModel
+  debugMsg("QAbstractListModel", "delete")
   self.QObject.delete()
 
 proc newQAbstractListModel*(): QAbstractListModel =
   ## Return a new QAbstractListModel
+  debugMsg("QAbstractListModel", "new")
   new(result, delete)
   result.setup()
 
 proc beginInsertRows*(self: QAbstractListModel, parentIndex: QModelIndex, first: int, last: int) =
   ## Notify the view that the model is about to inserting the given number of rows
+  debugMsg("QAbstractListModel", "beginInsertRows")
   dos_qabstractlistmodel_beginInsertRows(self.vptr.DosQAbstractListModel, parentIndex.vptr, first.cint, last.cint)
 
 proc endInsertRows*(self: QAbstractListModel) =
   ## Notify the view that the rows have been inserted
+  debugMsg("QAbstractListModel", "endInsertRows")
   dos_qabstractlistmodel_endInsertRows(self.vptr.DosQAbstractListModel)
 
 proc beginRemoveRows*(self: QAbstractListModel, parentIndex: QModelIndex, first: int, last: int) =
   ## Notify the view that the model is about to remove the given number of rows
+  debugMsg("QAbstractListModel", "beginRemoveRows")
   dos_qabstractlistmodel_beginRemoveRows(self.vptr.DosQAbstractListModel, parentIndex.vptr, first.cint, last.cint)
 
 proc endRemoveRows*(self: QAbstractListModel) =
   ## Notify the view that the rows have been removed
+  debugMsg("QAbstractListModel", "endRemoveRows")
   dos_qabstractlistmodel_endRemoveRows(self.vptr.DosQAbstractListModel)
 
 proc beginResetModel*(self: QAbstractListModel) =
   ## Notify the view that the model is about to resetting
+  debugMsg("QAbstractListModel", "beginResetModel")
   dos_qabstractlistmodel_beginResetModel(self.vptr.DosQAbstractListModel)
 
 proc endResetModel*(self: QAbstractListModel) =
   ## Notify the view that model has finished resetting
+  debugMsg("QAbstractListModel", "endResetModel")
   dos_qabstractlistmodel_endResetModel(self.vptr.DosQAbstractListModel)
 
 proc dataChanged*(self: QAbstractListModel,
@@ -140,6 +149,7 @@ proc dataChanged*(self: QAbstractListModel,
                  bottomRight: QModelIndex,
                  roles: openArray[int]) =
   ## Notify the view that the model data changed
+  debugMsg("QAbstractListModel", "dataChanged")
   var copy: seq[cint]
   for i in roles:
     copy.add(i.cint)
