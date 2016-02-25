@@ -96,7 +96,6 @@ method onSlotCalled*(self: QAbstractListModel, slotName: string, arguments: open
   ## Called from the dotherside library when a slot is called from Qml.
 
 proc setup*(self: QAbstractListModel) =
-  echo "NimQml: QAbstractListModel.setup"
   ## Setup a new QAbstractListModel
   dos_qabstractlistmodel_create(self.vptr.DosQAbstractListModel, addr(self[]), self.metaObject.vptr,
                                 qobjectCallback, rowCountCallback, columnCountCallback,
@@ -105,11 +104,7 @@ proc setup*(self: QAbstractListModel) =
 
 proc delete*(self: QAbstractListModel) =
   ## Delete the given QAbstractListModel
-  if self.vptr.isNil:
-    return
-  debugMsg("QAbstractListModel", "delete")
-  dos_qabstractlistmodel_delete(self.vptr.DosQAbstractListModel)
-  self.vptr.resetToNil
+  self.QObject.delete()
 
 proc newQAbstractListModel*(): QAbstractListModel =
   ## Return a new QAbstractListModel
