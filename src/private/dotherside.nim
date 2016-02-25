@@ -159,6 +159,7 @@ proc dos_qhash_int_qbytearray_value(qHash: DosQHashIntByteArray, key: int, value
 
 # QModelIndex
 proc dos_qmodelindex_create(modelIndex: var DosQModelIndex) {.cdecl, importc.}
+proc dos_qmodelindex_create_qmodelindex(modelIndex: var DosQModelIndex, other: DosQModelIndex) {.cdecl, importc.}
 proc dos_qmodelindex_delete(modelIndex: DosQModelIndex) {.cdecl, importc.}
 proc dos_qmodelindex_row(modelIndex: DosQModelIndex, row: var cint) {.cdecl, importc.}
 proc dos_qmodelindex_column(modelIndex: DosQModelIndex, column: var cint) {.cdecl, importc.}
@@ -167,6 +168,7 @@ proc dos_qmodelindex_data(modelIndex: DosQModelIndex, role: cint, data: DosQVari
 proc dos_qmodelindex_parent(modelIndex: DosQModelIndex, parent: DosQModelIndex) {.cdecl, importc.}
 proc dos_qmodelindex_child(modelIndex: DosQModelIndex, row: cint, column: cint, parent: DosQModelIndex) {.cdecl, importc.}
 proc dos_qmodelindex_sibling(modelIndex: DosQModelIndex, row: cint, column: cint, sibling: DosQModelIndex) {.cdecl, importc.}
+proc dos_qmodelindex_assign(leftSide: DosQModelIndex, rightSide: DosQModelIndex) {.cdecl, importc.}
 
 # QAbstractListModel
 proc dos_qabstractlistmodel_create(model: var DosQAbstractListModel,

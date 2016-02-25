@@ -4,7 +4,7 @@ proc setup*(self: QModelIndex) =
 
 proc setup(self: QModelIndex, vptr: DosQModelIndex) =
   ## Setup a new QModelIndex
-  self.vptr = vptr
+  dos_qmodelindex_create_qmodelindex(self.vptr, vptr)
 
 proc delete*(self: QModelIndex) =
   ## Delete the given QModelIndex
