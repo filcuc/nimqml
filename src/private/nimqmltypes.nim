@@ -2,6 +2,7 @@ type
   QObject* = ref object of RootObj ## \
     ## A QObject
     vptr: DosQObject
+    owner: bool
 
   QAbstractListModel* = ref object of QObject ## \
     ## A QAbstractListModel

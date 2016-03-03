@@ -2,11 +2,14 @@ import tables
 
 var ctorTable = initTable[cint, proc():QObject]()
 
-proc creator(id: cint, nimQObject:var NimQObject, dosQObject: var DosQObject) {.cdecl.} =
+proc creator(id: cint, wrapper: DosQObjectWrapper, nimQObject: var NimQObject, dosQObject: var DosQObject) {.cdecl.} =
   let qobject: QObject = ctorTable[id]()
   GC_ref(qobject)
   nimQObject = addr(qobject[])
   dosQObject = qobject.vptr
+  # Swap the dosQObject and
+  qobject.vptr = wrapper.DosQObject
+  qobject.owner = false
 
 proc deleter(id: cint, nimQObject: NimQObject) {.cdecl.} =
   let qobject = cast[QObject](nimQObject)

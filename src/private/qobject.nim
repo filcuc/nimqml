@@ -54,11 +54,13 @@ proc qobjectCallback(qobjectPtr: pointer, slotNamePtr: DosQVariant, dosArguments
 
 proc setup*(self: QObject) =
   ## Initialize a new QObject
+  self.owner = true
   dos_qobject_create(self.vptr, addr(self[]), self.metaObject.vptr, qobjectCallback)
+
 
 proc delete*(self: QObject) =
   ## Delete a QObject
-  if self.vptr.isNil:
+  if not self.owner or self.vptr.isNil:
     return
   dos_qobject_delete(self.vptr)
   self.vptr.resetToNil

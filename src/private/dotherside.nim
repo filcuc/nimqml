@@ -3,6 +3,7 @@ type
   NimQAbstractListModel = pointer
   DosQMetaObject = distinct pointer
   DosQObject = distinct pointer
+  DosQObjectWrapper = distinct pointer
   DosQVariant = distinct pointer
   DosQQmlContext = distinct pointer
   DosQQmlApplicationEngine = distinct pointer
@@ -45,7 +46,7 @@ type
     count: cint
     definitions: pointer
 
-  DosCreateCallback = proc(id: cint, nimQObject: var NimQObject, dosQObject: var DosQObject) {.cdecl.}
+  DosCreateCallback = proc(id: cint, wrapper: DosQObjectWrapper, nimQObject: var NimQObject, dosQObject: var DosQObject) {.cdecl.}
   DosDeleteCallback = proc(id: cint, nimQObject: NimQObject) {.cdecl.}
 
   DosQmlRegisterType = object
