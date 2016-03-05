@@ -101,3 +101,6 @@ type
   QUrlParsingMode* {.pure.} = enum
     Tolerant = 0.cint
     Strict = 1.cint
+
+const
+    UserRole* = 0x100
