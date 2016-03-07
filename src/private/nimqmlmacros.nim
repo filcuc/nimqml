@@ -5,494 +5,273 @@ import strutils
 import typetraits
 import tables
 
-template debug(body: stmt): stmt =
-  when defined(debug):
-    body
+type
+  FindQObjectTypeResult = tuple
+   typeIdent: NimNode
+   superTypeIdent: NimNode
 
-let nimFromQtVariant {.compileTime.} = {
-  "int" : "intVal",
-  "string" : "stringVal",
-  "bool" : "boolVal",
-  "float" : "floatVal",
-  "QObject" : "qobjectVal",
-}.toTable
+  ProcInfo = object
+    name: string
+    returnType: string
+    parametersTypes: seq[string]
+    parametersNames: seq[string]
 
-let nim2QtMeta {.compileTime.} = {
-    "bool": "Bool",
-    "int" : "Int",
-    "string" : "QString",
-    "pointer" : "VoidStar",
-    "QObject" : "QObjectStar",
-    "QVariant": "QVariant",
-    "" : "Void", # no return, which is represented by an nnkEmpty node
-}.toTable
+  PropertyInfo = object
+    name: string
+    typ: string
+    read: string
+    write: string
+    notify: string
 
-proc getNodeOf*(tree: NimNode, kind: NimNodeKind): NimNode {.compileTime.} =
-  ## recursively looks for a node of kind, ``kind``, in the tree provided as ``tree``
-  ## Returns the first node that satisfies this condition
-  for i in 0.. <tree.len:
-    var child = tree[i]
-    if child.kind == kind:
-      return child
-    var candidate = getNodeOf(child, kind)
-    if not candidate.isNil:
-      return candidate
+  QObjectInfo = object
+    name: string
+    superType: string
+    slots: seq[ProcInfo]
+    signals: seq[ProcInfo]
+    properties: seq[PropertyInfo]
 
-static:
-  type Context* = ref object of RootObj
-  type NullContext* = ref object of Context
 
-type NodeModifier*[T] = proc(context: T, a: var NimNode): NimNode
+proc display(info: ProcInfo) =
+  ## Display a ProcInfo
+  echo "SlotInfo {\"$1\", $2, [$3]}" % [info.name, info.returnType, info.parametersTypes.join(",")]
 
-# had to remove type bound on hook due to recent regression with generics
-proc hookOnNode*[T](context: T, code: NimNode, hook: NodeModifier,
-    recursive: bool = false): NimNode {.compileTime.} =
-  ## Iterates over the tree, ``code``, calling ``hook`` on each ``NimNode``
-  ## encountered. If ``recursive`` is true, it will recurse over the tree, otherwise
-  ## it will only visit ``code``'s children. ``hook`` should return a replacement for
-  ## the node that was passed in via it's return value. `hook` may return nil to remove
-  ## the node from the tree.
-  if code.len == 0:
-    return code
-  var newCode = newNimNode(code.kind)
-  for i in 0.. <code.len:
-    var child = code[i].copy()
-    child = hook(context, child)
-    if recursive:
-      child = hookOnNode(context,child,hook,true)
-    if child != nil:
-      newCode.add child
-  return newCode
+proc display(info: PropertyInfo) =
+  ## Display a PropertyInfo
+  echo "SlotInfo {\"$1\", \"$2\", \"$3\", \"$4\", \"$5\"}" % [info.name, info.typ, info.read, info.write, info.notify]
 
-proc removeOpenSym*(context: NullContext,
-  a: var NimNode): NimNode {.compileTime.} =
-  ## replaces: ``nnkOpenSymChoice`` and ``nnkSym`` nodes with idents
-  ## corresponding to the symbols string representation.
-  if a.kind == nnkOpenSymChoice:
-    return ident($a[0].symbol)
-  elif a.kind == nnkSym:
-    return ident($a.symbol)
-  return a
+proc childrenOfKind(n: NimNode, kind: NimNodeKind): seq[NimNode] {.compiletime.} =
+  ## Return the sequence of child nodes of the given kind
+  result = @[]
+  for c in n:
+    if c.kind == kind:
+      result.add(c)
 
-proc newTemplate*(name = newEmptyNode();
-    params: openArray[NimNode] = [newEmptyNode()];
-    body: NimNode = newStmtList()): NimNode {.compileTime.} =
-  ## shortcut for creating a new template
-  ##
-  ## The ``params`` array must start with the return type of the template,
-  ## followed by a list of IdentDefs which specify the params.
-  result = newNimNode(nnkTemplateDef).add(
-    name,
-    newEmptyNode(),
-    newEmptyNode(),
-    newNimNode(nnkFormalParams).add(params), ##params
-    newEmptyNode(),  ## pragmas
-    newEmptyNode(),
-    body)
+proc numChildrenOfKind(n: NimNode, kind: NimNodeKind): int {.compiletime.} =
+  ## Return the number of child nodes of the given kind
+  childrenOfKind(n, kind).len
 
-#FIXME: changed parent, typ from typedesc to expr to workaround Nim issue #1874
-template declareSuperTemplate*(parent: expr, typ: expr): stmt =
-  template superType*(ofType: typedesc[typ]): typedesc[parent] =
-    parent
+proc getPragmas(n: NimNode): seq[string] =
+  ## Return the pragmas of a node
+  result = @[]
+  let pragmas = n.childrenOfKind(nnkPragma)
+  if pragmas.len != 1:
+    return
+  let pragma = pragmas[0]
+  for c in pragma:
+    doAssert(c.kind == nnkIdent)
+    result.add($c)
 
-proc getTypeName*(a: NimNode): NimNode {.compileTime.} =
-  ## returns the node containing the name of an object in a
-  ## given type definition block
-  expectMinLen a, 1
-  expectKind a, nnkTypeDef
-  var testee = a
-  if testee[0].kind == nnkPragmaExpr:
-    testee = testee[0]
-  if testee[0].kind in {nnkIdent}:
-    return testee[0]
-  elif testee[0].kind in {nnkPostfix}:
-    return testee[0][1]
+proc extractQObjectTypeDef(head: NimNode): FindQObjectTypeResult {.compiletime.} =
+  ## Extract the first type section and extract the first type Name and SuperType
+  ## i.e. Given "type Bar = ref object of Foo" you get "Bar" and "Foo"
+  let sections = head.childrenOfKind(nnkTypeSection)
 
-proc isExported(def: NimNode): bool {.compileTime.} =
-  ## given a type definition, ``typedef``, determines whether or
-  ## not the type is exported with a '*'
-  assert def.kind in {nnkTypeDef, nnkProcDef, nnkMethodDef, nnkTemplateDef},
-    "unsupported type: " & $def.kind
-  if def[0].kind == nnkPostfix:
-    return true
+  if sections.len == 0:
+    error("No type section found")
 
-proc exportDef(def: NimNode) {.compileTime.} =
-  ## Exports exportable definitions. Currently only supports
-  ## templates, methods and procedures and types.
-  if def.kind in {nnkProcDef, nnkMethodDef, nnkTemplateDef, nnkTypeDef}:
-    if def.isExported:
-      return
-    def[0] = postfix(def[0], "*")
-  else:
-    error("node: " & $def.kind & " not supported")
+  if sections.len != 1:
+    error("Only one type section is supported")
 
-proc unexportDef(def: NimNode) {.compileTime.} =
-  ## unexports exportable definitions. Currently only supports
-  ## templates, methods and procedures and types.
-  if def.kind in {nnkProcDef, nnkMethodDef, nnkTemplateDef, nnkTypeDef}:
-    if not def.isExported:
-      return
-    def[0] = ident unpackPostfix(def[0])[1]
-  else:
-    error("node: " & $def.kind & " not supported")
+  let definitions = sections[0].childrenOfKind(nnkTypeDef)
 
-proc genSuperTemplate*(typeDecl: NimNode): NimNode {.compileTime.} =
-  ## generates a template, with name: superType, that returns the super type
-  ## of the object defined in the type defintion, ``typeDecl``. ``typeDecl``
-  ## must contain an object inheriting from a base type.
-  expectKind typeDecl, nnkTypeDef
-  let inheritStmt = typeDecl.getNodeOf(nnkOfInherit)
-  let typeName = getTypeName(typeDecl)
-  if inheritStmt == nil: error("you must declare a super type for " & $typeName)
-  # ident of superType (have to deal with generics)
-  let superType = if inheritStmt[0].kind == nnkIdent: inheritStmt[0]
-    else: inheritStmt[0].getNodeOf(nnkIdent)
-  let superTemplate = getAst declareSuperTemplate(superType, typeName)
-  result = superTemplate[0]
-  if typeDecl.isExported():
-    result.exportDef()
-  else:
-    result.unexportDef()
+  if definitions.len == 0:
+    error("No type definition found")
 
-proc getSuperType*(typeDecl: NimNode): NimNode {.compileTime.} =
-  ## returns ast containing superType info, may not be an ident if generic
-  let inheritStmt = typeDecl.getNodeOf(nnkOfInherit)
-  if inheritStmt.isNil: return newEmptyNode()
-  return inheritStmt[0]
+  if definitions.len != 1:
+    error("Only ne type definition is supported")
 
-proc getPragmaName*(child: NimNode): NimNode {.compileTime.} =
-  ## name of child in a nnkPragma section
-  if child.kind == nnkIdent:
-    return child
-  # assumes first ident is name of pragma
-  let ident = child.getNodeOf(nnkIdent)
-  result = ident
+  let def = definitions[0]
 
-proc removePragma*(pragma: NimNode, toRemove: string): NimNode {.compileTime.} =
-  ## removes a pragma from pragma definition, `pragma`, with name `toRemove`
-  expectKind pragma, nnkPragma
-  result = newNimNode(nnkPragma)
-  for i in 0.. <pragma.len:
-    let child = pragma[i]
-    if $child.getPragmaName == toRemove:
+  let name = def[0] # type Object = ... <---
+  let pragma = def[1] # type Object {.something.} = ... <---
+  let typeKind = def[2]  # .. = ref/distinct/object ..
+
+  if def[2].kind != nnkRefTy: # .. = ref ..
+    error("ref type expected")
+
+  if typekind[0].kind != nnkObjectTy: # .. = ref object of ...
+    error("ref object expected")
+
+  let objectType = typekind[0]
+  if objectType[1].kind != nnkOfInherit:
+    error("ref object with super type expected")
+
+  let superType = objectType[1][0]
+
+  result.typeIdent = name
+  result.superTypeIdent = superType
+
+proc extractProcInfo(n: NimNode): ProcInfo =
+  ## Extract the ProcInfo for the given node
+  result.name = $n[0]
+  let paramsSeq = n.childrenOfKind(nnkFormalParams)
+  if paramsSeq.len != 1: error("Failed to find parameters")
+  let params = paramsSeq[0]
+  result.returnType = repr params[0]
+  result.parametersNames = @[]
+  result.parametersTypes = @[]
+  for def in params.childrenOfKind(nnkIdentDefs):
+    result.parametersNames.add(repr def[0])
+    result.parametersTypes.add(repr def[1])
+
+proc extractPropertyInfo(node: NimNode): tuple[ok: bool, info: PropertyInfo] =
+  ## Extract the PropertyInfo for a given node
+  #[
+  Command
+      BracketExpr
+        Ident !"QtProperty"
+        Ident !"string"
+      Ident !"name"
+      StmtList
+        Asgn
+          Ident !"read"
+          Ident !"getName"
+        Asgn
+          Ident !"write"
+          Ident !"setName"
+        Asgn
+          Ident !"notify"
+          Ident !"nameChanged"
+  ]#
+  if node.kind != nnkCommand or
+     node.len != 3 or
+     node[0].kind != nnkBracketExpr or
+     node[1].kind != nnkIdent or
+     node[2].kind != nnkStmtList:
+    return
+  let bracketExpr = node[0]
+  if bracketExpr.len != 2 or
+     bracketExpr[0].kind != nnkIdent or
+     bracketExpr[1].kind != nnkIdent or
+     $(bracketExpr[0]) != "QtProperty":
+     return
+  let stmtList = node[2]
+  if stmtList.len != 3 or
+     stmtList[0].kind != nnkAsgn or stmtList[0].len != 2 or
+     stmtList[1].kind != nnkAsgn or stmtList[1].len != 2 or
+     stmtList[2].kind != nnkAsgn or stmtList[2].len != 2 or
+     stmtList[0][0].kind != nnkIdent or
+     stmtList[0][1].kind != nnkIdent or
+     stmtList[1][0].kind != nnkIdent or
+     stmtList[1][1].kind != nnkIdent or
+     stmtList[2][0].kind != nnkIdent or
+     stmtList[2][1].kind != nnkIdent:
+     return
+
+  result.info.name = $(node[1])
+  result.info.typ = $(bracketExpr[1])
+
+  var
+    readFound = false
+    writeFound = false
+    notifyFound = false
+
+  for c in stmtList:
+    let accessorType = $(c[0])
+    let accessorName = $(c[1])
+    if accessorType != "read" and accessorType != "write" and accessorType != "notify":
+      error("Invalid property accessor. Use read, write or notify")
+    if accessorType == "read" and readFound:
+      error("Read slot already defined")
+    if accessorType == "write" and writeFound:
+      error("Write slot already defined")
+    if accessorType == "notify" and notifyFound:
+      error("Notify signal already defined")
+    if accessorType == "read":
+      readFound = true
+      result.info.read = accessorName
+    if accessorType == "write":
+      writeFound = true
+      result.info.write = accessorName
+    if accessorType == "notify":
+      notifyFound = true
+      result.info.notify = accessorName
+
+  result.ok = true
+
+proc extractQObjectInfo(node: NimNode): QObjectInfo =
+  ## Extract the QObjectInfo for the given node
+  let (typeNode, superTypeNode) = extractQObjectTypeDef(node)
+  result.name = $typeNode
+  result.superType = $superTypeNode
+  result.slots = @[]
+  result.signals = @[]
+  result.properties = @[]
+
+  # Extract slots and signals infos
+  for c in node.children:
+    if c.kind != nnkProcDef and c.kind != nnkMethodDef:
       continue
-    result.add child
-  if result.len == 0:
-    return newEmptyNode()
+    let pragmas = c.getPragmas
+    if "slot" in pragmas:
+      result.slots.add(extractProcInfo(c))
+    if "signal" in pragmas:
+      result.signals.add(extractProcInfo(c))
 
-proc hasPragma*(node: NimNode, pragmaName: string): bool {.compileTime.} =
-  ## Returns ``true`` iff the method, or proc definition: ``node``, has a pragma
-  ## ``pragmaName``
-  doAssert node.kind in {nnkMethodDef, nnkProcDef}
-  result = false
-  let pragma = node.pragma
-  if pragma.kind == nnkEmpty:
-    # denotes no pragma set
-    return false
-  for child in pragma.children():
-    if $child.getPragmaName() == pragmaName:
-      return true
+  # Extract properties infos
+  for c in node.children:
+    let (ok, info) = extractPropertyInfo(c)
+    if not ok: continue
+    result.properties.add(info)
 
-proc getArgType*(arg: NimNode): NimNode  {.compileTime.} =
-  ## returns the ``NimNode`` representing a parameters type
-  if arg[1].kind == nnkIdent:
-    arg[1]
-  else:
-    arg[1].getNodeOf(nnkIdent)
+proc generateMetaObjectInitializer(info: QObjectInfo): NimNode {.compiletime.} =
+  ## Generate the metaObject initialization procedure
+  let str = [ "proc initializeMetaObjectInstance(): QMetaObject ="
+            , "  var signals: seq[SignalDefinition] = @[]"
+            , "  var slots: seq[SlotDefinition] = @[]"
+            , "  var properties: seq[PropertyDefinition] = @[]"
+            , "  newQMetaObject($2.staticMetaObject, \"$1\", signals, slots, properties)"
+            ].join("\n").format([info.name, info.superType])
 
-proc getArgName*(arg: NimNode): NimNode  {.compileTime.} =
-  ## returns the ``NimNode`` representing a parameters name
-  if arg[0].kind == nnkIdent:
-    arg[0]
-  else:
-    arg[0].getNodeOf(nnkIdent)
+  var signals: seq[string] = @[]
+  for signal in info.signals:
+    let def = "SignalDefinition(name: \"$1\", parametersTypes: @[$2])"
+    let str = "signals.add($1)" % def
+    signals.add(str)
 
-proc addSignalBody(signal: NimNode): NimNode {.compileTime.} =
-  # e.g: produces: emit(MyQObject, "nameChanged")
-  assert signal.kind in {nnkMethodDef, nnkProcDef}
+  var slots: seq[string] = @[]
+  for slot in info.slots:
+    let def = "SlotDefinition(name: \"$1\", returnMetaType: $2, parametersTypes: @[$3])"
+    let str = "slots.add($1)" % def
+    slots.add(str)
+
+  var properties: seq[string] = @[]
+  for property in info.properties:
+    let def = "PropertyDefinition(name: \"$1\", propertyMetaType: \"$2\", readSlot: \"$3\", writeSlot: \"$4\", notifySignal: \"$5\")"
+    let str = "properties.add($1)" % def
+    properties.add(str)
+
+  result = parseStmt(str)
+
+
+proc generateMetaObjectAccessors(info: QObjectInfo): NimNode {.compiletime.} =
+  ## Generate the metaObject instance and accessors
+  let str = [ "let staticMetaObjectInstance: QMetaObject = initializeMetaObjectInstance()"
+            , "proc staticMetaObject*(c: type $1): QMetaObject = staticMetaObjectInstance"
+            , "proc staticMetaObject*(self: $1): QMetaObject = staticMetaObjectInstance"
+            , "method metaObject*(self: $1): QMetaObject = staticMetaObjectInstance"].join("\n")
+  result = parseStmt(str % info.name)
+
+proc generateMetaObject(info: QObjectInfo): NimNode {.compiletime.} =
+  ## Generate the metaObject related procs and vars
+  result = newStmtList();
+  result.add(generateMetaObjectInitializer(info))
+  result.add(generateMetaObjectAccessors(info))
+
+macro slot*(s: stmt): stmt =
+  ## Do nothing. Used only for tagging
+  result = s
+
+macro signal*(s: stmt): stmt {.immediate.} =
+  ## Generate the signal implementation
+  let info = extractProcInfo(s)
+  let str = "$1.emit(\"$2\", [$3])"
+  s[s.len - 1 ] = parseStmt(str % [info.parametersNames[0], info.name, ""])
+  return s
+
+macro QtObject*(body: stmt): stmt {.immediate.} =
+  ## Generate the QObject stuff
+  let info = extractQObjectInfo(body)
   result = newStmtList()
-  # if exported, will use postfix
-  let name = if signal.name.kind == nnkIdent: signal.name else: signal.name[1]
-  let params = signal.params
-  # type signal defined on is the 1st arg
-  let self = getArgName(params[1])
-  var args = newSeq[NimNode]()
-  args.add(self)
-  args.add newLit($name)
-  if params.len > 2: # more args than just type
-    for i in 2.. <params.len:
-      args.add getArgName params[i]
-  result.add newCall("emit", args)
-
-#FIXME: changed typ from typedesc to expr to workaround Nim issue #1874
-# This is declared dirty so that identifers are not bound to symbols.
-# The alternative is to use `removeOpenSym` as we did for `prototypeCreate`.
-# We should decide which method is preferable.
-template prototypeOnSlotCalled(typ: expr): stmt {.dirty.} =
-  method onSlotCalled(myQObject: typ, slotName: string, args: openarray[QVariant]) =
-    var super = (typ.superType())(myQObject)
-    procCall onSlotCalled(super, slotName, args)
-
-#FIXME: changed parent, typ from typedesc to expr to workaround Nim issue #1874
-template prototypeCreate(typ: expr): stmt {.dirty.}=
-  proc create*(myQObject: var typ) =
-    var super = (typ.superType())(myQObject)
-    procCall create(super)
-
-proc doRemoveOpenSym(a: var NimNode): NimNode {.compileTime.} =
-  hookOnNode(NullContext(),a, removeOpenSym, true)
-
-proc templateBody*(a: NimNode): NimNode {.compileTime.} =
-  expectKind a, nnkTemplateDef
-  result = a[6]
-
-proc genArgTypeArray(params: NimNode): NimNode {.compileTime.} =
-  expectKind params, nnkFormalParams
-  result = newNimNode(nnkBracket)
-  for i in 0 .. <params.len:
-    if i == 1:
-      # skip "self" param eg: myQObject: MyQObject
-      continue
-    let pType = if i != 0: getArgType params[i] else: params[i]
-    let pTypeString = if pType.kind == nnkEmpty: "" else: $pType
-    # function that maps Qvariant type to nim type
-    let qtMeta = nim2QtMeta[pTypeString]
-    if qtMeta == nil: error(pTypeString & " not supported yet")
-    let metaDot = newDotExpr(ident "QMetaType", ident qtMeta)
-    result.add metaDot
-
-proc getIdentDefName*(a: NimNode): NimNode {.compileTime.} =
-  ## returns object field name from ident def
-  expectKind a, nnkIdentDefs
-  if a[0].kind == nnkIdent:
-    return a[0]
-  elif a[0].kind == nnkPostFix:
-    return a[0][1]
-
-proc tryHandleSigSlot(def: NimNode, signals: var seq[NimNode], slots: var seq[NimNode],
-    generatedCode: var NimNode): bool {.compileTime.} =
-  ## Checks a method/proc definition for signals and slots. On finding a method/proc with
-  ## a {.signal.} or {.slot.} pragma, it will strip the pragma, add the definition to the
-  ## appropriate seq, append the stripped version to the generated code block and return true
-  ## indicating the definition was a signal or a slot. If the method/proc is not a slot
-  ## or a slot it will return false.
-  expectKind generatedCode, nnkStmtList
-  assert (not signals.isNil)
-  assert (not slots.isNil)
-  assert def.kind in {nnkMethodDef, nnkProcDef}
-  result = false
-  if def.hasPragma("slot"):
-    let pragma = def.pragma()
-    def.pragma = pragma.removePragma("slot")
-    slots.add def # we need to gensome code later
-    generatedCode.add def
-    result = true
-  elif def.hasPragma("signal"):
-    let pragma = def.pragma()
-    def.pragma = pragma.removePragma("signal")
-    def.body = addSignalBody(def)
-    generatedCode.add def
-    signals.add def
-    result = true
-
-proc genCreateDecl(typ: NimNode): NimNode {.compileTime.} =
-  ## generates forward declaration for ``create`` procedure
-  expectKind typ, nnkTypeDef
-  let typeName = typ.getTypeName()
-  result = (getAst prototypeCreate(typeName))[0]
-  result.body = newEmptyNode()
-  if typ.isExported:
-    result.exportDef()
-  else:
-    result.unexportDef()
-
-proc genCreate(typ: NimNode, signals: seq[NimNode], slots: seq[NimNode],
-    properties: seq[NimNode]): NimNode {.compileTime.} =
-  expectKind typ, nnkTypeDef
-  let typeName = typ.getTypeName()
-  result = (getAst prototypeCreate(typeName))[0]
-  # the template creates loads of openSyms - replace these with idents
-  result = doRemoveOpenSym(result)
-  if typ.isExported:
-    result.exportDef()
-  else:
-    result.unexportDef()
-  var createBody = result.body
-  for slot in slots:
-    let params = slot.params
-    let regSlotDot = newDotExpr(ident "myQObject", ident "registerSlot")
-    let name = ($slot.name).replace("*","")
-    let argTypesArray = genArgTypeArray(params)
-    let call = newCall(regSlotDot, newLit name, argTypesArray)
-    createBody.add call
-  for signal in signals:
-    let params = signal.params
-    let regSigDot = newDotExpr(ident "myQObject", ident "registerSignal")
-    let name = ($signal.name).replace("*","")
-    let argTypesArray = genArgTypeArray(params)
-    let call = newCall(regSigDot, newLit name, argTypesArray)
-    createBody.add call
-  for property in properties:
-    let bracket = property[0]
-    expectKind bracket, nnkBracketExpr
-    #Command
-    #  BracketExpr
-    #    Ident !"QtProperty"
-    #    Ident !"string"
-    #  Ident !"name"
-    #  StmtList
-    let nimPropType = bracket[1]
-    let qtPropMeta = nim2QtMeta[$nimPropType]
-    if qtPropMeta == nil: error($nimPropType & " not supported")
-    let metaDot = newDotExpr(ident "QMetaType", ident qtPropMeta)
-    let propertyName = property[1]
-    var read, write, notify: NimNode
-    let stmtList = property[2]
-    # fields
-    #  StmtList
-    #   Asgn
-    #     Ident !"read"
-    #     Ident !"getName
-    for asgn in stmtList.children:
-      let name = asgn[0]
-      case $name
-      of "read":
-        read = asgn[1]
-      of "write":
-        write = asgn[1]
-      of "notify":
-        notify = asgn[1]
-      else:
-        error("unknown property field: " & $name)
-    let regPropDot = newDotExpr(ident "myQObject", ident "registerProperty")
-    let readArg = if read == nil: newNilLit() else: newLit($read)
-    let writeArg = if write == nil: newNilLit() else: newLit($write)
-    let notifyArg = if notify == nil: newNilLit() else: newLit($notify)
-    let call = newCall(regPropDot, newLit($propertyName), metaDot, readArg, writeArg, notifyArg)
-    createBody.add call
-
-proc genOnSlotCalled(typ: NimNode, slots: seq[NimNode]): NimNode {.compileTime.} =
-  expectKind typ, nnkTypeDef
-  let typeName = typ.getTypeName()
-  result = (getAst prototypeOnSlotCalled(typeName))[0]
-  var caseStmt = newNimNode(nnkCaseStmt)
-  caseStmt.add ident("slotName")
-  for slot in slots:
-    var ofBranch = newNimNode(nnkOfBranch)
-    # for exported procedures - strip * marker
-    let slotName = ($slot.name).replace("*","")
-    ofBranch.add newLit slotName
-    let params = slot.params
-    let hasReturn = not (params[0].kind == nnkEmpty)
-    var branchStmts = newStmtList()
-    var args = newSeq[NimNode]()
-    # first params always the object
-    args.add ident "myQObject"
-    for i in 2.. <params.len:
-      let pType = getArgType params[i]
-      let argAccess = newNimNode(nnkBracketExpr)
-          .add (ident "args")
-          .add newIntLitNode(i-1)
-      if $pType == "QVariant":
-        args.add argAccess
-      else:
-        # function that maps QVariant type to nim type
-        let mapper = nimFromQtVariant[$pType]
-        let dot = newDotExpr(argAccess, ident mapper)
-        args.add dot
-    var call = newCall(ident slotName, args)
-    if hasReturn:
-      let retType = params[0]
-      let argAccess = newNimNode(nnkBracketExpr)
-        .add (ident "args")
-        .add newIntLitNode(0)
-      if $retType == "QVariant":
-      # eg: args[0].assign(getName(myQObject))
-        let dot = newDotExpr(argAccess, ident "assign")
-        call = newCall(dot, call)
-      else:
-      # eg: args[0].strVal = getName(myQObject)
-        let mapper = nimFromQtVariant[$retType]
-        let dot = newDotExpr(argAccess, ident mapper)
-        call = newAssignment(dot, call)
-    branchStmts.add call
-    ofBranch.add branchStmts
-    caseStmt.add ofBranch
-  # add else: discard
-  caseStmt.add newNimNode(nnkElse)
-    .add newStmtList().add newNimNode(nnkDiscardStmt).add newNimNode(nnkEmpty)
-  result.body.add caseStmt
-
-macro QtObject*(qtDecl: stmt): stmt {.immediate.} =
-  ## Generates boiler plate code for registering signals, slots
-  ## and properties.
-  ##
-  ## Currently generates:
-  ## - create: a method to register signal, slots and properties
-  ## - superType: a template that returns the super type of the
-  ##   object defined within the macro body
-  ## - onSlotCalled: a method to dispatch an on slot call to the
-  ##   appropiate method.
-  ##
-  ## Current limitations:
-  ## - only one type can be defined within the body of code sent to the
-  ##   the macro. It is assumed, but not checked, that somewhere in the
-  ##   inheritance hierarchy this object derives from ``QObject``.
-  ## - generics are not currently supported
-  expectKind(qtDecl, nnkStmtList)
-  #echo treeRepr qtDecl
-  result = newStmtList()
-  var slots = newSeq[NimNode]()
-  var properties = newSeq[NimNode]()
-  var signals = newSeq[NimNode]()
-  # assume only one type per section for now
-  var typ: NimNode
-  for it in qtDecl.children():
-    if it.kind == nnkTypeSection:
-      let typeDecl = it.findChild(it.kind == nnkTypeDef)
-      let superType = typeDecl.getSuperType()
-      if superType.kind == nnkEmpty:
-        # allow simple types and type aliases
-        result.add it
-      else:
-        # may come in useful if we want to check objects inherit from QObject
-        #let superName = if superType.kind == nnkIdent: superType
-        #  else: superType.getNodeOf(nnkIdent)
-        if typ != nil:
-          error("you may not define more than one type " &
-                "within the code block passed to this macro")
-        else: # without this else, it fails to compile
-          typ = typeDecl
-          result.add it
-          result.add genSuperTemplate(typeDecl)
-          result.add genCreateDecl(typeDecl)
-    elif it.kind == nnkMethodDef:
-      if tryHandleSigSlot(it, signals, slots, result): continue
-      result.add it
-    elif it.kind == nnkProcDef:
-      if tryHandleSigSlot(it, signals, slots, result): continue
-      result.add it
-    elif it.kind == nnkCommand:
-      let bracket = it[0]
-      if bracket.kind != nnkBracketExpr:
-        error("do not know how to handle: \n" & repr(it))
-      # BracketExpr
-      #   Ident !"QtProperty"
-      #   Ident !"string"
-      let cmdIdent = bracket[0]
-      if cmdIdent == nil or cmdIdent.kind != nnkIdent or
-          ($cmdIdent).toLower() != "qtproperty":
-        error("do not know how to handle: \n" & repr(it))
-      properties.add it
-    else:
-      # everything else should pass through unchanged
-      result.add it
-  if typ == nil:
-    error("you must declare an object that inherits from QObject")
-
-  result.add genOnSlotCalled(typ, slots)
-
-  result.add genCreate(typ, signals, slots, properties)
-
-  debug:
-    echo repr result
+  result.add(body)
+  result.add(generateMetaObject(info))

@@ -70,7 +70,14 @@ type
 
 # Conversion
 proc resetToNil[T](x: var T) = x = nil.pointer.T
-proc isNil[T](x: T): bool = x.pointer == nil
+proc isNil(x: DosQMetaObject): bool = x.pointer.isNil
+proc isNil(x: DosQVariant): bool = x.pointer.isNil
+proc isNil(x: DosQObject): bool = x.pointer.isNil
+proc isNil(x: DosQQmlApplicationEngine): bool = x.pointer.isNil
+proc isNil(x: DosQUrl): bool = x.pointer.isNil
+proc isNil(x: DosQQuickView): bool = x.pointer.isNil
+proc isNil(x: DosQHashIntByteArray): bool = x.pointer.isNil
+proc isNil(x: DosQModelIndex): bool = x.pointer.isNil
 
 # QApplication
 proc dos_qapplication_create() {.cdecl, importc.}

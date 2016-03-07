@@ -26,3 +26,4 @@ include private/qmodelindex.nim
 include private/qabstractlistmodel.nim
 include private/qresource.nim
 include private/qdeclarative.nim
+include private/nimqmlmacros.nim
