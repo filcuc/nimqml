@@ -2,8 +2,10 @@
 
 import macros
 import strutils
+import sequtils
 import typetraits
 import tables
+
 
 type
   FindQObjectTypeResult = tuple
@@ -31,13 +33,66 @@ type
     properties: seq[PropertyInfo]
 
 
-proc display(info: ProcInfo) =
-  ## Display a ProcInfo
-  echo "SlotInfo {\"$1\", $2, [$3]}" % [info.name, info.returnType, info.parametersTypes.join(",")]
+proc toString(info: ProcInfo): string {.compiletime.} =
+  ## Convert a ProcInfo to string
+  "SlotInfo {\"$1\", $2, [$3]}" % [info.name, info.returnType, info.parametersTypes.join(",")]
 
-proc display(info: PropertyInfo) =
+
+proc display(info: ProcInfo) {.compiletime.} =
+  ## Display a ProcInfo
+  echo info.toString
+
+
+proc toString(info: PropertyInfo): string {.compiletime.} =
+  ## Convert a PropertyInfo to string
+  "PropertyInfo {\"$1\", \"$2\", \"$3\", \"$4\", \"$5\"}" % [info.name, info.typ, info.read, info.write, info.notify]
+
+
+proc display(info: PropertyInfo) {.compiletime.} =
   ## Display a PropertyInfo
-  echo "SlotInfo {\"$1\", \"$2\", \"$3\", \"$4\", \"$5\"}" % [info.name, info.typ, info.read, info.write, info.notify]
+  echo info.toString
+
+
+proc toString(info: QObjectInfo): string {.compiletime.} =
+  ## Convert a QObjectInfo to string
+  var slots: seq[string] = @[]
+  for s in info.slots: slots.add(s.toString)
+  var signals: seq[string] = @[]
+  for s in info.signals: signals.add(s.toString)
+  var properties: seq[string] = @[]
+  for p in info.properties: properties.add(p.toString)
+  "QObjectInfo {\"$1\", \"$2\", [\"$3\"], [\"$4\"], [\"$5\"]}" % [info.name, info.superType, slots.join(", "), signals.join(", "), properties.join(", ")]
+
+
+proc display(info: QObjectInfo) {.compiletime.} =
+  ## Display a QObjectInfo
+  echo info.toString
+
+
+proc toMetaType(x: string): string {.compiletime.} =
+  ## Convert a nim type to QMetaType
+  case x
+  of nil: result = "Void"
+  of "": result = "Void"
+  of "void": result = "Void"
+  of "int": result = "Int"
+  of "bool": result = "Bool"
+  of "string": result = "QString"
+  of "double": result = "Double"
+  of "float": result = "Float"
+  of "pointer": result = "VoidStar"
+  of "QVariant": result = "QVariant"
+  of "QObject": result = "QObjectStar"
+  else: error("Unsupported conversion of $1 to metatype" % x)
+  result = "QMetaType.$1" % result
+
+
+proc toMetaType(types: seq[string]): seq[string] {.compiletime.} =
+  ## Convert a sequence of nim types to a sequence of QMetaTypes
+  result = @[]
+  for t in types:
+    result.add(t.toMetaType)
+
 
 proc childrenOfKind(n: NimNode, kind: NimNodeKind): seq[NimNode] {.compiletime.} =
   ## Return the sequence of child nodes of the given kind
@@ -50,7 +105,8 @@ proc numChildrenOfKind(n: NimNode, kind: NimNodeKind): int {.compiletime.} =
   ## Return the number of child nodes of the given kind
   childrenOfKind(n, kind).len
 
-proc getPragmas(n: NimNode): seq[string] =
+
+proc getPragmas(n: NimNode): seq[string] {.compiletime.} =
   ## Return the pragmas of a node
   result = @[]
   let pragmas = n.childrenOfKind(nnkPragma)
@@ -60,6 +116,7 @@ proc getPragmas(n: NimNode): seq[string] =
   for c in pragma:
     doAssert(c.kind == nnkIdent)
     result.add($c)
+
 
 proc extractQObjectTypeDef(head: NimNode): FindQObjectTypeResult {.compiletime.} =
   ## Extract the first type section and extract the first type Name and SuperType
@@ -101,7 +158,8 @@ proc extractQObjectTypeDef(head: NimNode): FindQObjectTypeResult {.compiletime.}
   result.typeIdent = name
   result.superTypeIdent = superType
 
-proc extractProcInfo(n: NimNode): ProcInfo =
+
+proc extractProcInfo(n: NimNode): ProcInfo {.compiletime.} =
   ## Extract the ProcInfo for the given node
   result.name = $n[0]
   let paramsSeq = n.childrenOfKind(nnkFormalParams)
@@ -114,7 +172,8 @@ proc extractProcInfo(n: NimNode): ProcInfo =
     result.parametersNames.add(repr def[0])
     result.parametersTypes.add(repr def[1])
 
-proc extractPropertyInfo(node: NimNode): tuple[ok: bool, info: PropertyInfo] =
+
+proc extractPropertyInfo(node: NimNode): tuple[ok: bool, info: PropertyInfo] {.compiletime.} =
   ## Extract the PropertyInfo for a given node
   #[
   Command
@@ -189,7 +248,8 @@ proc extractPropertyInfo(node: NimNode): tuple[ok: bool, info: PropertyInfo] =
 
   result.ok = true
 
-proc extractQObjectInfo(node: NimNode): QObjectInfo =
+
+proc extractQObjectInfo(node: NimNode): QObjectInfo {.compiletime.} =
   ## Extract the QObjectInfo for the given node
   let (typeNode, superTypeNode) = extractQObjectTypeDef(node)
   result.name = $typeNode
@@ -203,10 +263,24 @@ proc extractQObjectInfo(node: NimNode): QObjectInfo =
     if c.kind != nnkProcDef and c.kind != nnkMethodDef:
       continue
     let pragmas = c.getPragmas
+    # Extract slot
     if "slot" in pragmas:
-      result.slots.add(extractProcInfo(c))
+      var info = extractProcInfo(c)
+      if info.parametersTypes.len == 0:
+        error("Slot $1 must have at least an argument" % info.name)
+      if info.parametersTypes[0] != $typeNode:
+        error("Slot $1 first arguments must be $2" % [info.name, $typeNode])
+      info.parametersTypes.delete(0,0)
+      result.slots.add(info)
+    # Extract signal
     if "signal" in pragmas:
-      result.signals.add(extractProcInfo(c))
+      var info = extractProcInfo(c)
+      if info.parametersTypes.len == 0:
+        error("Signal $1 must have at least an argument" % info.name)
+      if info.parametersTypes[0] != $typeNode:
+        error("Signal $1 first arguments must be $2" % [info.name, $typeNode])
+      info.parametersTypes.delete(0,0)
+      result.signals.add(info)
 
   # Extract properties infos
   for c in node.children:
@@ -214,33 +288,49 @@ proc extractQObjectInfo(node: NimNode): QObjectInfo =
     if not ok: continue
     result.properties.add(info)
 
+
+proc generateMetaObjectSignalDefinitions(signals: seq[ProcInfo]): seq[string] {.compiletime.} =
+  result = @[]
+  for signal in signals:
+    let args = [signal.name, signal.parametersTypes.toMetaType.join(",")]
+    let def = "SignalDefinition(name: \"$1\", parametersTypes: @[$2])" % args
+    let str = "  signals.add($1)" % def
+    result.add(str)
+
+
+proc generateMetaObjectSlotsDefinitions(slots: seq[ProcInfo]): seq[string] {.compiletime.} =
+  result = @[]
+  for slot in slots:
+    let args = [slot.name, slot.returnType.toMetaType, slot.parametersTypes.toMetaType.join(",")]
+    let def = "SlotDefinition(name: \"$1\", returnMetaType: $2, parametersTypes: @[$3])" % args
+    let str = "  slots.add($1)" % def
+    result.add(str)
+
+
+proc generateMetaObjectPropertiesDefinitions(properties: seq[PropertyInfo]): seq[string] {.compiletime.} =
+  result = @[]
+  for property in properties:
+    let args = [property.name, property.typ.toMetaType, property.read, property.write, property.notify]
+    let def = "PropertyDefinition(name: \"$1\", propertyMetaType: $2, readSlot: \"$3\", writeSlot: \"$4\", notifySignal: \"$5\")" % args
+    let str = "  properties.add($1)" % def
+    result.add(str)
+
+
 proc generateMetaObjectInitializer(info: QObjectInfo): NimNode {.compiletime.} =
   ## Generate the metaObject initialization procedure
-  let str = [ "proc initializeMetaObjectInstance(): QMetaObject ="
-            , "  var signals: seq[SignalDefinition] = @[]"
-            , "  var slots: seq[SlotDefinition] = @[]"
-            , "  var properties: seq[PropertyDefinition] = @[]"
-            , "  newQMetaObject($2.staticMetaObject, \"$1\", signals, slots, properties)"
-            ].join("\n").format([info.name, info.superType])
 
-  var signals: seq[string] = @[]
-  for signal in info.signals:
-    let def = "SignalDefinition(name: \"$1\", parametersTypes: @[$2])"
-    let str = "signals.add($1)" % def
-    signals.add(str)
+  let signals = generateMetaObjectSignalDefinitions(info.signals)
+  let slots = generateMetaObjectSlotsDefinitions(info.slots)
+  let properties = generateMetaObjectPropertiesDefinitions(info.properties)
 
-  var slots: seq[string] = @[]
-  for slot in info.slots:
-    let def = "SlotDefinition(name: \"$1\", returnMetaType: $2, parametersTypes: @[$3])"
-    let str = "slots.add($1)" % def
-    slots.add(str)
-
-  var properties: seq[string] = @[]
-  for property in info.properties:
-    let def = "PropertyDefinition(name: \"$1\", propertyMetaType: \"$2\", readSlot: \"$3\", writeSlot: \"$4\", notifySignal: \"$5\")"
-    let str = "properties.add($1)" % def
-    properties.add(str)
-
+  var lines = @[ "proc initializeMetaObjectInstance(): QMetaObject ="
+             , "  var signals: seq[SignalDefinition] = @[]"
+             , "  var slots: seq[SlotDefinition] = @[]"
+             , "  var properties: seq[PropertyDefinition] = @[]"]
+  lines = lines.concat(signals.concat(slots.concat(properties)))
+  let newStmt = "  newQMetaObject($2.staticMetaObject, \"$1\", signals, slots, properties)".format([info.name, info.superType])
+  lines = lines.concat(@[newStmt])
+  let str = lines.join("\n")
   result = parseStmt(str)
 
 
@@ -252,15 +342,18 @@ proc generateMetaObjectAccessors(info: QObjectInfo): NimNode {.compiletime.} =
             , "method metaObject*(self: $1): QMetaObject = staticMetaObjectInstance"].join("\n")
   result = parseStmt(str % info.name)
 
+
 proc generateMetaObject(info: QObjectInfo): NimNode {.compiletime.} =
   ## Generate the metaObject related procs and vars
   result = newStmtList();
   result.add(generateMetaObjectInitializer(info))
   result.add(generateMetaObjectAccessors(info))
 
+
 macro slot*(s: stmt): stmt =
   ## Do nothing. Used only for tagging
   result = s
+
 
 macro signal*(s: stmt): stmt {.immediate.} =
   ## Generate the signal implementation
@@ -268,6 +361,7 @@ macro signal*(s: stmt): stmt {.immediate.} =
   let str = "$1.emit(\"$2\", [$3])"
   s[s.len - 1 ] = parseStmt(str % [info.parametersNames[0], info.name, ""])
   return s
+
 
 macro QtObject*(body: stmt): stmt {.immediate.} =
   ## Generate the QObject stuff
