@@ -251,12 +251,12 @@ proc extractPropertyInfo(node: NimNode): tuple[ok: bool, info: PropertyInfo] {.c
      stmtList[1].kind != nnkAsgn or stmtList[1].len != 2 or
      stmtList[2].kind != nnkAsgn or stmtList[2].len != 2 or
      stmtList[0][0].kind != nnkIdent or
-     stmtList[0][1].kind != nnkIdent or
+     (stmtList[0][1].kind != nnkIdent and stmtList[0][1].kind != nnkAccQuoted) or
      stmtList[1][0].kind != nnkIdent or
-     stmtList[1][1].kind != nnkIdent or
+     (stmtList[1][1].kind != nnkIdent and stmtList[1][1].kind != nnkAccQuoted) or
      stmtList[2][0].kind != nnkIdent or
-     stmtList[2][1].kind != nnkIdent:
-     return
+     (stmtList[2][1].kind != nnkIdent and stmtList[2][1].kind != nnkAccQuoted):
+     error("QtProperty parsing error")
 
   result.info.name = $(node[1])
   result.info.typ = $(bracketExpr[1])
@@ -268,7 +268,7 @@ proc extractPropertyInfo(node: NimNode): tuple[ok: bool, info: PropertyInfo] {.c
 
   for c in stmtList:
     let accessorType = $(c[0])
-    let accessorName = $(c[1])
+    let accessorName = c[1].repr
     if accessorType != "read" and accessorType != "write" and accessorType != "notify":
       error("Invalid property accessor. Use read, write or notify")
     if accessorType == "read" and readFound:
