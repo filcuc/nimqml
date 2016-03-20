@@ -33,6 +33,24 @@ type
     properties: seq[PropertyInfo]
 
 
+proc childPos(node: NimNode, child: NimNode): int =
+  ## Return the position of the given child or -1
+  var i = 0
+  for c in node.children:
+    if c == child:
+      return i
+    inc(i)
+  return -1
+
+
+proc removeChild(node: NimNode, child: NimNode): bool =
+  ## Remove the child from a node
+  let pos = node.childPos(child)
+  if pos == -1: return false
+  node.del(pos)
+  return true
+
+
 proc toString(info: ProcInfo): string {.compiletime.} =
   ## Convert a ProcInfo to string
   "SlotInfo {\"$1\", $2, [$3]}" % [info.name, info.returnType, info.parametersTypes.join(",")]
@@ -55,18 +73,29 @@ proc display(info: PropertyInfo) {.compiletime.} =
 
 proc toString(info: QObjectInfo): string {.compiletime.} =
   ## Convert a QObjectInfo to string
-  var slots: seq[string] = @[]
-  for s in info.slots: slots.add(s.toString)
-  var signals: seq[string] = @[]
-  for s in info.signals: signals.add(s.toString)
-  var properties: seq[string] = @[]
-  for p in info.properties: properties.add(p.toString)
+  let slots = info.slots.map(proc (x: auto): auto = x.toString)
+  let signals = info.signals.map(proc(x:auto): auto = x.toString)
+  let properties = info.properties.map(proc(x:auto): auto = x.toString)
   "QObjectInfo {\"$1\", \"$2\", [\"$3\"], [\"$4\"], [\"$5\"]}" % [info.name, info.superType, slots.join(", "), signals.join(", "), properties.join(", ")]
 
 
 proc display(info: QObjectInfo) {.compiletime.} =
   ## Display a QObjectInfo
   echo info.toString
+
+
+proc fromQVariantConversion(x: string): string {.compiletime.} =
+  ## Return the correct conversion call from a QVariant
+  ## to the given nim type
+  case x:
+  of "int": result = "intVal"
+  of "string": result = "stringVal"
+  of "bool": result = "boolVal"
+  of "float": result = "floatVal"
+  of "double": result = "doubleVal"
+  of "QObject": result = "qobjectVal"
+  of "QVariant": result = ""
+  else: error("Unsupported conversion from QVariant to $1" % x)
 
 
 proc toMetaType(x: string): string {.compiletime.} =
@@ -139,9 +168,15 @@ proc extractQObjectTypeDef(head: NimNode): FindQObjectTypeResult {.compiletime.}
 
   let def = definitions[0]
 
-  let name = def[0] # type Object = ... <---
+  var name = def[0] # type Object = ... <---
   let pragma = def[1] # type Object {.something.} = ... <---
   let typeKind = def[2]  # .. = ref/distinct/object ..
+
+  if name.kind == nnkPostFix:
+    if name.len != 2: error("Expected two children in nnkPostFix node")
+    if name[0].kind != nnkIdent or $(name[0]) != "*": error("Expected * in nnkPostFix node")
+    if name[1].kind != nnkIdent: error("Expected ident as second argument in nnkPostFix node")
+    name = name[1]
 
   if def[2].kind != nnkRefTy: # .. = ref ..
     error("ref type expected")
@@ -161,7 +196,13 @@ proc extractQObjectTypeDef(head: NimNode): FindQObjectTypeResult {.compiletime.}
 
 proc extractProcInfo(n: NimNode): ProcInfo {.compiletime.} =
   ## Extract the ProcInfo for the given node
-  result.name = $n[0]
+  let procName = n[0]
+  if procName.kind == nnkIdent: # proc name <-- without *
+    result.name = $procName
+  elif procName.kind == nnkPostFix: # proc name* <-- with *
+    result.name = procName[1].repr # We handle both proc name and proc `name=`
+  else: error("Unexpected node kind")
+
   let paramsSeq = n.childrenOfKind(nnkFormalParams)
   if paramsSeq.len != 1: error("Failed to find parameters")
   let params = paramsSeq[0]
@@ -249,6 +290,27 @@ proc extractPropertyInfo(node: NimNode): tuple[ok: bool, info: PropertyInfo] {.c
   result.ok = true
 
 
+proc isSlot(n: NimNode): bool {.compiletime.} =
+  n.kind in {nnkProcDef, nnkMethodDef} and "slot" in n.getPragmas
+
+proc isSignal(n: NimNode): bool {.compiletime.} =
+  n.kind in {nnkProcDef, nnkMethodDef} and "signal" in n.getPragmas
+
+proc isProperty(node: NimNode): bool {.compiletime.} =
+  if node.kind != nnkCommand or
+     node.len != 3 or
+     node[0].kind != nnkBracketExpr or
+     node[1].kind != nnkIdent or
+     node[2].kind != nnkStmtList:
+    return false
+  let bracketExpr = node[0]
+  if bracketExpr.len != 2 or
+     bracketExpr[0].kind != nnkIdent or
+     bracketExpr[1].kind != nnkIdent or
+     $(bracketExpr[0]) != "QtProperty":
+     return false
+  return true
+
 proc extractQObjectInfo(node: NimNode): QObjectInfo {.compiletime.} =
   ## Extract the QObjectInfo for the given node
   let (typeNode, superTypeNode) = extractQObjectTypeDef(node)
@@ -260,11 +322,8 @@ proc extractQObjectInfo(node: NimNode): QObjectInfo {.compiletime.} =
 
   # Extract slots and signals infos
   for c in node.children:
-    if c.kind != nnkProcDef and c.kind != nnkMethodDef:
-      continue
-    let pragmas = c.getPragmas
     # Extract slot
-    if "slot" in pragmas:
+    if c.isSlot:
       var info = extractProcInfo(c)
       if info.parametersTypes.len == 0:
         error("Slot $1 must have at least an argument" % info.name)
@@ -273,7 +332,7 @@ proc extractQObjectInfo(node: NimNode): QObjectInfo {.compiletime.} =
       info.parametersTypes.delete(0,0)
       result.slots.add(info)
     # Extract signal
-    if "signal" in pragmas:
+    if c.isSignal:
       var info = extractProcInfo(c)
       if info.parametersTypes.len == 0:
         error("Signal $1 must have at least an argument" % info.name)
@@ -282,11 +341,17 @@ proc extractQObjectInfo(node: NimNode): QObjectInfo {.compiletime.} =
       info.parametersTypes.delete(0,0)
       result.signals.add(info)
 
-  # Extract properties infos
-  for c in node.children:
+  # Extract properties infos and remove them
+  var toRemove: seq[NimNode]= @[]
+  for c in node:
     let (ok, info) = extractPropertyInfo(c)
     if not ok: continue
+    toRemove.add(c)
     result.properties.add(info)
+
+  for r in toRemove:
+    if not node.removeChild(r):
+      error("Failed to remove a child")
 
 
 proc generateMetaObjectSignalDefinitions(signals: seq[ProcInfo]): seq[string] {.compiletime.} =
@@ -345,9 +410,50 @@ proc generateMetaObjectAccessors(info: QObjectInfo): NimNode {.compiletime.} =
 
 proc generateMetaObject(info: QObjectInfo): NimNode {.compiletime.} =
   ## Generate the metaObject related procs and vars
-  result = newStmtList();
+  result = newStmtList()
   result.add(generateMetaObjectInitializer(info))
   result.add(generateMetaObjectAccessors(info))
+
+
+proc generateSlotCall(slot: ProcInfo): string {.compiletime.} =
+  ## Generate a slot call
+  var sequence: seq[string] = @[]
+
+  # Add return type
+  if slot.returnType != nil and
+     slot.returnType != "" and
+     slot.returnType != "void":
+     sequence.add("arguments[0]")
+     let conversion = fromQVariantConversion(slot.returnType)
+     if conversion != "": sequence.add(".")
+     sequence.add(conversion)
+     sequence.add(" = ")
+
+  sequence.add("self.$1" % slot.name)
+
+  if slot.parametersTypes.len > 0:
+    sequence.add("(")
+    for i in 0..<slot.parametersTypes.len:
+      if i != 0: sequence.add(",")
+      sequence.add("arguments[$1]" % $(i+1))
+      let conversion = fromQVariantConversion(slot.parametersTypes[i])
+      if conversion != "": sequence.add(".")
+      sequence.add(conversion)
+    sequence.add(")")
+
+  result = sequence.join("")
+
+
+proc generateOnSlotCalled(info: QObjectInfo): NimNode {.compiletime.} =
+  ## Generate the onSlotCalled method
+  var str = "method onSlotCalled*(self: $1, name: string, arguments: openarray[QVariant]) = "
+  var body: seq[string] = @[]
+  body.add("  case name")
+  for slot in info.slots:
+    body.add("  of \"$1\": $2" % [slot.name, generateSlotCall(slot)])
+  body.add("  else: procCall onSlotCalled(self.$1, name, arguments)" % info.superType)
+  str = str & "\n" & body.join("\n")
+  result = parseStmt(str % info.name)
 
 
 macro slot*(s: stmt): stmt =
@@ -369,3 +475,4 @@ macro QtObject*(body: stmt): stmt {.immediate.} =
   result = newStmtList()
   result.add(body)
   result.add(generateMetaObject(info))
+  result.add(generateOnSlotCalled(info))

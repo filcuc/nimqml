@@ -69,6 +69,7 @@ type
     Int = 2.cint,
     QString = 10.cint,
     VoidStar = 31.cint,
+    Float = 38.cint,
     QObjectStar = 39.cint,
     QVariant = 41.cint,
     Void = 43.cint,
