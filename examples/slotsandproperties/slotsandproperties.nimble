@@ -7,4 +7,4 @@ description   = "slotsandproperties"
 license       = "MIT"
 
 [Deps]
-Requires: "nim >= 0.12.1, nimqml >= 0.4.8"
+Requires: "nim >= 0.12.1, nimqml >= 0.5.0"

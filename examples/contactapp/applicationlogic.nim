@@ -6,27 +6,29 @@ QtObject:
     app: QApplication
 
   proc delete*(self: ApplicationLogic) =
-    let qobject = self.QObject
-    qobject.delete
+    self.QObject.delete
     self.contactList.delete
+
+  proc setup(self: ApplicationLogic) =
+    self.QObject.setup
 
   proc newApplicationLogic*(app: QApplication): ApplicationLogic =
     new(result)
     result.contactList = newContactList()
     result.app = app
-    result.create()
+    result.setup()
 
-  method getContactList(self: ApplicationLogic): QVariant {.slot.} =
+  proc getContactList(self: ApplicationLogic): QVariant {.slot.} =
     return newQVariant(self.contactList)
 
-  method onLoadTriggered(self: ApplicationLogic) {.slot.} =
+  proc onLoadTriggered(self: ApplicationLogic) {.slot.} =
     echo "Load Triggered"
     self.contactList.add("John", "Doo")
 
-  method onSaveTriggered(self: ApplicationLogic) {.slot.} =
+  proc onSaveTriggered(self: ApplicationLogic) {.slot.} =
     echo "Save Triggered"
 
-  method onExitTriggered(self: ApplicationLogic) {.slot.} =
+  proc onExitTriggered(self: ApplicationLogic) {.slot.} =
     self.app.quit
 
   QtProperty[QVariant] contactList:

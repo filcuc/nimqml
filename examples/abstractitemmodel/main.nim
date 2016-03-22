@@ -14,7 +14,7 @@ proc mainProc() =
   var variant = newQVariant(myListModel)
   defer: variant.delete
 
-  engine.rootContext.setContextProperty("myListModel", variant)
+  engine.setRootContextProperty("myListModel", variant)
   engine.load("main.qml")
 
   app.exec()

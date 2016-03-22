@@ -1,37 +1,34 @@
 import NimQml, Tables
 
+type
+  RoleNames {.pure.} = enum
+    Name = UserRole + 1,
+
 QtObject:
   type
     MyListModel* = ref object of QAbstractListModel
       names*: seq[string]
-    RoleNames {.pure.} = enum
-      Name = 0,
-
-  converter toCInt(value: RoleNames): cint = return value.cint
-  converter toCInt(value: int): cint = return value.cint
-  converter toInt(value: RoleNames): int = return value.int
-  converter toInt(value: cint): int = return value.int
-  converter toQVariant(value: string): QVariant = return value.newQVariant
 
   proc delete(self: MyListModel) =
-    let model = self.QAbstractListModel
-    model.delete
+    self.QAbstractListModel.delete
+
+  proc setup(self: MyListModel) =
+    self.QAbstractListModel.setup
 
   proc newMyListModel*(): MyListModel =
     new(result, delete)
     result.names = @["John", "Max", "Paul", "Anna"]
-    result.create
+    result.setup
 
-  method rowCount(self: MyListModel, index: QModelIndex = nil): cint =
+  method rowCount(self: MyListModel, index: QModelIndex = nil): int =
     return self.names.len
 
-  method data(self: MyListModel, index: QModelIndex, role: cint): QVariant =
+  method data(self: MyListModel, index: QModelIndex, role: int): QVariant =
     if not index.isValid:
       return
     if index.row < 0 or index.row >= self.names.len:
       return
-    return self.names[index.row]
+    return newQVariant(self.names[index.row])
 
-  method roleNames(self: MyListModel): Table[cint, cstring] =
-    result = initTable[cint, cstring]()
-    result[RoleNames.Name] = "name"
+  method roleNames(self: MyListModel): Table[int, string] =
+    { RoleNames.Name.int:"name"}.toTable
