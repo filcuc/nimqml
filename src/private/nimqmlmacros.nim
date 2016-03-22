@@ -246,17 +246,23 @@ proc extractPropertyInfo(node: NimNode): tuple[ok: bool, info: PropertyInfo] {.c
      $(bracketExpr[0]) != "QtProperty":
      return
   let stmtList = node[2]
-  if stmtList.len != 3 or
-     stmtList[0].kind != nnkAsgn or stmtList[0].len != 2 or
-     stmtList[1].kind != nnkAsgn or stmtList[1].len != 2 or
-     stmtList[2].kind != nnkAsgn or stmtList[2].len != 2 or
-     stmtList[0][0].kind != nnkIdent or
-     (stmtList[0][1].kind != nnkIdent and stmtList[0][1].kind != nnkAccQuoted) or
-     stmtList[1][0].kind != nnkIdent or
-     (stmtList[1][1].kind != nnkIdent and stmtList[1][1].kind != nnkAccQuoted) or
-     stmtList[2][0].kind != nnkIdent or
-     (stmtList[2][1].kind != nnkIdent and stmtList[2][1].kind != nnkAccQuoted):
-     error("QtProperty parsing error")
+  echo repr stmtList
+  echo $stmtList.len
+  if stmtList.len >= 1:
+    if stmtList[0].kind != nnkAsgn or stmtList[0].len != 2 or
+       stmtList[0][0].kind != nnkIdent or
+       (stmtList[0][1].kind != nnkIdent and stmtList[0][1].kind != nnkAccQuoted):
+      error("QtProperty parsing error")
+  if stmtList.len >= 2:
+    if stmtList[1].kind != nnkAsgn or stmtList[1].len != 2 or
+       stmtList[1][0].kind != nnkIdent or
+       (stmtList[1][1].kind != nnkIdent and stmtList[1][1].kind != nnkAccQuoted):
+      error("QtProperty parsing error")
+  if stmtList.len >= 3:
+    if stmtList[2].kind != nnkAsgn or stmtList[2].len != 2 or
+       stmtList[2][0].kind != nnkIdent or
+       (stmtList[2][1].kind != nnkIdent and stmtList[2][1].kind != nnkAccQuoted):
+      error("QtProperty parsing error")
 
   result.info.name = $(node[1])
   result.info.typ = $(bracketExpr[1])
@@ -265,6 +271,10 @@ proc extractPropertyInfo(node: NimNode): tuple[ok: bool, info: PropertyInfo] {.c
     readFound = false
     writeFound = false
     notifyFound = false
+
+  result.info.read = ""
+  result.info.write = ""
+  result.info.notify = ""
 
   for c in stmtList:
     let accessorType = $(c[0])
@@ -423,13 +433,13 @@ proc generateSlotCall(slot: ProcInfo): string {.compiletime.} =
   if slot.returnType != nil and
      slot.returnType != "" and
      slot.returnType != "void":
-     sequence.add("arguments[0]")
-     let conversion = fromQVariantConversion(slot.returnType)
-     if conversion != "": sequence.add(".")
-     sequence.add(conversion)
-     sequence.add(" = ")
-
-  sequence.add("self.$1" % slot.name)
+    let conversion = fromQVariantConversion(slot.returnType)
+    if conversion == "":
+      sequence.add("arguments[0].assign(self.$1)" % slot.name)
+    else:
+      sequence.add("arguments[0].$1 = self.$2" % [conversion, slot.name])
+  else:
+    sequence.add("self.$1" % slot.name)
 
   if slot.parametersTypes.len > 0:
     sequence.add("(")
