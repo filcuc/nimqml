@@ -246,8 +246,6 @@ proc extractPropertyInfo(node: NimNode): tuple[ok: bool, info: PropertyInfo] {.c
      $(bracketExpr[0]) != "QtProperty":
      return
   let stmtList = node[2]
-  echo repr stmtList
-  echo $stmtList.len
   if stmtList.len >= 1:
     if stmtList[0].kind != nnkAsgn or stmtList[0].len != 2 or
        stmtList[0][0].kind != nnkIdent or
