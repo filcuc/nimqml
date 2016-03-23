@@ -15,20 +15,22 @@ proc deleter(id: cint, nimQObject: NimQObject) {.cdecl.} =
   let qobject = cast[QObject](nimQObject)
   GC_unref(qobject)
 
-proc qmlRegisterType*[T](uri: string, major: int, minor: int, qmlName: string, ctor: proc(): T) {.cdecl.} =
-  var result: cint = 0
+proc qmlRegisterType*[T](uri: string, major: int, minor: int, qmlName: string, ctor: proc(): T): int =
+  var id: cint = 0
   let metaObject: QMetaObject = T.staticMetaObject()
   let dosQmlRegisterType = DosQmlRegisterType(major: major.cint, minor: minor.cint, uri: uri.cstring,
                                               qml: qmlName.cstring, staticMetaObject: metaObject.vptr,
                                               createCallback: creator, deleteCallback: deleter)
-  dos_qdeclarative_qmlregistertype(dosQmlRegisterType.unsafeAddr, result)
-  ctorTable[result] = proc(): QObject = ctor().QObject
+  dos_qdeclarative_qmlregistertype(dosQmlRegisterType.unsafeAddr, id)
+  ctorTable[id] = proc(): QObject = ctor().QObject
+  id.int
 
-proc qmlRegisterSingletonType*[T](uri: string, major: int, minor: int, qmlName: string, ctor: proc(): T) {.cdecl.} =
-  var result: cint = 0
+proc qmlRegisterSingletonType*[T](uri: string, major: int, minor: int, qmlName: string, ctor: proc(): T): int =
+  var id: cint = 0
   let metaObject: QMetaObject = T.staticMetaObject()
   let dosQmlRegisterType = DosQmlRegisterType(major: major.cint, minor: minor.cint, uri: uri.cstring,
                                               qml: qmlName.cstring, staticMetaObject: metaObject.vptr,
                                               createCallback: creator, deleteCallback: deleter)
-  dos_qdeclarative_qmlregistersingletontype(dosQmlRegisterType.unsafeAddr, result)
-  ctorTable[result] = proc(): QObject = ctor().QObject
+  dos_qdeclarative_qmlregistersingletontype(dosQmlRegisterType.unsafeAddr, id)
+  ctorTable[id] = proc(): QObject = ctor().QObject
+  id.int
