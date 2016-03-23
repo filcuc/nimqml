@@ -5,7 +5,7 @@ import typeinfo
 proc mainProc() =
   var app = newQApplication()
   defer: app.delete()
-   
+
   var engine = newQQmlApplicationEngine()
   defer: engine.delete()
 
@@ -15,4 +15,3 @@ proc mainProc() =
 when isMainModule:
   mainProc()
   GC_fullcollect()
-
