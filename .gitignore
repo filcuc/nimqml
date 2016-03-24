@@ -1,3 +1,4 @@
 *.c
 *.o
 nimcache
+*.nimproject*
