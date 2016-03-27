@@ -79,6 +79,12 @@ proc isNil(x: DosQQuickView): bool = x.pointer.isNil
 proc isNil(x: DosQHashIntByteArray): bool = x.pointer.isNil
 proc isNil(x: DosQModelIndex): bool = x.pointer.isNil
 
+# CharArray
+proc dos_chararray_delete(str: cstring) {.cdecl, importc.}
+
+# QCoreApplication
+proc dos_qcoreapplication_application_dir_path(str: var cstring) {.cdecl, importc.}
+
 # QApplication
 proc dos_qapplication_create() {.cdecl, importc.}
 proc dos_qapplication_exec() {.cdecl, importc.}
@@ -97,6 +103,7 @@ proc dos_qqmlcontext_setcontextproperty(context: DosQQmlContext, propertyName: c
 # QQmlApplicationEngine
 proc dos_qqmlapplicationengine_create(engine: var DosQQmlApplicationEngine) {.cdecl, importc.}
 proc dos_qqmlapplicationengine_load(engine: DosQQmlApplicationEngine, filename: cstring) {.cdecl, importc.}
+proc dos_qqmlapplicationengine_load_url(engine: DosQQmlApplicationEngine, url: DosQUrl) {.cdecl, importc.}
 proc dos_qqmlapplicationengine_load_data(engine: DosQQmlApplicationEngine, data: cstring) {.cdecl, importc.}
 proc dos_qqmlapplicationengine_add_import_path(engine: DosQQmlApplicationEngine, path: cstring) {.cdecl, importc.}
 proc dos_qqmlapplicationengine_context(engine: DosQQmlApplicationEngine, context: var DosQQmlContext) {.cdecl, importc.}
@@ -125,7 +132,6 @@ proc dos_qvariant_setFloat(variant: DosQVariant, value: float)  {.cdecl, importc
 proc dos_qvariant_toDouble(variant: DosQVariant, value: var cdouble) {.cdecl, importc.}
 proc dos_qvariant_setDouble(variant: DosQVariant, value: cdouble) {.cdecl, importc.}
 proc dos_qvariant_setQObject(variant: DosQVariant, value: DosQObject) {.cdecl, importc.}
-proc dos_chararray_delete(str: cstring) {.cdecl, importc.}
 
 # QObject
 proc dos_qobject_qmetaobject(vptr: var DosQmetaObject) {.cdecl, importc.}

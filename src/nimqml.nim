@@ -17,8 +17,9 @@ include private/qmetaobject.nim
 include private/qvariant.nim
 include private/qobject.nim
 include private/qqmlapplicationengine.nim
-include private/qapplication.nim
+include private/qcoreapplication.nim
 include private/qguiapplication.nim
+include private/qapplication.nim
 include private/qurl.nim
 include private/qquickview.nim
 include private/qhashintbytearray.nim
