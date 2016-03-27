@@ -5,15 +5,14 @@ author        = "Filippo Cucchetto"
 description   = "resourcebundling"
 license       = "MIT"
 
-bin = @["resourcebundling"]
+bin = @["main"]
 
 # Dependencies
 
 requires "nimqml >= 0.5.0"
 
-task compileresources, "Compile the qrc into rcc":
-  exec ("rcc --binary resources.qrc -o main.rcc")
-  setCommand("nop")
+task build, "Compile the binary":
+  exec ("nim c main")
 
-task compilebinary, "Compile the binary":
-  setCommand "c"
+before build:
+  exec ("rcc --binary resources.qrc -o main.rcc")
