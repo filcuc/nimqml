@@ -1,6 +1,6 @@
 proc setup*(self: QQuickView) =
   ## Setup a new QQuickView
-  dos_qquickview_create(self.vptr)
+  self.vptr = dos_qquickview_create()
 
 proc delete*(self: QQuickView) =
   ## Delete the given QQuickView
@@ -15,10 +15,11 @@ proc newQQuickView*(): QQuickView =
   new(result, delete)
   result.setup()
 
-proc source*(self: QQuickView): cstring =
+proc source*(self: QQuickView): string =
   ## Return the source Qml file loaded by the view
-  var length: int
-  dos_qquickview_source(self.vptr, result, length)
+  let str = dos_qquickview_source(self.vptr)
+  result = $str
+  dos_chararray_delete(str)
 
 proc `source=`*(self: QQuickView, filename: cstring) =
   ## Sets the source Qml file laoded by the view

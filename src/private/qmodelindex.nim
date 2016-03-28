@@ -1,10 +1,10 @@
 proc setup*(self: QModelIndex) =
   ## Setup a new QModelIndex
-  dos_qmodelindex_create(self.vptr)
+  self.vptr = dos_qmodelindex_create()
 
-proc setup(self: QModelIndex, vptr: DosQModelIndex) =
+proc setup(self: QModelIndex, other: DosQModelIndex) =
   ## Setup a new QModelIndex
-  dos_qmodelindex_create_qmodelindex(self.vptr, vptr)
+  self.vptr = dos_qmodelindex_create_qmodelindex(other)
 
 proc delete*(self: QModelIndex) =
   ## Delete the given QModelIndex
@@ -24,17 +24,17 @@ proc newQModelIndex(vptr: DosQModelIndex): QModelIndex =
   new(result, delete)
   result.setup(vptr)
 
-proc row*(self: QModelIndex): cint =
+proc row*(self: QModelIndex): int =
   ## Return the index row
-  dos_qmodelindex_row(self.vptr, result)
+  dos_qmodelindex_row(self.vptr).int
 
-proc column*(self: QModelIndex): cint =
+proc column*(self: QModelIndex): int =
   ## Return the index column
-  dos_qmodelindex_column(self.vptr, result)
+  dos_qmodelindex_column(self.vptr).int
 
 proc isValid*(self: QModelIndex): bool =
   ## Return true if the index is valid, false otherwise
-  dos_qmodelindex_isValid(self.vptr, result)
+  dos_qmodelindex_isValid(self.vptr)
 
 proc data*(self: QModelIndex, role: cint): QVariant =
   ## Return the model data associated to the given role

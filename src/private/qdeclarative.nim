@@ -16,21 +16,19 @@ proc deleter(id: cint, nimQObject: NimQObject) {.cdecl.} =
   GC_unref(qobject)
 
 proc qmlRegisterType*[T](uri: string, major: int, minor: int, qmlName: string, ctor: proc(): T): int =
-  var id: cint = 0
   let metaObject: QMetaObject = T.staticMetaObject()
   let dosQmlRegisterType = DosQmlRegisterType(major: major.cint, minor: minor.cint, uri: uri.cstring,
                                               qml: qmlName.cstring, staticMetaObject: metaObject.vptr,
                                               createCallback: creator, deleteCallback: deleter)
-  dos_qdeclarative_qmlregistertype(dosQmlRegisterType.unsafeAddr, id)
+  let id = dos_qdeclarative_qmlregistertype(dosQmlRegisterType.unsafeAddr)
   ctorTable[id] = proc(): QObject = ctor().QObject
   id.int
 
 proc qmlRegisterSingletonType*[T](uri: string, major: int, minor: int, qmlName: string, ctor: proc(): T): int =
-  var id: cint = 0
   let metaObject: QMetaObject = T.staticMetaObject()
   let dosQmlRegisterType = DosQmlRegisterType(major: major.cint, minor: minor.cint, uri: uri.cstring,
                                               qml: qmlName.cstring, staticMetaObject: metaObject.vptr,
                                               createCallback: creator, deleteCallback: deleter)
-  dos_qdeclarative_qmlregistersingletontype(dosQmlRegisterType.unsafeAddr, id)
+  let id = dos_qdeclarative_qmlregistersingletontype(dosQmlRegisterType.unsafeAddr)
   ctorTable[id] = proc(): QObject = ctor().QObject
   id.int

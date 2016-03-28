@@ -1,35 +1,35 @@
 proc setup*(variant: QVariant) =
   ## Setup a new QVariant
-  dos_qvariant_create(variant.vptr)
+  variant.vptr = dos_qvariant_create()
 
 proc setup*(variant: QVariant, value: int) =
   ## Setup a new QVariant given a cint value
-  dos_qvariant_create_int(variant.vptr, value.cint)
+  variant.vptr = dos_qvariant_create_int(value.cint)
 
 proc setup*(variant: QVariant, value: bool) =
   ## Setup a new QVariant given a bool value
-  dos_qvariant_create_bool(variant.vptr, value)
+  variant.vptr = dos_qvariant_create_bool(value)
 
 proc setup*(variant: QVariant, value: string) =
   ## Setup a new QVariant given a string value
-  dos_qvariant_create_string(variant.vptr, value.cstring)
+  variant.vptr = dos_qvariant_create_string(value.cstring)
 
 proc setup*(variant: QVariant, value: QObject) =
   ## Setup a new QVariant given a QObject
-  dos_qvariant_create_qobject(variant.vptr, value.vptr)
+  variant.vptr = dos_qvariant_create_qobject(value.vptr)
 
 proc setup*(variant: QVariant, value: DosQVariant) =
   ## Setup a new QVariant given another QVariant.
   ## The inner value of the QVariant is copied
-  dos_qvariant_create_qvariant(variant.vptr, value)
+  variant.vptr = dos_qvariant_create_qvariant(value)
 
 proc setup*(variant: QVariant, value: cfloat) =
   ## Setup a new QVariant given a cfloat value
-  dos_qvariant_create_float(variant.vptr, value)
+  variant.vptr = dos_qvariant_create_float(value)
 
 proc setup*(variant: QVariant, value: cdouble) =
   ## Setup a new QVariant given a cdouble value
-  dos_qvariant_create_double(variant.vptr, value)
+  variant.vptr = dos_qvariant_create_double(value)
 
 proc setup*(variant: QVariant, value: QVariant) =
   ## Setup a new QVariant given another QVariant.
@@ -86,13 +86,11 @@ proc newQVariant*(value: float): QVariant =
 
 proc isNull*(variant: QVariant): bool =
   ## Return true if the QVariant value is null, false otherwise
-  dos_qvariant_isnull(variant.vptr, result)
+  dos_qvariant_isnull(variant.vptr)
 
 proc intVal*(variant: QVariant): int =
   ## Return the QVariant value as int
-  var rawValue: cint
-  dos_qvariant_toInt(variant.vptr, rawValue)
-  result = rawValue.cint
+  dos_qvariant_toInt(variant.vptr).int
 
 proc `intVal=`*(variant: QVariant, value: int) =
   ## Sets the QVariant value int value
@@ -101,7 +99,7 @@ proc `intVal=`*(variant: QVariant, value: int) =
 
 proc boolVal*(variant: QVariant): bool =
   ## Return the QVariant value as bool
-  dos_qvariant_toBool(variant.vptr, result)
+  dos_qvariant_toBool(variant.vptr)
 
 proc `boolVal=`*(variant: QVariant, value: bool) =
   ## Sets the QVariant bool value
@@ -109,9 +107,7 @@ proc `boolVal=`*(variant: QVariant, value: bool) =
 
 proc floatVal*(variant: QVariant): float =
   ## Return the QVariant value as float
-  var rawValue: cfloat
-  dos_qvariant_toFloat(variant.vptr, rawValue)
-  result = rawValue.cfloat
+  dos_qvariant_toFloat(variant.vptr).float
 
 proc `floatVal=`*(variant: QVariant, value: float) =
   ## Sets the QVariant float value
@@ -119,9 +115,7 @@ proc `floatVal=`*(variant: QVariant, value: float) =
 
 proc doubleVal*(variant: QVariant): cdouble =
   ## Return the QVariant value as double
-  var rawValue: cdouble
-  dos_qvariant_toDouble(variant.vptr, rawValue)
-  result = rawValue
+  dos_qvariant_toDouble(variant.vptr)
 
 proc `doubleVal=`*(variant: QVariant, value: cdouble) =
   ## Sets the QVariant double value
@@ -129,8 +123,7 @@ proc `doubleVal=`*(variant: QVariant, value: cdouble) =
 
 proc stringVal*(variant: QVariant): string =
   ## Return the QVariant value as string
-  var rawCString: cstring
-  dos_qvariant_toString(variant.vptr, rawCString)
+  var rawCString = dos_qvariant_toString(variant.vptr)
   result = $rawCString
   dos_chararray_delete(rawCString)
 

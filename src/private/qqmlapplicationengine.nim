@@ -1,6 +1,6 @@
 proc setup*(self: QQmlApplicationEngine) =
   ## Setup a QQmlApplicationEngine
-  dos_qqmlapplicationengine_create(self.vptr)
+  self.vptr = dos_qqmlapplicationengine_create()
 
 proc loadData*(self:QQmlApplicationEngine, data: string) =
   ## Load the given data
@@ -20,8 +20,7 @@ proc addImportPath*(self: QQmlApplicationEngine, path: string) =
 
 proc setRootContextProperty*(self: QQmlApplicationEngine, name: string, value: QVariant) =
   ## Set a root context property
-  var context: DosQQmlContext
-  dos_qqmlapplicationengine_context(self.vptr, context)
+  let context = dos_qqmlapplicationengine_context(self.vptr)
   dos_qqmlcontext_setcontextproperty(context, name.cstring, value.vptr)
 
 proc delete*(self: QQmlApplicationEngine) =

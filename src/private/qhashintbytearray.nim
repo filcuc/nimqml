@@ -1,6 +1,6 @@
 proc setup*(self: QHashIntByteArray) =
   ## Setup the QHash
-  dos_qhash_int_qbytearray_create(self.vptr)
+  self.vptr = dos_qhash_int_qbytearray_create()
 
 proc delete*(self: QHashIntByteArray) =
   ## Delete the QHash
@@ -21,7 +21,6 @@ proc insert*(self: QHashIntByteArray, key: int, value: cstring) =
 
 proc value*(self: QHashIntByteArray, key: int): string =
   ## Return the value associated at the given key
-  var rawString: cstring
-  dos_qhash_int_qbytearray_value(self.vptr, key, rawString)
-  result = $rawString
-  dos_chararray_delete(rawString)
+  let str = dos_qhash_int_qbytearray_value(self.vptr, key)
+  result = $str
+  dos_chararray_delete(str)

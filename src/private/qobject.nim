@@ -10,8 +10,7 @@ proc staticMetaObject*(self: QObject): QMetaObject =
 
 proc objectName*(self: QObject): string =
   ## Return the QObject name
-  var str: cstring
-  dos_qobject_objectName(self.vptr, str)
+  var str = dos_qobject_objectName(self.vptr)
   result = $str
   dos_chararray_delete(str)
 
@@ -55,7 +54,7 @@ proc qobjectCallback(qobjectPtr: pointer, slotNamePtr: DosQVariant, dosArguments
 proc setup*(self: QObject) =
   ## Initialize a new QObject
   self.owner = true
-  dos_qobject_create(self.vptr, addr(self[]), self.metaObject.vptr, qobjectCallback)
+  self.vptr = dos_qobject_create(addr(self[]), self.metaObject.vptr, qobjectCallback)
 
 
 proc delete*(self: QObject) =

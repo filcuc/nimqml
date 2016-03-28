@@ -10,13 +10,13 @@ proc newQObjectMetaObject*(): QMetaObject =
   ## Create the QMetaObject of QObject
   debugMsg("QMetaObject", "newQObjectMetaObject")
   new(result, delete)
-  dos_qobject_qmetaobject(result.vptr)
+  result.vptr = dos_qobject_qmetaobject()
 
 proc newQAbstractListModelMetaObject*(): QMetaObject =
   ## Create the QMetaObject of QAbstractListModel
   debugMsg("QMetaObject", "newQAbstractListModelMetaObject")
   new(result, delete)
-  dos_qabstractlistmodel_qmetaobject(result.vptr)
+  result.vptr = dos_qabstractlistmodel_qmetaobject()
 
 proc newQMetaObject*(superClass: QMetaObject, className: string,
                      signals: seq[SignalDefinition],
@@ -63,5 +63,4 @@ proc newQMetaObject*(superClass: QMetaObject, className: string,
   let slots = DosSlotDefinitions(count: dosSlots.len.cint, definitions: if dosSlots.len > 0: dosSlots[0].unsafeAddr else: nil)
   let properties = DosPropertyDefinitions(count: dosProperties.len.cint, definitions: if dosProperties.len > 0: dosProperties[0].unsafeAddr else: nil)
 
-  dos_qmetaobject_create(result.vptr, superClass.vptr, className.cstring,
-                         signals.unsafeAddr, slots.unsafeAddr, properties.unsafeAddr)
+  result.vptr = dos_qmetaobject_create(superClass.vptr, className.cstring, signals.unsafeAddr, slots.unsafeAddr, properties.unsafeAddr)

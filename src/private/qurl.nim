@@ -1,6 +1,6 @@
 proc setup*(self: QUrl, url: string, mode: QUrlParsingMode) =
   ## Setup a new QUrl
-  dos_qurl_create(self.vptr, url.cstring, mode.cint)
+  self.vptr = dos_qurl_create(url.cstring, mode.cint)
 
 proc delete*(self: QUrl) =
   ## Delete a QUrl
@@ -17,7 +17,6 @@ proc newQUrl*(url: string, mode: QUrlParsingMode = QUrlParsingMode.Tolerant): QU
 
 proc toString*(self: QUrl): string =
   ## Return the url string
-  var str: cstring
-  dos_qurl_to_string(self.vptr, str)
+  let str: cstring = dos_qurl_to_string(self.vptr)
   result = $str
   dos_chararray_delete(str)

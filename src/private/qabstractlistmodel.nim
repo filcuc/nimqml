@@ -91,17 +91,16 @@ proc headerDataCallback(modelPtr: pointer, section: cint, orientation: cint, rol
     dos_qvariant_assign(result, variant.vptr)
     variant.delete
 
-
 method onSlotCalled*(self: QAbstractListModel, slotName: string, arguments: openarray[QVariant]) =
   ## Called from the dotherside library when a slot is called from Qml.
 
 proc setup*(self: QAbstractListModel) =
   ## Setup a new QAbstractListModel
   debugMsg("QAbstractListModel", "setup")
-  dos_qabstractlistmodel_create(self.vptr.DosQAbstractListModel, addr(self[]), self.metaObject.vptr,
-                                qobjectCallback, rowCountCallback, columnCountCallback,
-                                dataCallback, setDataCallback, roleNamesCallback,
-                                flagsCallback, headerDataCallback)
+  self.vptr = dos_qabstractlistmodel_create(addr(self[]), self.metaObject.vptr,
+                                            qobjectCallback, rowCountCallback, columnCountCallback,
+                                            dataCallback, setDataCallback, roleNamesCallback,
+                                            flagsCallback, headerDataCallback).DosQObject
 
 proc delete*(self: QAbstractListModel) =
   ## Delete the given QAbstractListModel
