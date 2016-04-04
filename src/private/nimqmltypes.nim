@@ -103,5 +103,10 @@ type
     Tolerant = 0.cint
     Strict = 1.cint
 
+  Ownership {.pure.} = enum ## \
+    ## Specify the ownership of a pointer
+    Take, # The ownership is passed to the wrapper
+    Clone # The node should be cloned
+
 const
     UserRole* = 0x100

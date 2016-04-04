@@ -21,7 +21,7 @@ method rowCount*(self: QAbstractListModel, index: QModelIndex): int {.base.} =
 proc rowCountCallback(modelPtr: pointer, rawIndex: DosQModelIndex, result: var cint) {.cdecl, exportc.} =
   debugMsg("QAbstractListModel", "rowCountCallback")
   let model = cast[QAbstractListModel](modelPtr)
-  let index = newQModelIndex(rawIndex)
+  let index = newQModelIndex(rawIndex, Ownership.Clone)
   result = model.rowCount(index).cint
 
 method columnCount*(self: QAbstractListModel, index: QModelIndex): int {.base.} =
@@ -31,7 +31,7 @@ method columnCount*(self: QAbstractListModel, index: QModelIndex): int {.base.} 
 proc columnCountCallback(modelPtr: pointer, rawIndex: DosQModelIndex, result: var cint) {.cdecl, exportc.} =
   debugMsg("QAbstractListModel", "columnCountCallback")
   let model = cast[QAbstractListModel](modelPtr)
-  let index = newQModelIndex(rawIndex)
+  let index = newQModelIndex(rawIndex, Ownership.Clone)
   result = model.columnCount(index).cint
 
 method data*(self: QAbstractListModel, index: QModelIndex, role: int): QVariant {.base.} =
@@ -41,7 +41,7 @@ method data*(self: QAbstractListModel, index: QModelIndex, role: int): QVariant 
 proc dataCallback(modelPtr: pointer, rawIndex: DosQModelIndex, role: cint, result: DosQVariant) {.cdecl, exportc.} =
   debugMsg("QAbstractListModel", "dataCallback")
   let model = cast[QAbstractListModel](modelPtr)
-  let index = newQModelIndex(rawIndex)
+  let index = newQModelIndex(rawIndex, Ownership.Clone)
   let variant = data(model, index, role.int)
   if variant != nil:
     dos_qvariant_assign(result, variant.vptr)
@@ -51,11 +51,11 @@ method setData*(self: QAbstractListModel, index: QModelIndex, value: QVariant, r
   ## Sets the data at the given index and role. Return true on success, false otherwise
   false
 
-proc setDataCallback(modelPtr: pointer, rawIndex: DosQModelIndex, DosQVariant: DosQVariant,  role: cint, result: var bool) {.cdecl, exportc.} =
+proc setDataCallback(modelPtr: pointer, rawIndex: DosQModelIndex, rawQVariant: DosQVariant,  role: cint, result: var bool) {.cdecl, exportc.} =
   debugMsg("QAbstractListModel", "setDataCallback")
   let model = cast[QAbstractListModel](modelPtr)
-  let index = newQModelIndex(rawIndex)
-  let variant = newQVariant(DosQVariant)
+  let index = newQModelIndex(rawIndex, Ownership.Clone)
+  let variant = newQVariant(rawQVariant, Ownership.Clone)
   result = model.setData(index, variant, role.int)
 
 method roleNames*(self: QAbstractListModel): Table[int,string] {.base.} =
@@ -76,7 +76,7 @@ method flags*(self: QAbstractListModel, index: QModelIndex): QtItemFlag {.base.}
 proc flagsCallback(modelPtr: pointer, rawIndex: DosQModelIndex, result: var cint) {.cdecl, exportc.} =
   debugMsg("QAbstractListModel", "flagsCallback")
   let model = cast[QAbstractListModel](modelPtr)
-  let index = newQModelIndex(rawIndex)
+  let index = newQModelIndex(rawIndex, Ownership.Clone)
   result = model.flags(index).cint
 
 method headerData*(self: QAbstractListModel, section: int, orientation: QtOrientation, role: int): QVariant {.base.} =

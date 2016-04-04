@@ -40,10 +40,10 @@ proc qobjectCallback(qobjectPtr: pointer, slotNamePtr: DosQVariant, dosArguments
   let qobject = cast[QObject](qobjectPtr)
   GC_ref(qobject)
   # Retrieve slot name
-  let slotName = newQVariant(slotNamePtr)
+  let slotName = newQVariant(slotNamePtr, Ownership.Clone) # Don't take ownership but clone
   defer: slotName.delete
   # Retrieve arguments
-  let arguments = toQVariantSequence(dosArguments, dosArgumentsLength)
+  let arguments = toQVariantSequence(dosArguments, dosArgumentsLength, Ownership.Clone) # Don't take ownership but clone
   defer: arguments.delete
   # Forward to args to the slot
   qobject.onSlotCalled(slotName.stringVal, arguments)

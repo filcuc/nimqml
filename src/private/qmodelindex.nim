@@ -2,9 +2,9 @@ proc setup*(self: QModelIndex) =
   ## Setup a new QModelIndex
   self.vptr = dos_qmodelindex_create()
 
-proc setup(self: QModelIndex, other: DosQModelIndex) =
+proc setup(self: QModelIndex, other: DosQModelIndex, takeOwnership: Ownership) =
   ## Setup a new QModelIndex
-  self.vptr = dos_qmodelindex_create_qmodelindex(other)
+  self.vptr = if takeOwnership == Ownership.Take: other else: dos_qmodelindex_create_qmodelindex(other)
 
 proc delete*(self: QModelIndex) =
   ## Delete the given QModelIndex
@@ -19,10 +19,10 @@ proc newQModelIndex*(): QModelIndex =
   new(result, delete)
   result.setup()
 
-proc newQModelIndex(vptr: DosQModelIndex): QModelIndex =
+proc newQModelIndex(vptr: DosQModelIndex, takeOwnership: Ownership): QModelIndex =
   ## Return a new QModelIndex given a raw index
   new(result, delete)
-  result.setup(vptr)
+  result.setup(vptr, takeOwnership)
 
 proc row*(self: QModelIndex): int =
   ## Return the index row
@@ -38,20 +38,16 @@ proc isValid*(self: QModelIndex): bool =
 
 proc data*(self: QModelIndex, role: cint): QVariant =
   ## Return the model data associated to the given role
-  result = newQVariant()
-  dos_qmodelindex_data(self.vptr, role, result.vptr)
+  newQVariant(dos_qmodelindex_data(self.vptr, role), Ownership.Take)
 
 proc parent*(self: QModelIndex): QModelIndex =
   ## Return the parent index
-  result = newQModelIndex()
-  dos_qmodelindex_parent(self.vptr, result.vptr)
+  newQModelIndex(dos_qmodelindex_parent(self.vptr), Ownership.Take)
 
 proc child*(self: QModelIndex, row: cint, column: cint): QModelIndex =
   ## Return the child index associated to the given row and column
-  result = newQModelIndex()
-  dos_qmodelindex_child(self.vptr, row, column, result.vptr)
+  newQModelIndex(dos_qmodelindex_child(self.vptr, row, column), Ownership.Take)
 
 proc sibling*(self: QModelIndex, row: cint, column: cint): QModelIndex =
   ## Return the sibling index associated to the given row and column
-  result = newQModelIndex()
-  dos_qmodelindex_sibling(self.vptr, row, column, result.vptr)
+  newQModelIndex(dos_qmodelindex_sibling(self.vptr, row, column), Ownership.Take)

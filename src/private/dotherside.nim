@@ -185,10 +185,10 @@ proc dos_qmodelindex_delete(modelIndex: DosQModelIndex) {.cdecl, dynlib: getDllN
 proc dos_qmodelindex_row(modelIndex: DosQModelIndex): cint {.cdecl, dynlib: getDllName(), importc.}
 proc dos_qmodelindex_column(modelIndex: DosQModelIndex): cint {.cdecl, dynlib: getDllName(), importc.}
 proc dos_qmodelindex_isValid(modelIndex: DosQModelIndex): bool {.cdecl, dynlib: getDllName(), importc.}
-proc dos_qmodelindex_data(modelIndex: DosQModelIndex, role: cint, data: DosQVariant) {.cdecl, dynlib: getDllName(), importc.}
-proc dos_qmodelindex_parent(modelIndex: DosQModelIndex, parent: DosQModelIndex) {.cdecl, dynlib: getDllName(), importc.}
-proc dos_qmodelindex_child(modelIndex: DosQModelIndex, row: cint, column: cint, parent: DosQModelIndex) {.cdecl, dynlib: getDllName(), importc.}
-proc dos_qmodelindex_sibling(modelIndex: DosQModelIndex, row: cint, column: cint, sibling: DosQModelIndex) {.cdecl, dynlib: getDllName(), importc.}
+proc dos_qmodelindex_data(modelIndex: DosQModelIndex, role: cint): DosQVariant {.cdecl, dynlib: getDllName(), importc.}
+proc dos_qmodelindex_parent(modelIndex: DosQModelIndex): DosQModelIndex {.cdecl, dynlib: getDllName(), importc.}
+proc dos_qmodelindex_child(modelIndex: DosQModelIndex, row: cint, column: cint): DosQModelIndex {.cdecl, dynlib: getDllName(), importc.}
+proc dos_qmodelindex_sibling(modelIndex: DosQModelIndex, row: cint, column: cint): DosQModelIndex {.cdecl, dynlib: getDllName(), importc.}
 proc dos_qmodelindex_assign(leftSide: DosQModelIndex, rightSide: DosQModelIndex) {.cdecl, dynlib: getDllName(), importc.}
 
 # QAbstractListModel

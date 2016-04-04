@@ -18,10 +18,10 @@ proc setup*(variant: QVariant, value: QObject) =
   ## Setup a new QVariant given a QObject
   variant.vptr = dos_qvariant_create_qobject(value.vptr)
 
-proc setup*(variant: QVariant, value: DosQVariant) =
+proc setup*(variant: QVariant, value: DosQVariant, takeOwnership: Ownership) =
   ## Setup a new QVariant given another QVariant.
   ## The inner value of the QVariant is copied
-  variant.vptr = dos_qvariant_create_qvariant(value)
+  variant.vptr = if takeOwnership == Ownership.Take: value else: dos_qvariant_create_qvariant(value)
 
 proc setup*(variant: QVariant, value: cfloat) =
   ## Setup a new QVariant given a cfloat value
@@ -34,7 +34,7 @@ proc setup*(variant: QVariant, value: cdouble) =
 proc setup*(variant: QVariant, value: QVariant) =
   ## Setup a new QVariant given another QVariant.
   ## The inner value of the QVariant is copied
-  setup(variant, value.vptr)
+  setup(variant, value.vptr, Ownership.Clone)
 
 proc delete*(variant: QVariant) =
   ## Delete a QVariant
@@ -69,10 +69,10 @@ proc newQVariant*(value: QObject): QVariant  =
   new(result, delete)
   result.setup(value)
 
-proc newQVariant*(value: DosQVariant): QVariant =
+proc newQVariant(value: DosQVariant, takeOwnership: Ownership): QVariant =
   ## Return a new QVariant given a raw QVariant pointer
   new(result, delete)
-  result.setup(value)
+  result.setup(value, takeOwnership)
 
 proc newQVariant*(value: QVariant): QVariant =
   ## Return a new QVariant given another QVariant
@@ -139,11 +139,11 @@ proc assign*(leftValue: QVariant, rightValue: QVariant) =
   ## Assign a QVariant with another. The inner value of the QVariant is copied
   dos_qvariant_assign(leftValue.vptr, rightValue.vptr)
 
-proc toQVariantSequence(a: ptr DosQVariantArray, length: cint): seq[QVariant] =
+proc toQVariantSequence(a: ptr DosQVariantArray, length: cint, takeOwnership: Ownership): seq[QVariant] =
   ## Convert an array of DosQVariant to a sequence of QVariant
   result = @[]
   for i in 0..<length:
-    result.add(newQVariant(a[i]))
+    result.add(newQVariant(a[i], takeOwnership))
 
 proc delete(a: openarray[QVariant]) =
   ## Delete an array of QVariants
