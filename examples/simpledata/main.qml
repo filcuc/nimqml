@@ -7,6 +7,7 @@ ApplicationWindow {
     width: 400
     height: 300
     title: "SimpleData"
+
     Component.onCompleted: visible = true
 
     ColumnLayout {

@@ -1,5 +1,5 @@
 import QtQuick 2.2
-import QtQuick.Controls 1.1
+import QtQuick.Controls 1.2
 import QtQuick.Layouts 1.1
 import QtQuick.Window 2.1
 
@@ -53,11 +53,11 @@ ApplicationWindow {
                 id: tableItemDelegateInstance
                 sourceComponent: {
                     if (styleData.column === 0 || styleData.column === 1)
-                    return tableTextDelegate
+                        return tableTextDelegate
                     else if (styleData.column === 2)
-                    return tableButtonDelegate
+                        return tableButtonDelegate
                     else
-                    return tableTextDelegate
+                        return tableTextDelegate
                 }
                 Binding {
                     target: tableItemDelegateInstance.item
