@@ -17,7 +17,7 @@ proc deleter(id: cint, nimQObject: NimQObject) {.cdecl.} =
 
 proc qmlRegisterType*[T](uri: string, major: int, minor: int, qmlName: string, ctor: proc(): T): int =
   let metaObject: QMetaObject = T.staticMetaObject()
-  let dosQmlRegisterType = DosQmlRegisterType(major: major.cint, minor: minor.cint, uri: uri.cstring,
+  var dosQmlRegisterType = DosQmlRegisterType(major: major.cint, minor: minor.cint, uri: uri.cstring,
                                               qml: qmlName.cstring, staticMetaObject: metaObject.vptr,
                                               createCallback: creator, deleteCallback: deleter)
   let id = dos_qdeclarative_qmlregistertype(dosQmlRegisterType.unsafeAddr)
@@ -26,7 +26,7 @@ proc qmlRegisterType*[T](uri: string, major: int, minor: int, qmlName: string, c
 
 proc qmlRegisterSingletonType*[T](uri: string, major: int, minor: int, qmlName: string, ctor: proc(): T): int =
   let metaObject: QMetaObject = T.staticMetaObject()
-  let dosQmlRegisterType = DosQmlRegisterType(major: major.cint, minor: minor.cint, uri: uri.cstring,
+  var dosQmlRegisterType = DosQmlRegisterType(major: major.cint, minor: minor.cint, uri: uri.cstring,
                                               qml: qmlName.cstring, staticMetaObject: metaObject.vptr,
                                               createCallback: creator, deleteCallback: deleter)
   let id = dos_qdeclarative_qmlregistersingletontype(dosQmlRegisterType.unsafeAddr)
