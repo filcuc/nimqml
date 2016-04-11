@@ -2,7 +2,7 @@ import os, strutils
 
 proc getDllName: string =
   when defined(windows):
-    "(DOtherSide|libDOtherSide).dll"
+    "DOtherSide.dll"
   else:
     "libDOtherSide.so"
 
