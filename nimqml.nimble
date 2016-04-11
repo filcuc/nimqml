@@ -1,6 +1,6 @@
 [Package]
 name          = "nimqml"
-version       = "0.5.0"
+version       = "0.5.1"
 author        = "Filippo Cucchetto, Will Szumski"
 description   = "QML bindings for Nim"
 license       = "LGPLv3"
