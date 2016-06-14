@@ -1,5 +1,5 @@
 import NimQml
-import Contact
+import contact
 
 proc mainProc() =
   var app = newQApplication()

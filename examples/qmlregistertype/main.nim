@@ -1,5 +1,5 @@
 import NimQml
-import Contact
+import contact
 import macros
 
 proc mainProc() =

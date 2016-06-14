@@ -1,4 +1,4 @@
-import NimQml, MyListModel
+import NimQml, mylistmodel
 
 proc mainProc() =
   echo "Starting"

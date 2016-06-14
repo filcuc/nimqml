@@ -1,4 +1,4 @@
-import NimQml, Contact, Tables
+import NimQml, contact, Tables
 
 type
   ContactRoles {.pure.} = enum

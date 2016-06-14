@@ -1,4 +1,4 @@
-import NimQml, ContactList
+import NimQml, contactlist
 
 QtObject:
   type ApplicationLogic* = ref object of QObject

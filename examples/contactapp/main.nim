@@ -1,4 +1,5 @@
-import NimQml, ApplicationLogic
+import NimQml
+import applicationlogic
 
 proc mainProc() =
   let app = newQApplication()
