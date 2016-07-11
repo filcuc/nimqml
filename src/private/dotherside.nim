@@ -1,10 +1,13 @@
 import os, strutils
 
 proc getDllName: string =
-  when defined(windows):
-    "DOtherSide.dll"
-  else:
-    "libDOtherSide.so"
+  case system.hostOS:
+    of "windows":
+      "DOtherSide.dll"
+    of "macosx":
+      "libDOtherSide.dylib"
+    else:
+      "libDOtherSide.so"
 
 type
   NimQObject = pointer
