@@ -53,7 +53,8 @@ proc removeChild(node: NimNode, child: NimNode): bool =
 
 proc toString(info: ProcInfo): string {.compiletime.} =
   ## Convert a ProcInfo to string
-  "SlotInfo {\"$1\", $2, [$3]}" % [info.name, info.returnType, info.parametersTypes.join(",")]
+  let str = "ProcInfo {\n  Name:\"$1\",\n  Return Type:$2,\n  Param Types:[$3],\n  Param Names:[$4]\n}"
+  str % [info.name, info.returnType, info.parametersTypes.join(","), info.parametersNames.join(",")]
 
 
 proc display(info: ProcInfo) {.compiletime.} =
@@ -472,8 +473,18 @@ macro slot*(s: stmt): stmt =
 macro signal*(s: stmt): stmt {.immediate.} =
   ## Generate the signal implementation
   let info = extractProcInfo(s)
-  let str = "$1.emit(\"$2\", [$3])"
-  s[s.len - 1 ] = parseStmt(str % [info.parametersNames[0], info.name, ""])
+
+  # Remove self from parameter names
+  var parametersNames: seq[string] = @[]
+  var i = 0
+  for name in info.parametersNames:
+    if i != 0:
+      parametersNames.add("newQVariant($1)" % name)
+    inc(i)
+
+  let format = "$1.emit(\"$2\", [$3])"
+  let str = format % [info.parametersNames[0], info.name, parametersNames.join(", ")]
+  s[s.len - 1 ] = parseStmt(str)
   return s
 
 
