@@ -465,12 +465,12 @@ proc generateOnSlotCalled(info: QObjectInfo): NimNode {.compiletime.} =
   result = parseStmt(str % info.name)
 
 
-macro slot*(s: stmt): stmt =
+macro slot*(s: untyped): untyped =
   ## Do nothing. Used only for tagging
-  result = s
+  s
 
 
-macro signal*(s: stmt): stmt {.immediate.} =
+macro signal*(s: untyped): untyped =
   ## Generate the signal implementation
   let info = extractProcInfo(s)
 
@@ -485,10 +485,10 @@ macro signal*(s: stmt): stmt {.immediate.} =
   let format = "$1.emit(\"$2\", [$3])"
   let str = format % [info.parametersNames[0], info.name, parametersNames.join(", ")]
   s[s.len - 1 ] = parseStmt(str)
-  return s
+  s
 
 
-macro QtObject*(body: stmt): stmt {.immediate.} =
+macro QtObject*(body: untyped): untyped =
   ## Generate the QObject stuff
   let info = extractQObjectInfo(body)
   result = newStmtList()
