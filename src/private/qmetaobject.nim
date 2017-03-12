@@ -29,12 +29,17 @@ proc newQMetaObject*(superClass: QMetaObject, className: string,
   result.slots = slots
   result.properties = properties
 
+  var dosParameters: seq[seq[DosParameterDefinition]] = @[]
+
   var dosSignals: seq[DosSignalDefinition] = @[]
   for i in 0..<signals.len:
     let name = signals[i].name.cstring
     let parametersCount = signals[i].parameters.len.cint
-    let parameters = if parametersCount > 0: signals[i].parameters[0].unsafeAddr else: nil
-    let dosSignal = DosSignalDefinition(name: name, parametersCount: parametersCount, parameters: parameters)
+    var parameters: seq[DosParameterDefinition] = @[]
+    for p in signals[i].parameters:
+      parameters.add(DosParameterDefinition(name: p.name.cstring, metaType: p.metaType.cint))
+    dosParameters.add(parameters)
+    let dosSignal = DosSignalDefinition(name: name, parametersCount: parametersCount, parameters: if parameters.len > 0: parameters[0].unsafeAddr else: nil)
     dosSignals.add(dosSignal)
 
   var dosSlots: seq[DosSlotDefinition] = @[]
@@ -42,9 +47,12 @@ proc newQMetaObject*(superClass: QMetaObject, className: string,
     let name = slots[i].name.cstring
     let returnMetaType = slots[i].returnMetaType.cint
     let parametersCount = slots[i].parameters.len.cint
-    let parameters = if parametersCount > 0: slots[i].parameters[0].unsafeAddr else: nil
+    var parameters: seq[DosParameterDefinition] = @[]
+    for p in slots[i].parameters:
+      parameters.add(DosParameterDefinition(name: p.name.cstring, metaType: p.metaType.cint))
+    dosParameters.add(parameters)
     let dosSlot = DosSlotDefinition(name: name, returnMetaType: returnMetaType,
-                                    parametersCount: parametersCount, parameters: parameters)
+                                    parametersCount: parametersCount, parameters: if parameters.len > 0: parameters[0].unsafeAddr else: nil)
     dosSlots.add(dosSlot)
 
   var dosProperties: seq[DosPropertyDefinition] = @[]
