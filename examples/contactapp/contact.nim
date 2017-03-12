@@ -19,12 +19,12 @@ QtObject:
   proc firstName*(self: Contact): string {.slot.} =
     result = self.name
 
-  proc firstNameChanged*(self: Contact) {.signal.}
+  proc firstNameChanged*(self: Contact, firstName: string) {.signal.}
 
   proc setFirstName(self: Contact, name: string) {.slot.} =
     if self.name == name: return
     self.name = name
-    self.firstNameChanged()
+    self.firstNameChanged(name)
 
   proc `firstName=`*(self: Contact, name: string) = self.setFirstName(name)
 
@@ -36,12 +36,12 @@ QtObject:
   proc surname*(self: Contact): string {.slot.} =
     result = self.surname
 
-  proc surnameChanged*(self: Contact) {.signal.}
+  proc surnameChanged*(self: Contact, surname: string) {.signal.}
 
   proc setSurname(self: Contact, surname: string) {.slot.} =
     if self.surname == surname: return
     self.surname = surname
-    self.surnameChanged()
+    self.surnameChanged(surname)
 
   proc `surname=`*(self: Contact, surname: string) = self.setSurname(surname)
 

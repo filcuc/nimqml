@@ -7,17 +7,17 @@ type
 
 QtObject:
   type
-    ContactList* = ref object of QAbstractListModel
+    ContactList* = ref object of QAbstractItemModel
       contacts*: seq[Contact]
 
   proc delete(self: ContactList) =
-    self.QAbstractListModel.delete
+    self.QAbstractItemModel.delete
     for contact in self.contacts:
       contact.delete
     self.contacts = @[]
 
   proc setup(self: ContactList) =
-    self.QAbstractListModel.setup
+    self.QAbstractItemModel.setup
 
   proc newContactList*(): ContactList =
     new(result, delete)
