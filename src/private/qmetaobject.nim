@@ -12,11 +12,11 @@ proc newQObjectMetaObject*(): QMetaObject =
   new(result, delete)
   result.vptr = dos_qobject_qmetaobject()
 
-proc newQAbstractListModelMetaObject*(): QMetaObject =
-  ## Create the QMetaObject of QAbstractListModel
-  debugMsg("QMetaObject", "newQAbstractListModelMetaObject")
+proc newQAbstractItemModelMetaObject*(): QMetaObject =
+  ## Create the QMetaObject of QAbstractItemModel
+  debugMsg("QMetaObject", "newQAbstractItemModelMetaObject")
   new(result, delete)
-  result.vptr = dos_qabstractlistmodel_qmetaobject()
+  result.vptr = dos_qabstractitemmodel_qmetaobject()
 
 proc newQMetaObject*(superClass: QMetaObject, className: string,
                      signals: seq[SignalDefinition],
@@ -32,19 +32,19 @@ proc newQMetaObject*(superClass: QMetaObject, className: string,
   var dosSignals: seq[DosSignalDefinition] = @[]
   for i in 0..<signals.len:
     let name = signals[i].name.cstring
-    let parametersCount = signals[i].parametersTypes.len.cint
-    let parametersMetaTypes = if parametersCount > 0: signals[i].parametersTypes[0].unsafeAddr else: nil
-    let dosSignal = DosSignalDefinition(name: name, parametersCount: parametersCount, parametersMetaTypes: parametersMetaTypes)
+    let parametersCount = signals[i].parameters.len.cint
+    let parameters = if parametersCount > 0: signals[i].parameters[0].unsafeAddr else: nil
+    let dosSignal = DosSignalDefinition(name: name, parametersCount: parametersCount, parameters: parameters)
     dosSignals.add(dosSignal)
 
   var dosSlots: seq[DosSlotDefinition] = @[]
   for i in 0..<slots.len:
     let name = slots[i].name.cstring
     let returnMetaType = slots[i].returnMetaType.cint
-    let parametersCount = slots[i].parametersTypes.len.cint
-    let parametersMetaTypes = if parametersCount > 0: slots[i].parametersTypes[0].unsafeAddr else: nil
+    let parametersCount = slots[i].parameters.len.cint
+    let parameters = if parametersCount > 0: slots[i].parameters[0].unsafeAddr else: nil
     let dosSlot = DosSlotDefinition(name: name, returnMetaType: returnMetaType,
-                                    parametersCount: parametersCount, parametersMetaTypes: parametersMetaTypes)
+                                    parametersCount: parametersCount, parameters: parameters)
     dosSlots.add(dosSlot)
 
   var dosProperties: seq[DosPropertyDefinition] = @[]
