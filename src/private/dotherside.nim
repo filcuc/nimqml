@@ -11,7 +11,9 @@ proc getDllName: string =
 
 type
   NimQObject = pointer
+  NimQAbstractItemModel = pointer
   NimQAbstractListModel = pointer
+  NimQAbstractTableModel = pointer
   DosQMetaObject = distinct pointer
   DosQObject = distinct pointer
   DosQObjectWrapper = distinct pointer
@@ -25,12 +27,18 @@ type
   DosQQuickView = distinct pointer
   DosQHashIntByteArray = distinct pointer
   DosQModelIndex = distinct pointer
+  DosQAbstractItemModel = distinct pointer
+  DosQAbstractTableModel = distinct pointer
   DosQAbstractListModel = distinct pointer
+
+  DosParameterDefinition = object
+    name: cstring
+    metaType: cint
 
   DosSignalDefinition = object
     name: cstring
     parametersCount: cint
-    parametersMetaTypes: pointer
+    parameters: pointer
 
   DosSignalDefinitions = object
     count: cint
@@ -40,7 +48,7 @@ type
     name: cstring
     returnMetaType: cint
     parametersCount: cint
-    parametersMetaTypes: pointer
+    parameters: pointer
 
   DosSlotDefinitions = object
     count: cint
@@ -71,13 +79,33 @@ type
 
   DosQObjectCallBack = proc(nimobject: NimQObject, slotName: DosQVariant, numArguments: cint, arguments: ptr DosQVariantArray) {.cdecl.}
 
-  DosRowCountCallback    = proc(nimmodel: NimQAbstractListModel, rawIndex: DosQModelIndex, result: var cint) {.cdecl.}
-  DosColumnCountCallback = proc(nimmodel: NimQAbstractListModel, rawIndex: DosQModelIndex, result: var cint) {.cdecl.}
-  DosDataCallback        = proc(nimmodel: NimQAbstractListModel, rawIndex: DosQModelIndex, role: cint, result: DosQVariant) {.cdecl.}
-  DosSetDataCallback     = proc(nimmodel: NimQAbstractListModel, rawIndex: DosQModelIndex, value: DosQVariant, role: cint, result: var bool) {.cdecl.}
-  DosRoleNamesCallback   = proc(nimmodel: NimQAbstractListModel, result: DosQHashIntByteArray) {.cdecl.}
-  DosFlagsCallback       = proc(nimmodel: NimQAbstractListModel, index: DosQModelIndex, result: var cint) {.cdecl.}
-  DosHeaderDataCallback  = proc(nimmodel: NimQAbstractListModel, section: cint, orientation: cint, role: cint, result: DosQVariant) {.cdecl.}
+  DosRowCountCallback     = proc(nimmodel: NimQAbstractItemModel, rawIndex: DosQModelIndex, result: var cint) {.cdecl.}
+  DosColumnCountCallback  = proc(nimmodel: NimQAbstractItemModel, rawIndex: DosQModelIndex, result: var cint) {.cdecl.}
+  DosDataCallback         = proc(nimmodel: NimQAbstractItemModel, rawIndex: DosQModelIndex, role: cint, result: DosQVariant) {.cdecl.}
+  DosSetDataCallback      = proc(nimmodel: NimQAbstractItemModel, rawIndex: DosQModelIndex, value: DosQVariant, role: cint, result: var bool) {.cdecl.}
+  DosRoleNamesCallback    = proc(nimmodel: NimQAbstractItemModel, result: DosQHashIntByteArray) {.cdecl.}
+  DosFlagsCallback        = proc(nimmodel: NimQAbstractItemModel, index: DosQModelIndex, result: var cint) {.cdecl.}
+  DosHeaderDataCallback   = proc(nimmodel: NimQAbstractItemModel, section: cint, orientation: cint, role: cint, result: DosQVariant) {.cdecl.}
+  DosIndexCallback        = proc(nimmodel: NimQAbstractItemModel, row: cint, column: cint, parent: DosQModelIndex, result: DosQModelIndex) {.cdecl.}
+  DosParentCallback       = proc(nimmodel: NimQAbstractItemModel, child: DosQModelIndex, result: DosQModelIndex) {.cdecl.}
+  DosHasChildrenCallback  = proc(nimmodel: NimQAbstractItemModel, parent: DosQModelIndex, result: var bool) {.cdecl.}
+  DosCanFetchMoreCallback = proc(nimmodel: NimQAbstractItemModel, parent: DosQModelIndex, result: var bool) {.cdecl.}
+  DosFetchMoreCallback    = proc(nimmodel: NimQAbstractItemModel, parent: DosQModelIndex) {.cdecl.}
+
+  DosQAbstractItemModelCallbacks = object
+    rowCount: DosRowCountCallback
+    columnCount: DosColumnCountCallback
+    data: DosDataCallback
+    setData: DosSetDataCallback
+    roleNames: DosRoleNamesCallback
+    flags: DosFlagsCallback
+    headerData: DosHeaderDataCallback
+    index: DosIndexCallback
+    parent: DosParentCallback
+    hasChildren: DosHasChildrenCallback
+    canFetchMore: DosCanFetchMoreCallback
+    fetchMore: DosFetchMoreCallback
+
 
 # Conversion
 proc resetToNil[T](x: var T) = x = nil.pointer.T
@@ -152,8 +180,8 @@ proc dos_qobject_setObjectName(qobject: DosQObject, name: cstring) {.cdecl, dynl
 proc dos_qobject_signal_emit(qobject: DosQObject, signalName: cstring, argumentsCount: cint, arguments: ptr DosQVariantArray) {.cdecl, dynlib: getDllName(), importc.}
 proc dos_qobject_delete(qobject: DosQObject) {.cdecl, dynlib: getDllName(), importc.}
 
-# QAbstractListModel
-proc dos_qabstractlistmodel_qmetaobject(): DosQMetaObject {.cdecl dynlib: getDllName(), importc.}
+# QAbstractItemModel
+proc dos_qabstractitemmodel_qmetaobject(): DosQMetaObject {.cdecl dynlib: getDllName(), importc.}
 
 # QMetaObject
 proc dos_qmetaobject_create(superclassMetaObject: DosQMetaObject,
@@ -194,35 +222,44 @@ proc dos_qmodelindex_child(modelIndex: DosQModelIndex, row: cint, column: cint):
 proc dos_qmodelindex_sibling(modelIndex: DosQModelIndex, row: cint, column: cint): DosQModelIndex {.cdecl, dynlib: getDllName(), importc.}
 proc dos_qmodelindex_assign(leftSide: DosQModelIndex, rightSide: DosQModelIndex) {.cdecl, dynlib: getDllName(), importc.}
 
-# QAbstractListModel
-proc dos_qabstractlistmodel_create(modelPtr: NimQAbstractListModel,
+# QAbstractItemModel
+proc dos_qabstractitemmodel_create(modelPtr: NimQAbstractItemModel,
                                    metaObject: DosQMetaObject,
                                    qobjectCallback: DosQObjectCallBack,
-                                   rowCountCallback: DosRowCountCallback,
-                                   columnCountCallback: DosColumnCountCallback,
-                                   dataCallback: DosDataCallback,
-                                   setDataCallback: DosSetDataCallBack,
-                                   roleNamesCallback: DosRoleNamesCallback,
-                                   flagsCallback: DosFlagsCallback,
-                                   headerDataCallback: DosHeaderDataCallback): DosQAbstractListModel {.cdecl, dynlib: getDllName(), importc.}
+                                   qaimCallbacks: DosQAbstractItemModelCallbacks): DosQAbstractItemModel {.cdecl, dynlib: getDllName(), importc.}
 
-proc dos_qabstractlistmodel_beginInsertRows(model: DosQAbstractListModel,
+proc dos_qabstractitemmodel_beginInsertRows(model: DosQAbstractItemModel,
                                             parentIndex: DosQModelIndex,
                                             first: cint,
                                             last: cint) {.cdecl, dynlib: getDllName(), importc.}
-proc dos_qabstractlistmodel_endInsertRows(model: DosQAbstractListModel) {.cdecl, dynlib: getDllName(), importc.}
-proc dos_qabstractlistmodel_beginRemoveRows(model: DosQAbstractListModel,
+proc dos_qabstractitemmodel_endInsertRows(model: DosQAbstractItemModel) {.cdecl, dynlib: getDllName(), importc.}
+proc dos_qabstractitemmodel_beginRemoveRows(model: DosQAbstractItemModel,
                                             parentIndex: DosQModelIndex,
                                             first: cint,
                                             last: cint) {.cdecl, dynlib: getDllName(), importc.}
-proc dos_qabstractlistmodel_endRemoveRows(model: DosQAbstractListModel) {.cdecl, dynlib: getDllName(), importc.}
-proc dos_qabstractlistmodel_beginResetModel(model: DosQAbstractListModel) {.cdecl, dynlib: getDllName(), importc.}
-proc dos_qabstractlistmodel_endResetModel(model: DosQAbstractListModel) {.cdecl, dynlib: getDllName(), importc.}
-proc dos_qabstractlistmodel_dataChanged(model: DosQAbstractListModel,
+proc dos_qabstractitemmodel_endRemoveRows(model: DosQAbstractItemModel) {.cdecl, dynlib: getDllName(), importc.}
+proc dos_qabstractitemmodel_beginInsertColumns(model: DosQAbstractItemModel,
+                                               parentIndex: DosQModelIndex,
+                                               first: cint,
+                                               last: cint) {.cdecl, dynlib: getDllName(), importc.}
+proc dos_qabstractitemmodel_endInsertColumns(model: DosQAbstractItemModel) {.cdecl, dynlib: getDllName(), importc.}
+proc dos_qabstractitemmodel_beginRemoveColumns(model: DosQAbstractItemModel,
+                                               parentIndex: DosQModelIndex,
+                                               first: cint,
+                                               last: cint) {.cdecl, dynlib: getDllName(), importc.}
+proc dos_qabstractitemmodel_endRemoveColumns(model: DosQAbstractItemModel) {.cdecl, dynlib: getDllName(), importc.}
+proc dos_qabstractitemmodel_beginResetModel(model: DosQAbstractItemModel) {.cdecl, dynlib: getDllName(), importc.}
+proc dos_qabstractitemmodel_endResetModel(model: DosQAbstractItemModel) {.cdecl, dynlib: getDllName(), importc.}
+proc dos_qabstractitemmodel_dataChanged(model: DosQAbstractItemModel,
                                         parentLeft: DosQModelIndex,
                                         bottomRight: DosQModelIndex,
                                         rolesArrayPtr: ptr cint,
                                         rolesArrayLength: cint) {.cdecl, dynlib: getDllName(), importc.}
+proc dos_qabstractitemmodel_createIndex(model: DosQAbstractItemModel, row: cint, column: cint, data: pointer): DosQModelIndex {.cdecl, dynlib: getDllName(), importc.}
+proc dos_qabstractitemmodel_hasChildren(model: DosQAbstractItemModel, parent: DosQModelIndex): bool {.cdecl, dynlib: getDllName(), importc.}
+proc dos_qabstractitemmodel_canFetchMore(model: DosQAbstractItemModel, parent: DosQModelIndex): bool {.cdecl, dynlib: getDllName(), importc.}
+proc dos_qabstractitemmodel_fetchMore(model: DosQAbstractItemModel, parent: DosQModelIndex) {.cdecl, dynlib: getDllName(), importc.}
+
 
 # QResource
 proc dos_qresource_register(filename: cstring) {.cdecl, dynlib: getDllName(), importc.}
@@ -230,3 +267,23 @@ proc dos_qresource_register(filename: cstring) {.cdecl, dynlib: getDllName(), im
 # QDeclarative
 proc dos_qdeclarative_qmlregistertype(value: ptr DosQmlRegisterType): cint {.cdecl, dynlib: getDllName(), importc.}
 proc dos_qdeclarative_qmlregistersingletontype(value: ptr DosQmlRegisterType): cint {.cdecl, dynlib: getDllName(), importc.}
+
+# QAbstractListModel
+proc dos_qabstractlistmodel_qmetaobject(): DosQMetaObject {.cdecl dynlib: getDllName(), importc.}
+
+proc dos_qabstractlistmodel_create(modelPtr: NimQAbstractListModel,
+                                   metaObject: DosQMetaObject,
+                                   qobjectCallback: DosQObjectCallBack,
+                                   qaimCallbacks: DosQAbstractItemModelCallbacks): DosQAbstractListModel {.cdecl, dynlib: getDllName(), importc.}
+proc dos_qabstractlistmodel_columnCount(modelPtr: DosQAbstractListModel, index: DosQModelIndex): cint {.cdecl, dynlib: getDllName(), importc.}
+proc dos_qabstractlistmodel_parent(modelPtr: DosQAbstractListModel, index: DosQModelIndex): DosQModelIndex {.cdecl, dynlib: getDllName(), importc.}
+proc dos_qabstractlistmodel_index(modelPtr: DosQAbstractListModel, row: cint, column: cint, parent: DosQModelIndex): DosQModelIndex {.cdecl, dynlib: getDllName(), importc.}
+
+# QAbstractTableModel
+proc dos_qabstracttablemodel_qmetaobject(): DosQMetaObject {.cdecl dynlib: getDllName(), importc.}
+proc dos_qabstracttablemodel_create(modelPtr: NimQAbstractTableModel,
+                                    metaObject: DosQMetaObject,
+                                    qobjectCallback: DosQObjectCallBack,
+                                    qaimCallbacks: DosQAbstractItemModelCallbacks): DosQAbstractTableModel {.cdecl, dynlib: getDllName(), importc.}
+proc dos_qabstracttablemodel_parent(modelPtr: DosQAbstractTableModel, index: DosQModelIndex): DosQModelIndex {.cdecl, dynlib: getDllName(), importc.}
+proc dos_qabstracttablemodel_index(modelPtr: DosQAbstractTableModel, row: cint, column: cint, parent: DosQModelIndex): DosQModelIndex {.cdecl, dynlib: getDllName(), importc.}

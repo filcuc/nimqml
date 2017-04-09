@@ -339,6 +339,7 @@ proc extractQObjectInfo(node: NimNode): QObjectInfo {.compiletime.} =
       if info.parametersTypes[0] != $typeNode:
         error("Slot $1 first arguments must be $2" % [info.name, $typeNode])
       info.parametersTypes.delete(0,0)
+      info.parametersNames.delete(0,0)
       result.slots.add(info)
     # Extract signal
     if c.isSignal:
@@ -348,6 +349,7 @@ proc extractQObjectInfo(node: NimNode): QObjectInfo {.compiletime.} =
       if info.parametersTypes[0] != $typeNode:
         error("Signal $1 first arguments must be $2" % [info.name, $typeNode])
       info.parametersTypes.delete(0,0)
+      info.parametersNames.delete(0,0)
       result.signals.add(info)
 
   # Extract properties infos and remove them
@@ -366,8 +368,10 @@ proc extractQObjectInfo(node: NimNode): QObjectInfo {.compiletime.} =
 proc generateMetaObjectSignalDefinitions(signals: seq[ProcInfo]): seq[string] {.compiletime.} =
   result = @[]
   for signal in signals:
-    let args = [signal.name, signal.parametersTypes.toMetaType.join(",")]
-    let def = "SignalDefinition(name: \"$1\", parametersTypes: @[$2])" % args
+    var parameters: seq[string] = @[]
+    for i in 0..<signal.parametersTypes.len:
+      parameters.add("ParameterDefinition(name: \"$1\", metaType: $2)" % [signal.parametersNames[i], signal.parametersTypes[i].toMetaType])
+    let def = "SignalDefinition(name: \"$1\", parameters: @[$2])" % [signal.name, parameters.join(",")]
     let str = "  signals.add($1)" % def
     result.add(str)
 
@@ -375,8 +379,10 @@ proc generateMetaObjectSignalDefinitions(signals: seq[ProcInfo]): seq[string] {.
 proc generateMetaObjectSlotsDefinitions(slots: seq[ProcInfo]): seq[string] {.compiletime.} =
   result = @[]
   for slot in slots:
-    let args = [slot.name, slot.returnType.toMetaType, slot.parametersTypes.toMetaType.join(",")]
-    let def = "SlotDefinition(name: \"$1\", returnMetaType: $2, parametersTypes: @[$3])" % args
+    var parameters: seq[string] = @[]
+    for i in 0..<slot.parametersTypes.len:
+      parameters.add("ParameterDefinition(name: \"$1\", metaType: $2)" % [slot.parametersNames[i], slot.parametersTypes[i].toMetaType])
+    let def = "SlotDefinition(name: \"$1\", returnMetaType: $2, parameters: @[$3])" % [slot.name, slot.returnType.toMetaType, parameters.join(",")]
     let str = "  slots.add($1)" % def
     result.add(str)
 
@@ -392,7 +398,6 @@ proc generateMetaObjectPropertiesDefinitions(properties: seq[PropertyInfo]): seq
 
 proc generateMetaObjectInitializer(info: QObjectInfo): NimNode {.compiletime.} =
   ## Generate the metaObject initialization procedure
-
   let signals = generateMetaObjectSignalDefinitions(info.signals)
   let slots = generateMetaObjectSlotsDefinitions(info.slots)
   let properties = generateMetaObjectPropertiesDefinitions(info.properties)

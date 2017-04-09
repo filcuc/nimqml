@@ -4,8 +4,14 @@ type
     vptr: DosQObject
     owner: bool
 
-  QAbstractListModel* = ref object of QObject ## \
+  QAbstractItemModel* = ref object of QObject ## \
+    ## A QAbstractItemModel
+
+  QAbstractListModel* = ref object of QAbstractItemModel ## \
     ## A QAbstractListModel
+
+  QAbstractTableModel* = ref object of QAbstractItemModel ## \
+    ## A QAbstractTableModel
 
   QVariant* = ref object of RootObj ## \
     ## A QVariant
@@ -74,14 +80,18 @@ type
     QVariant = 41.cint,
     Void = 43.cint,
 
+  ParameterDefinition* = object
+    name*: string
+    metaType*: QMetaType
+
   SignalDefinition* = object
     name*: string
-    parametersTypes*: seq[QMetaType]
+    parameters*: seq[ParameterDefinition]
 
   SlotDefinition* = object
     name*: string
     returnMetaType*: QMetaType
-    parametersTypes*: seq[QMetaType]
+    parameters*: seq[ParameterDefinition]
 
   PropertyDefinition* = object
     name*: string

@@ -1,8 +1,7 @@
 ## NimQml aims to provide binding to the QML for the Nim programming language
 
 template debugMsg(message: string) =
-  when defined(debug):
-    echo "NimQml: ", message
+  echo "NimQml: ", message
 
 template debugMsg(typeName: string, procName: string) =
   when defined(debug):
@@ -24,7 +23,9 @@ include private/qurl.nim
 include private/qquickview.nim
 include private/qhashintbytearray.nim
 include private/qmodelindex.nim
+include private/qabstractitemmodel.nim
 include private/qabstractlistmodel.nim
+include private/qabstracttablemodel.nim
 include private/qresource.nim
 include private/qdeclarative.nim
 include private/nimqmlmacros.nim
