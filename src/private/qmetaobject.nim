@@ -18,6 +18,18 @@ proc newQAbstractItemModelMetaObject*(): QMetaObject =
   new(result, delete)
   result.vptr = dos_qabstractitemmodel_qmetaobject()
 
+proc newQAbstractListModelMetaObject*(): QMetaObject =
+  ## Create the QMetaObject of QAbstractListModel
+  debugMsg("QMetaObject", "newQAbstractListModelMetaObject")
+  new(result, delete)
+  result.vptr = dos_qabstractlistmodel_qmetaobject()
+
+proc newQAbstractTableModelMetaObject*(): QMetaObject =
+  ## Create the QMetaObject of QAbstractTableModel
+  debugMsg("QMetaObject", "newQAbstractItemTableMetaObject")
+  new(result, delete)
+  result.vptr = dos_qabstracttablemodel_qmetaobject()
+
 proc newQMetaObject*(superClass: QMetaObject, className: string,
                      signals: seq[SignalDefinition],
                      slots: seq[SlotDefinition],

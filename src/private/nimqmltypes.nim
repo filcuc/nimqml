@@ -7,6 +7,12 @@ type
   QAbstractItemModel* = ref object of QObject ## \
     ## A QAbstractItemModel
 
+  QAbstractListModel* = ref object of QAbstractItemModel ## \
+    ## A QAbstractListModel
+
+  QAbstractTableModel* = ref object of QAbstractItemModel ## \
+    ## A QAbstractTableModel
+
   QVariant* = ref object of RootObj ## \
     ## A QVariant
     vptr: DosQVariant

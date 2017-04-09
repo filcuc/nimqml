@@ -24,6 +24,8 @@ include private/qquickview.nim
 include private/qhashintbytearray.nim
 include private/qmodelindex.nim
 include private/qabstractitemmodel.nim
+include private/qabstractlistmodel.nim
+include private/qabstracttablemodel.nim
 include private/qresource.nim
 include private/qdeclarative.nim
 include private/nimqmlmacros.nim
