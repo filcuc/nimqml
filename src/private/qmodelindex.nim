@@ -51,3 +51,7 @@ proc child*(self: QModelIndex, row: cint, column: cint): QModelIndex =
 proc sibling*(self: QModelIndex, row: cint, column: cint): QModelIndex =
   ## Return the sibling index associated to the given row and column
   newQModelIndex(dos_qmodelindex_sibling(self.vptr, row, column), Ownership.Take)
+  
+proc internalPointer(self: QModelIndex): pointer = 
+  ## Return the internal pointer
+  dos_qmodelindex_internalPointer(self.vptr)

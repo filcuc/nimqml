@@ -221,6 +221,7 @@ proc dos_qmodelindex_parent(modelIndex: DosQModelIndex): DosQModelIndex {.cdecl,
 proc dos_qmodelindex_child(modelIndex: DosQModelIndex, row: cint, column: cint): DosQModelIndex {.cdecl, dynlib: getDllName(), importc.}
 proc dos_qmodelindex_sibling(modelIndex: DosQModelIndex, row: cint, column: cint): DosQModelIndex {.cdecl, dynlib: getDllName(), importc.}
 proc dos_qmodelindex_assign(leftSide: DosQModelIndex, rightSide: DosQModelIndex) {.cdecl, dynlib: getDllName(), importc.}
+proc dos_qmodelindex_internalPointer(modelIndex: DosQModelIndex): pointer {.cdecl, dynlib: getDllName(), importc.}
 
 # QAbstractItemModel
 proc dos_qabstractitemmodel_create(modelPtr: NimQAbstractItemModel,
