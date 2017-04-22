@@ -106,7 +106,7 @@ proc indexCallback(modelPtr: pointer, row: cint, column: cint, parent: DosQModel
   let index = model.index(row.int, column.int, newQModelIndex(parent, Ownership.Clone))
   dos_qmodelindex_assign(result, index.vptr)
 
-method parent(self: QAbstractItemModel, child: QModelIndex): QModelIndex {.base.} =
+method parent*(self: QAbstractItemModel, child: QModelIndex): QModelIndex {.base.} =
   return newQModelIndex()
 
 proc parentCallback(modelPtr: pointer, child: DosQModelIndex, result: DosQModelIndex) {.cdecl, exportc.} =
@@ -115,28 +115,26 @@ proc parentCallback(modelPtr: pointer, child: DosQModelIndex, result: DosQModelI
   let index = model.parent(newQModelIndex(child, Ownership.Clone))
   dos_qmodelindex_assign(result, index.vptr)
 
-method hasChildren(self: QAbstractItemModel, parent: QModelIndex): bool {.base.} =
+method hasChildren*(self: QAbstractItemModel, parent: QModelIndex): bool {.base.} =
   return dos_qabstractitemmodel_hasChildren(self.vptr.DosQAbstractItemModel, parent.vptr.DosQModelIndex)
 
 proc hasChildrenCallback(modelPtr: pointer, parent: DosQModelIndex, result: var bool) {.cdecl, exportc.} =
   let model = cast[QAbstractItemModel](modelPtr)
   result = model.hasChildren(newQModelIndex(parent, Ownership.Clone))
 
-method canFetchMore(self: QAbstractItemModel, parent: QModelIndex): bool {.base.} =
+method canFetchMore*(self: QAbstractItemModel, parent: QModelIndex): bool {.base.} =
   return dos_qabstractitemmodel_canFetchMore(self.vptr.DosQAbstractItemModel, parent.vptr.DosQModelIndex)
 
 proc canFetchMoreCallback(modelPtr: pointer, parent: DosQModelIndex, result: var bool) {.cdecl, exportc.} =
   let model = cast[QAbstractItemModel](modelPtr)
   result = model.canFetchMore(newQModelIndex(parent, Ownership.Clone))
 
-method fetchMore(self: QAbstractItemModel, parent: QModelIndex) {.base.} =
+method fetchMore*(self: QAbstractItemModel, parent: QModelIndex) {.base.} =
   dos_qabstractitemmodel_fetchMore(self.vptr.DosQAbstractItemModel, parent.vptr.DosQModelIndex)
 
 proc fetchMoreCallback(modelPtr: pointer, parent: DosQModelIndex) {.cdecl, exportc.} =
   let model = cast[QAbstractItemModel](modelPtr)
   model.fetchMore(newQModelIndex(parent, Ownership.Clone))
-
-
 
 method onSlotCalled*(self: QAbstractItemModel, slotName: string, arguments: openarray[QVariant]) =
   ## Called from the dotherside library when a slot is called from Qml.
@@ -171,6 +169,10 @@ proc newQAbstractItemModel*(): QAbstractItemModel =
   debugMsg("QAbstractItemModel", "new")
   new(result, delete)
   result.setup()
+
+proc hasIndex*(self: QAbstractItemModel, row: int, column: int, parent: QModelIndex): bool =
+  debugMsg("QAbstractItemModel", "hasIndex")
+  dos_qabstractitemmodel_hasIndex(self.vptr.DosQAbstractItemModel, row.cint, column.cint, parent.vptr.DosQModelIndex)
 
 proc beginInsertRows*(self: QAbstractItemModel, parentIndex: QModelIndex, first: int, last: int) =
   ## Notify the view that the model is about to inserting the given number of rows

@@ -258,6 +258,7 @@ proc dos_qabstractitemmodel_dataChanged(model: DosQAbstractItemModel,
                                         rolesArrayLength: cint) {.cdecl, dynlib: getDllName(), importc.}
 proc dos_qabstractitemmodel_createIndex(model: DosQAbstractItemModel, row: cint, column: cint, data: pointer): DosQModelIndex {.cdecl, dynlib: getDllName(), importc.}
 proc dos_qabstractitemmodel_hasChildren(model: DosQAbstractItemModel, parent: DosQModelIndex): bool {.cdecl, dynlib: getDllName(), importc.}
+proc dos_qabstractitemmodel_hasIndex(model: DosQAbstractItemModel, row: int, column: int, parent: DosQModelIndex): bool {.cdecl, dynlib: getDllName(), importc.}
 proc dos_qabstractitemmodel_canFetchMore(model: DosQAbstractItemModel, parent: DosQModelIndex): bool {.cdecl, dynlib: getDllName(), importc.}
 proc dos_qabstractitemmodel_fetchMore(model: DosQAbstractItemModel, parent: DosQModelIndex) {.cdecl, dynlib: getDllName(), importc.}
 
