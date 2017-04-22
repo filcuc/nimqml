@@ -7,7 +7,7 @@ proc getDllName: string =
     of "macosx":
       "libDOtherSide.dylib"
     else:
-      "libDOtherSide.so"
+      "libDOtherSide.so.0.6"
 
 type
   NimQObject = pointer
