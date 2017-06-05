@@ -7,4 +7,4 @@ license       = "LGPLv3"
 srcDir        = "src"
 
 [Deps]
-Requires: "nim >= 0.15.0"
+Requires: "nim >= 0.17.0"
