@@ -1,6 +1,6 @@
 import os, strutils
 
-proc getDllName: string =
+const theDllName =
   case system.hostOS:
     of "windows":
       "DOtherSide.dll"
@@ -8,6 +8,8 @@ proc getDllName: string =
       "libDOtherSide.dylib"
     else:
       "libDOtherSide.so.0.6"
+
+template getDllName: string = theDllName
 
 type
   NimQObject = pointer
