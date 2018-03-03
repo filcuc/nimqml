@@ -98,7 +98,7 @@ proc createIndex*(self: QAbstractItemModel, row: int, column: int, data: pointer
   return newQModelIndex(result, Ownership.Take)
 
 method index*(self: QAbstractItemModel, row: int, column: int, parent: QModelIndex): QModelIndex {.base.} =
-  return self.createIndex(row, column, nil)
+  doAssert(false, "QAbstractItemModel::index is pure virtual")
 
 proc indexCallback(modelPtr: pointer, row: cint, column: cint, parent: DosQModelIndex, result: DosQModelIndex) {.cdecl, exportc.} =
   debugMsg("QAbstractItemModel", "indexCallback")
@@ -107,7 +107,7 @@ proc indexCallback(modelPtr: pointer, row: cint, column: cint, parent: DosQModel
   dos_qmodelindex_assign(result, index.vptr)
 
 method parent*(self: QAbstractItemModel, child: QModelIndex): QModelIndex {.base.} =
-  return newQModelIndex()
+  doAssert(false, "QAbstractItemModel::parent is pure virtual")
 
 proc parentCallback(modelPtr: pointer, child: DosQModelIndex, result: DosQModelIndex) {.cdecl, exportc.} =
   debugMsg("QAbstractItemModel", "parentCallback")

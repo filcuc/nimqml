@@ -43,5 +43,11 @@ proc newQAbstractTableModel*(): QAbstractTableModel =
   new(result, delete)
   result.setup()
 
+method parent(self: QAbstractTableModel, child: QModelIndex): QModelIndex =
+  let indexPtr = dos_qabstracttablemodel_parent(self.vptr.DosQAbstractTableModel, child.vptr.DosQModelIndex)
+  result = newQModelIndex(indexPtr, Ownership.Take)
 
+method index*(self: QAbstractTableModel, row: int, column: int, parent: QModelIndex): QModelIndex =
+  let indexPtr = dos_qabstracttablemodel_index(self.vptr.DosQAbstractTableModel, row.cint, column.cint, parent.vptr.DosQModelIndex)
+  result = newQModelIndex(indexPtr, Ownership.Take)
 

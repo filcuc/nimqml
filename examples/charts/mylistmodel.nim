@@ -7,16 +7,16 @@ type
 
 QtObject:
   type
-    MyListModel* = ref object of QAbstractListModel
+    MyListModel* = ref object of QAbstractTableModel
       points*: seq[Point]
       maxX: int
       maxY: int
 
   proc delete(self: MyListModel) =
-    self.QAbstractListModel.delete
+    self.QAbstractTableModel.delete
 
   proc setup(self: MyListModel) =
-    self.QAbstractListModel.setup
+    self.QAbstractTableModel.setup
 
   method rowCount(self: MyListModel, index: QModelIndex = nil): int =
     return self.points.len
@@ -26,8 +26,8 @@ QtObject:
 
   method data(self: MyListModel, index: QModelIndex, role: int): QVariant =
     result = nil
-    if not index.isValid:
-      return 
+    if not index.isValid or index.row < 0 or index.row >= self.rowCount() or index.column < 0 or index.column >= self.columnCount():
+      return
     if role == 0:
       let point = self.points[index.row]
       if index.column == 0:
@@ -64,7 +64,6 @@ QtObject:
     if y > self.maxY:
       self.maxY = y
       self.maxYChanged(y)
-    echo "Adding " & $x & " " & $y
     self.points.add(Point(x: x, y: y))
     self.endInsertRows()
 
