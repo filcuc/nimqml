@@ -1,5 +1,7 @@
 import QtQuick 2.7
 import QtCharts 2.2
+import QtQuick.Controls 2.2
+import QtQuick.Layouts 1.3
 import QtQuick.Window 2.3
 
 Window {
@@ -9,22 +11,44 @@ Window {
 
     Component.onCompleted: visible = true
 
-    ChartView {
-        id: view
+    ColumnLayout {
+	anchors.fill: parent
 
-        anchors.fill: parent
+	ChartView {
+            id: view
 
-        VXYModelMapper {
-            id: mapper
-            model: myListModel
-            series: lineSeries
-            xColumn: 0
-            yColumn: 1
-        }
+	    Layout.fillHeight: true
+	    Layout.fillWidth: true
 
-        LineSeries {
-            id: lineSeries
-            name: "LineSeries"
-        }
+            VXYModelMapper {
+		id: mapper
+		model: myListModel
+		series: lineSeries
+		xColumn: 0
+		yColumn: 1
+            }
+
+            LineSeries {
+		id: lineSeries
+		name: "LineSeries"
+		axisX: ValueAxis {
+		    min: 0
+		    max: myListModel.maxX
+		}
+		axisY: ValueAxis {
+		    min: 0
+		    max: myListModel.maxY
+		}
+            }
+	}
+
+	RowLayout {
+	    Layout.fillWidth: true
+
+	    Button {
+		text: "Add random point"
+		onClicked: myListModel.addRandomPoint()
+	    }
+	}
     }
 }
