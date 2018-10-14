@@ -102,7 +102,6 @@ proc fromQVariantConversion(x: string): string {.compiletime.} =
 proc toMetaType(x: string): string {.compiletime.} =
   ## Convert a nim type to QMetaType
   case x
-  of nil: result = "Void"
   of "": result = "Void"
   of "void": result = "Void"
   of "int": result = "Int"
@@ -434,8 +433,7 @@ proc generateSlotCall(slot: ProcInfo): string {.compiletime.} =
   var sequence: seq[string] = @[]
 
   # Add return type
-  if slot.returnType != nil and
-     slot.returnType != "" and
+  if slot.returnType != "" and
      slot.returnType != "void":
     let conversion = fromQVariantConversion(slot.returnType)
     if conversion == "":
