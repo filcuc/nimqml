@@ -1,10 +1,9 @@
-import QtQuick 2.7
+import QtQuick 2.8
 import QtCharts 2.2
-import QtQuick.Controls 2.2
 import QtQuick.Layouts 1.3
-import QtQuick.Window 2.3
+import QtQuick.Controls 2.3
 
-Window {
+ApplicationWindow {
     width: 400
     height: 300
     title: "Charts"

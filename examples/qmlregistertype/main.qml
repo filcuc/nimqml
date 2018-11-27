@@ -1,7 +1,6 @@
-import QtQuick 2.2
-import QtQuick.Controls 1.2
-import QtQuick.Layouts 1.1
-import QtQuick.Window 2.1
+import QtQuick 2.8
+import QtQuick.Controls 2.3
+import QtQuick.Layouts 1.3
 import ContactModule 1.0
 
 ApplicationWindow {
@@ -26,10 +25,10 @@ ApplicationWindow {
         anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
         Item { Layout.fillWidth: true }
         Label { text: "FirstName:" }
-        TextField { onEditingFinished: contact.firstName = text }
+        TextField { Layout.preferredWidth: 100; onEditingFinished: contact.firstName = text }
         Item { width: 30 }
         Label { text: "LastName: " }
-        TextField { onEditingFinished: contact.lastName = text }
+        TextField { Layout.preferredWidth: 100; onEditingFinished: contact.lastName = text }
         Item { Layout.fillWidth: true }
     }
 }
