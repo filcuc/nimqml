@@ -20,9 +20,9 @@ type
   DosQVariant = distinct pointer
   DosQQmlContext = distinct pointer
   DosQQmlApplicationEngine = distinct pointer
-  DosQVariantArray {.unchecked.} = array[0..0, DosQVariant]
+  DosQVariantArray = UncheckedArray[DosQVariant]
   DosQMetaType = cint
-  DosQMetaTypeArray {.unchecked.} = array[0..0, DosQMetaType]
+  DosQMetaTypeArray = UncheckedArray[DosQMetaType]
   DosQUrl = distinct pointer
   DosQQuickView = distinct pointer
   DosQHashIntByteArray = distinct pointer

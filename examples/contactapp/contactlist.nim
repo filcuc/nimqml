@@ -37,7 +37,6 @@ QtObject:
     case contactRole:
     of ContactRoles.FirstName: result = newQVariant(contact.firstName)
     of ContactRoles.Surname: result = newQVariant(contact.surname)
-    else: return
 
   method roleNames(self: ContactList): Table[int, string] =
     { ContactRoles.FirstName.int:"firstName",
