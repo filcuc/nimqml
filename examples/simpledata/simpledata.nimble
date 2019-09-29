@@ -7,4 +7,5 @@ description   = "simpledata"
 license       = "MIT"
 
 [Deps]
-Requires: "nim >= 0.12.1, nimqml >= 0.5.0"
+Requires: "nim >= 1.0.0, nimqml >= 0.7.7"
+
