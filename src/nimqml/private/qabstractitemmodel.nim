@@ -94,8 +94,8 @@ proc headerDataCallback(modelPtr: pointer, section: cint, orientation: cint, rol
 proc createIndex*(self: QAbstractItemModel, row: int, column: int, data: pointer): QModelIndex =
   ## Create a new QModelIndex
   debugMsg("QAbstractItemModel", "createIndex")
-  let result = dos_qabstractitemmodel_createIndex(self.vptr.DosQAbstractItemModel, row.cint, column.cint, data)
-  return newQModelIndex(result, Ownership.Take)
+  let index = dos_qabstractitemmodel_createIndex(self.vptr.DosQAbstractItemModel, row.cint, column.cint, data)
+  result = newQModelIndex(index, Ownership.Take)
 
 method index*(self: QAbstractItemModel, row: int, column: int, parent: QModelIndex): QModelIndex {.base.} =
   doAssert(false, "QAbstractItemModel::index is pure virtual")

@@ -4,7 +4,6 @@ import macros
 import strutils
 import sequtils
 import typetraits
-import tables
 
 
 type

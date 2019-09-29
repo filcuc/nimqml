@@ -1,4 +1,4 @@
-import os, strutils
+import strutils
 
 const dynLibName =
   case system.hostOS:
