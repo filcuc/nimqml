@@ -1,6 +1,6 @@
 import tables
 
-var ctorTable = initTable[cint, proc():QObject]()
+var ctorTable = initTable[cint, proc(): QObject]()
 
 proc creator(id: cint, wrapper: DosQObjectWrapper, nimQObject: var NimQObject, dosQObject: var DosQObject) {.cdecl.} =
   let qobject: QObject = ctorTable[id]()

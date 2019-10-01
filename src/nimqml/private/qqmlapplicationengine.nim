@@ -2,7 +2,7 @@ proc setup*(self: QQmlApplicationEngine) =
   ## Setup a QQmlApplicationEngine
   self.vptr = dos_qqmlapplicationengine_create()
 
-proc loadData*(self:QQmlApplicationEngine, data: string) =
+proc loadData*(self: QQmlApplicationEngine, data: string) =
   ## Load the given data
   dos_qqmlapplicationengine_load_data(self.vptr, data.cstring)
 

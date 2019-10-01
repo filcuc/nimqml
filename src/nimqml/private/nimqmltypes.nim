@@ -44,7 +44,7 @@ type
   QResource* = ref object of RootObj ## \
     # A QResource
 
-  QtItemFlag* {.pure, size: sizeof(cint).} = enum ## \
+  QtItemFlag*{.pure, size: sizeof(cint).} = enum ## \
     ## Item flags
     ##
     ## This enum mimic the Qt::itemFlag C++ enum
@@ -58,14 +58,14 @@ type
     IsTristate = 64.cint,
     NeverHasChildren = 128.cint
 
-  QtOrientation* {.pure, size: sizeof(cint).} = enum ## \
+  QtOrientation*{.pure, size: sizeof(cint).} = enum ## \
     ## Define orientation
     ##
     ## This enum mimic the Qt::Orientation C++ enum
     Horizontal = 1.cint,
     Vertical = 2.cint
 
-  QMetaType* {.pure, size: sizeof(cint).} = enum ## \
+  QMetaType*{.pure, size: sizeof(cint).} = enum ## \
     ## Qt metatypes values used for specifing the
     ## signals and slots argument and return types.
     ##
@@ -78,7 +78,7 @@ type
     Float = 38.cint,
     QObjectStar = 39.cint,
     QVariant = 41.cint,
-    Void = 43.cint,
+    Void = 43.cint
 
   ParameterDefinition* = object
     name*: string
@@ -109,14 +109,14 @@ type
   QUrl* = ref object of RootObj
     vptr: DosQUrl
 
-  QUrlParsingMode* {.pure, size: sizeof(cint).} = enum
+  QUrlParsingMode*{.pure, size: sizeof(cint).} = enum
     Tolerant = 0.cint
     Strict = 1.cint
 
   Ownership {.pure.} = enum ## \
     ## Specify the ownership of a pointer
-    Take, # The ownership is passed to the wrapper
-    Clone # The node should be cloned
+    Take,                   # The ownership is passed to the wrapper
+    Clone                   # The node should be cloned
 
 const
-    UserRole* = 0x100
+  UserRole* = 0x100

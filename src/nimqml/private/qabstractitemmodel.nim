@@ -51,14 +51,14 @@ method setData*(self: QAbstractItemModel, index: QModelIndex, value: QVariant, r
   ## Sets the data at the given index and role. Return true on success, false otherwise
   false
 
-proc setDataCallback(modelPtr: pointer, rawIndex: DosQModelIndex, rawQVariant: DosQVariant,  role: cint, result: var bool) {.cdecl, exportc.} =
+proc setDataCallback(modelPtr: pointer, rawIndex: DosQModelIndex, rawQVariant: DosQVariant, role: cint, result: var bool) {.cdecl, exportc.} =
   debugMsg("QAbstractItemModel", "setDataCallback")
   let model = cast[QAbstractItemModel](modelPtr)
   let index = newQModelIndex(rawIndex, Ownership.Clone)
   let variant = newQVariant(rawQVariant, Ownership.Clone)
   result = model.setData(index, variant, role.int)
 
-method roleNames*(self: QAbstractItemModel): Table[int,string] {.base.} =
+method roleNames*(self: QAbstractItemModel): Table[int, string] {.base.} =
   ## Return the model role names
   nil
 
@@ -138,6 +138,7 @@ proc fetchMoreCallback(modelPtr: pointer, parent: DosQModelIndex) {.cdecl, expor
 
 method onSlotCalled*(self: QAbstractItemModel, slotName: string, arguments: openarray[QVariant]) =
   ## Called from the dotherside library when a slot is called from Qml.
+  discard
 
 proc setup*(self: QAbstractItemModel) =
   ## Setup a new QAbstractItemModel

@@ -54,17 +54,17 @@ proc newQVariant*(value: int): QVariant =
   new(result, delete)
   result.setup(value)
 
-proc newQVariant*(value: bool): QVariant  =
+proc newQVariant*(value: bool): QVariant =
   ## Return a new QVariant given a bool
   new(result, delete)
   result.setup(value)
 
-proc newQVariant*(value: string): QVariant  =
+proc newQVariant*(value: string): QVariant =
   ## Return a new QVariant given a string
   new(result, delete)
   result.setup(value)
 
-proc newQVariant*(value: QObject): QVariant  =
+proc newQVariant*(value: QObject): QVariant =
   ## Return a new QVariant given a QObject
   new(result, delete)
   result.setup(value)

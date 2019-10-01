@@ -8,8 +8,8 @@ import typetraits
 
 type
   FindQObjectTypeResult = tuple
-   typeIdent: NimNode
-   superTypeIdent: NimNode
+    typeIdent: NimNode
+    superTypeIdent: NimNode
 
   ProcInfo = object
     name: string
@@ -74,8 +74,8 @@ proc display(info: PropertyInfo) {.compiletime.} =
 proc toString(info: QObjectInfo): string {.compiletime.} =
   ## Convert a QObjectInfo to string
   let slots = info.slots.map(proc (x: auto): auto = x.toString)
-  let signals = info.signals.map(proc(x:auto): auto = x.toString)
-  let properties = info.properties.map(proc(x:auto): auto = x.toString)
+  let signals = info.signals.map(proc(x: auto): auto = x.toString)
+  let properties = info.properties.map(proc(x: auto): auto = x.toString)
   "QObjectInfo {\"$1\", \"$2\", [\"$3\"], [\"$4\"], [\"$5\"]}" % [info.name, info.superType, slots.join(", "), signals.join(", "), properties.join(", ")]
 
 
@@ -169,7 +169,7 @@ proc extractQObjectTypeDef(head: NimNode): FindQObjectTypeResult {.compiletime.}
 
   var name = def[0] # type Object = ... <---
   let pragma = def[1] # type Object {.something.} = ... <---
-  let typeKind = def[2]  # .. = ref/distinct/object ..
+  let typeKind = def[2] # .. = ref/distinct/object ..
 
   if name.kind == nnkPostFix:
     if name.len != 2: error("Expected two children in nnkPostFix node")
@@ -243,22 +243,22 @@ proc extractPropertyInfo(node: NimNode): tuple[ok: bool, info: PropertyInfo] {.c
      bracketExpr[0].kind != nnkIdent or
      bracketExpr[1].kind != nnkIdent or
      $(bracketExpr[0]) != "QtProperty":
-     return
+    return
   let stmtList = node[2]
   if stmtList.len >= 1:
     if stmtList[0].kind != nnkAsgn or stmtList[0].len != 2 or
        stmtList[0][0].kind != nnkIdent or
-       (stmtList[0][1].kind != nnkIdent and stmtList[0][1].kind != nnkAccQuoted):
+        (stmtList[0][1].kind != nnkIdent and stmtList[0][1].kind != nnkAccQuoted):
       error("QtProperty parsing error")
   if stmtList.len >= 2:
     if stmtList[1].kind != nnkAsgn or stmtList[1].len != 2 or
        stmtList[1][0].kind != nnkIdent or
-       (stmtList[1][1].kind != nnkIdent and stmtList[1][1].kind != nnkAccQuoted):
+        (stmtList[1][1].kind != nnkIdent and stmtList[1][1].kind != nnkAccQuoted):
       error("QtProperty parsing error")
   if stmtList.len >= 3:
     if stmtList[2].kind != nnkAsgn or stmtList[2].len != 2 or
        stmtList[2][0].kind != nnkIdent or
-       (stmtList[2][1].kind != nnkIdent and stmtList[2][1].kind != nnkAccQuoted):
+        (stmtList[2][1].kind != nnkIdent and stmtList[2][1].kind != nnkAccQuoted):
       error("QtProperty parsing error")
 
   result.info.name = $(node[1])
@@ -315,7 +315,7 @@ proc isProperty(node: NimNode): bool {.compiletime.} =
      bracketExpr[0].kind != nnkIdent or
      bracketExpr[1].kind != nnkIdent or
      $(bracketExpr[0]) != "QtProperty":
-     return false
+    return false
   return true
 
 proc extractQObjectInfo(node: NimNode): QObjectInfo {.compiletime.} =
@@ -336,8 +336,8 @@ proc extractQObjectInfo(node: NimNode): QObjectInfo {.compiletime.} =
         error("Slot $1 must have at least an argument" % info.name)
       if info.parametersTypes[0] != $typeNode:
         error("Slot $1 first arguments must be $2" % [info.name, $typeNode])
-      info.parametersTypes.delete(0,0)
-      info.parametersNames.delete(0,0)
+      info.parametersTypes.delete(0, 0)
+      info.parametersNames.delete(0, 0)
       result.slots.add(info)
     # Extract signal
     if c.isSignal:
@@ -346,12 +346,12 @@ proc extractQObjectInfo(node: NimNode): QObjectInfo {.compiletime.} =
         error("Signal $1 must have at least an argument" % info.name)
       if info.parametersTypes[0] != $typeNode:
         error("Signal $1 first arguments must be $2" % [info.name, $typeNode])
-      info.parametersTypes.delete(0,0)
-      info.parametersNames.delete(0,0)
+      info.parametersTypes.delete(0, 0)
+      info.parametersNames.delete(0, 0)
       result.signals.add(info)
 
   # Extract properties infos and remove them
-  var toRemove: seq[NimNode]= @[]
+  var toRemove: seq[NimNode] = @[]
   for c in node:
     let (ok, info) = extractPropertyInfo(c)
     if not ok: continue
@@ -400,10 +400,10 @@ proc generateMetaObjectInitializer(info: QObjectInfo): NimNode {.compiletime.} =
   let slots = generateMetaObjectSlotsDefinitions(info.slots)
   let properties = generateMetaObjectPropertiesDefinitions(info.properties)
 
-  var lines = @[ "proc initializeMetaObjectInstance(): QMetaObject ="
-             , "  var signals: seq[SignalDefinition] = @[]"
-             , "  var slots: seq[SlotDefinition] = @[]"
-             , "  var properties: seq[PropertyDefinition] = @[]"]
+  var lines = @["proc initializeMetaObjectInstance(): QMetaObject ="
+    , "  var signals: seq[SignalDefinition] = @[]"
+    , "  var slots: seq[SlotDefinition] = @[]"
+    , "  var properties: seq[PropertyDefinition] = @[]"]
   lines = lines.concat(signals.concat(slots.concat(properties)))
   let newStmt = "  newQMetaObject($2.staticMetaObject, \"$1\", signals, slots, properties)".format([info.name, info.superType])
   lines = lines.concat(@[newStmt])
@@ -413,10 +413,10 @@ proc generateMetaObjectInitializer(info: QObjectInfo): NimNode {.compiletime.} =
 
 proc generateMetaObjectAccessors(info: QObjectInfo): NimNode {.compiletime.} =
   ## Generate the metaObject instance and accessors
-  let str = [ "let staticMetaObjectInstance: QMetaObject = initializeMetaObjectInstance()"
-            , "proc staticMetaObject*(c: type $1): QMetaObject = staticMetaObjectInstance"
-            , "proc staticMetaObject*(self: $1): QMetaObject = staticMetaObjectInstance"
-            , "method metaObject*(self: $1): QMetaObject = staticMetaObjectInstance"].join("\n")
+  let str = ["let staticMetaObjectInstance: QMetaObject = initializeMetaObjectInstance()"
+    , "proc staticMetaObject*(c: type $1): QMetaObject = staticMetaObjectInstance"
+    , "proc staticMetaObject*(self: $1): QMetaObject = staticMetaObjectInstance"
+    , "method metaObject*(self: $1): QMetaObject = staticMetaObjectInstance"].join("\n")
   result = parseStmt(str % info.name)
 
 
@@ -486,7 +486,7 @@ macro signal*(s: untyped): untyped =
 
   let format = "$1.emit(\"$2\", [$3])"
   let str = format % [info.parametersNames[0], info.name, parametersNames.join(", ")]
-  s[s.len - 1 ] = parseStmt(str)
+  s[s.len - 1] = parseStmt(str)
   s
 
 
