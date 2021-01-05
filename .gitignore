@@ -4,3 +4,4 @@ nimcache
 *.nimproject*
 *.exe
 *.qmlc
+*.idea
