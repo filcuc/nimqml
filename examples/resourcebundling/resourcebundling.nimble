@@ -9,7 +9,7 @@ bin = @["main"]
 
 # Dependencies
 
-requires @["nim >= 1.0.0", "nimqml >= 0.7.7"]
+requires @["nim >= 1.0.0", "nimqml >= 0.8.0"]
 
 task build, "Compile the binary":
   exec ("nim c main")

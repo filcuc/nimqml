@@ -2,8 +2,8 @@
 	Filippo Cucchetto <filippocucchetto@gmail.com>
 
 	Will Szumski <will@cowboycoders.org>
-:Version: 0.7.7
-:Date: 2019/10/01
+:Version: 0.8.0
+:Date: 2021/01/05
 
 
 Introduction
