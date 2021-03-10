@@ -18,7 +18,7 @@ QtObject:
 
   proc firstNameChanged*(self: Contact, firstName: string) {.signal.}
 
-  proc setFirstName(self: Contact, name: string) {.slot.} =
+  method setFirstName(self: Contact, name: string) {.slot.} =
     if self.name != name:
       self.name = name
       self.firstNameChanged(name)
@@ -54,7 +54,6 @@ proc childrenOfKind(n: NimNode, kind: NimNodeKind): seq[NimNode] {.compiletime.}
     if c.kind == kind:
       result.add(c)
 
-
 proc getPragmas(n: NimNode): seq[string] {.compiletime.} =
   ## Return the pragmas of a node
   result = @[]
@@ -63,14 +62,60 @@ proc getPragmas(n: NimNode): seq[string] {.compiletime.} =
     return
   let pragma = pragmas[0]
   for c in pragma:
-    doAssert(c.kind == nnkIdent)
+    doAssert(c.kind == nnkSym)
     result.add($c)
 
 proc isSlot(n: NimNode): bool {.compiletime.} =
+  ## return true if the given proc/method is a slotn
   n.kind in {nnkProcDef, nnkMethodDef} and "slot" in n.getPragmas
 
 proc isSignal(n: NimNode): bool {.compiletime.} =
+  ## Return true if the given procdef is a signal 
   n.kind in {nnkProcDef, nnkMethodDef} and "signal" in n.getPragmas
+
+type MyProcInfo = object
+  name: string
+  params: seq[string]
+  isSlot: bool
+  isSignal: bool
+
+proc extractQObjectSignalsAndSlots(procDefs: seq[NimNode]): seq[MyProcInfo] =
+  ## Given a list of proc definitions extract the slot and signals
+  for def in procDefs:
+    # Check if slot is a signal or slo 
+    let procIsSlot = isSlot(def)
+    let procIsSignal = isSignal(def)
+    if not procIsSlot and not procIsSignal:
+      continue
+
+    # Check that we have at least the return type and a first argument
+    let procName = def[0]
+    let procParams = def[3]
+    let procParamsCount = procParams.len
+    if procParamsCount < 2:
+      continue
+
+    # Check first arguments to be a ref type
+    let procReturnType = procParams[0]
+    let procFirstParam = procParams[1]
+    let procFirstParamName = procFirstParam[0]
+    let procFirstParamTypeSym = procFirstParam[1]
+    if procFirstParamTypeSym.typeKind != ntyRef:
+      continue
+
+    # Check first type to be a QObject
+    let procFirstParamTypeDef = procFirstParamTypeSym.getImpl
+    if not isQObject(procFirstParamTypeDef):
+      continue
+
+    # Collect info
+    var procInfo = MyProcInfo(name: "", params: @[], isSlot: false, isSignal: false)
+    procInfo.name = $procName
+    for param in procParams[1 .. ^1]:
+      procInfo.params.add($param[1])
+    procInfo.isSlot = procIsSlot
+    procInfo.isSignal = procIsSignal
+    result.add(procInfo)
 
 macro foo(node: typed): void =
   var procDefs: seq[NimNode] = @[]
@@ -81,31 +126,15 @@ macro foo(node: typed): void =
   elif node.kind == nnkClosedSymChoice:
     for sym in node.children:
       let impl = sym.getImpl
-      impl.expectKind(nnkProcDef)
+      impl.expectKind({nnkProcDef, nnkMethodDef})
       procDefs.add(impl)
   else:
     raiseAssert("Invalid Node")
   
-  for impl in procDefs:
-    let name = impl[0]
-    let params = impl[3]
-    let paramsCount = params.len
-    let returnType = params[0]
-    if paramsCount < 2:
-      continue
-    let firstParam = params[1]
-    let firstParamName = firstParam[0]
-    let firstParamTypeSym = firstParam[1]
-    if firstParamTypeSym.typeKind != ntyRef:
-      continue
-    let firstParamTypeDef = firstParamTypeSym.getImpl
-    if not isQObject(firstParamTypeDef):
-      echo $firstParamTypeSym & " is not a QObject"
-      continue
+  let procAndSignalsInfo = extractQObjectSignalsAndSlots(procDefs)
+  for info in procAndSignalsInfo:
+    echo fmt"Name {info.name} is slot {info.isSlot} is signal {info.isSignal}"
 
-#    echo $firstParamTypeSym & " is a QObject"
-    echo impl.treeRepr()
-#    echo getPragmas(impl)
     
 proc intproc(i: RefTemp) = discard
 proc intproc(i: Contact) {.compiletime.} = discard
