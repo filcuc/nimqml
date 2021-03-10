@@ -2,7 +2,7 @@ import nimqml
 import macros
 import os
 import sugar
-
+import strformat
 
 type Temp = object
 type RefTemp = ref object
@@ -34,28 +34,51 @@ QtObject:
 
 proc superClass(n: NimNode): NimNode {.compileTime.} =
   let inherit = n[2][0][1]
-  echo n.treeRepr
-  echo $(inherit.treeRepr)
+  if inherit.kind == nnkOfInherit:
+    return inherit[0].getImpl()
+  return newNimNode(nnkEmpty)
 
 proc isQObject(impl: NimNode): bool {.compileTime.} =
-  impl.expectKind(nnkTypeDef)
+  var typ = impl
+  while typ.kind == nnkTypeDef:
+    let name = typ[0]
+    if $name == "QObject":
+      return true
+    typ = superClass(typ)
+  return false
 
-  let name = impl[0]
-  if $name == "QObject":
-    return true
-  let superclass = superClass(impl)
-  return true
+proc childrenOfKind(n: NimNode, kind: NimNodeKind): seq[NimNode] {.compiletime.} =
+  ## Return the sequence of child nodes of the given kind
+  result = @[]
+  for c in n:
+    if c.kind == kind:
+      result.add(c)
 
+
+proc getPragmas(n: NimNode): seq[string] {.compiletime.} =
+  ## Return the pragmas of a node
+  result = @[]
+  let pragmas = n.childrenOfKind(nnkPragma)
+  if pragmas.len != 1:
+    return
+  let pragma = pragmas[0]
+  for c in pragma:
+    doAssert(c.kind == nnkIdent)
+    result.add($c)
+
+proc isSlot(n: NimNode): bool {.compiletime.} =
+  n.kind in {nnkProcDef, nnkMethodDef} and "slot" in n.getPragmas
+
+proc isSignal(n: NimNode): bool {.compiletime.} =
+  n.kind in {nnkProcDef, nnkMethodDef} and "signal" in n.getPragmas
 
 macro foo(node: typed): void =
   var procDefs: seq[NimNode] = @[]
   if node.kind == nnkSym:
-#    echo "nnkSym"
     let impl = node.getImpl
     impl.expectKind(nnkProcDef)
     procDefs.add(impl)
   elif node.kind == nnkClosedSymChoice:
-#    echo "nnkClosedSymChoice"
     for sym in node.children:
       let impl = sym.getImpl
       impl.expectKind(nnkProcDef)
@@ -77,16 +100,21 @@ macro foo(node: typed): void =
       continue
     let firstParamTypeDef = firstParamTypeSym.getImpl
     if not isQObject(firstParamTypeDef):
+      echo $firstParamTypeSym & " is not a QObject"
       continue
-    echo "OK"
 
-
+#    echo $firstParamTypeSym & " is a QObject"
+    echo impl.treeRepr()
+#    echo getPragmas(impl)
+    
 proc intproc(i: RefTemp) = discard
+proc intproc(i: Contact) {.compiletime.} = discard
 proc intproc(i: QObject) = discard
 proc intproc(i: int) = discard
 
 proc main() =
-  foo(intproc)
+  foo(firstNameChanged)
+
 
 if isMainModule:
   main()

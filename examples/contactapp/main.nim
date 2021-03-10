@@ -16,6 +16,7 @@ proc mainProc() =
 
   engine.setRootContextProperty("logic", logicVariant)
   engine.load("main.qml")
+
   app.exec()
 
 when isMainModule:

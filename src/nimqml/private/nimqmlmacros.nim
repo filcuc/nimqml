@@ -479,19 +479,15 @@ proc generateSignature(info: QObjectInfo, slot: ProcInfo, dos_macro: string): st
 
 
 proc generateSignalAndSlotsSignatures(info: QObjectInfo): NimNode {.compiletime.} =
-    var body: seq[string] = @[]
-    for slot in info.slots:
-      body.add(generateSignature(info, slot, "dos_slot_macro"))
-    for signal in info.signals:
-      body.add(generateSignature(info, signal, "dos_signal_macro"))
-    result = parseStmt(body.join("\n"))
-    echo result.repr
+  ## Generate signal signature
+  var body: seq[string] = @[]
+  for slot in info.slots:
+    body.add(generateSignature(info, slot, "dos_slot_macro"))
+  for signal in info.signals:
+    body.add(generateSignature(info, signal, "dos_signal_macro"))
+  result = parseStmt(body.join("\n"))
 
-macro slot*(s: untyped): untyped =
-  ## Do nothing. Used only for tagging
-  s
-
-macro signal*(s: untyped): untyped =
+proc generateSignalDefinition(s: NimNode): NimNode =
   ## Generate the signal implementation
   let info = extractProcInfo(s)
 
@@ -508,12 +504,22 @@ macro signal*(s: untyped): untyped =
   s[s.len - 1] = parseStmt(str)
   s
 
+template slot* {.pragma.}
+
+template signal* {.pragma.}
+
 macro QtObject*(body: untyped): untyped =
   ## Generate the QObject stuff
+  #echo body.treeRepr
   let info = extractQObjectInfo(body)
   result = newStmtList()
-  result.add(body)
+  for n in body.children:
+    if isSignal(n):
+      result.add generateSignalDefinition(n)
+    else:
+      result.add n
   result.add(generateMetaObject(info))
   result.add(generateOnSlotCalled(info))
   result.add(generateSignalAndSlotsSignatures(info))
+
 

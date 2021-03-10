@@ -24,11 +24,11 @@ proc delete*(application: QApplication) =
   dos_qapplication_delete()
   application.deleted = true
 
-proc newQApplication*(): QApplication =
-  ## Return a new QApplication
-  QApplication.new
-
 proc new*(c: type QApplication): QApplication =
   ## Return a new QApplicationp
   new(result, delete)
   result.setup()
+
+proc newQApplication*(): QApplication {.deprecated: "use QApplication.new".} =
+  ## Return a new QApplication
+  QApplication.new
