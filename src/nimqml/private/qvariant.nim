@@ -79,7 +79,7 @@ proc newQVariant*(value: QVariant): QVariant =
   new(result, delete)
   result.setup(value)
 
-proc newQVariant*(value: float): QVariant =
+proc newQVariant*(value: cfloat): QVariant =
   ## Return a new QVariant given a float
   new(result, delete)
   result.setup(value.cfloat)
@@ -105,11 +105,11 @@ proc `boolVal=`*(variant: QVariant, value: bool) =
   ## Sets the QVariant bool value
   dos_qvariant_setBool(variant.vptr, value)
 
-proc floatVal*(variant: QVariant): float =
+proc floatVal*(variant: QVariant): cfloat =
   ## Return the QVariant value as float
-  dos_qvariant_toFloat(variant.vptr).float
+  dos_qvariant_toFloat(variant.vptr)
 
-proc `floatVal=`*(variant: QVariant, value: float) =
+proc `floatVal=`*(variant: QVariant, value: cfloat) =
   ## Sets the QVariant float value
   dos_qvariant_setFloat(variant.vptr, value.cfloat)
 
@@ -134,6 +134,18 @@ proc `stringVal=`*(variant: QVariant, value: string) =
 proc `qobjectVal=`*(variant: QVariant, value: QObject) =
   ## Sets the QVariant qobject value
   dos_qvariant_setQObject(variant.vptr, value.vptr)
+
+proc value*(self: QVariant, T: type string): string= self.stringVal
+proc value*(self: QVariant, T: type int): int = self.intVal
+proc value*(self: QVariant, T: type bool): bool= self.boolVal
+proc value*(self: QVariant, T: type cfloat): cfloat = self.floatVal
+proc value*(self: QVariant, T: type cdouble): cdouble = self.doubleVal
+
+proc `value=`*(self: QVariant, value: string) = self.stringVal = value
+proc `value=`*(self: QVariant, value: int) = self.intVal = value
+proc `value=`*(self: QVariant, value: bool) = self.boolVal = value
+proc `value=`*(self: QVariant, value: cfloat) = self.floatVal = value
+proc `value=`*(self: QVariant, value: cdouble) = self.doubleVal = value
 
 proc assign*(leftValue: QVariant, rightValue: QVariant) =
   ## Assign a QVariant with another. The inner value of the QVariant is copied

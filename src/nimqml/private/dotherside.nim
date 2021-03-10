@@ -7,13 +7,14 @@ const dynLibName =
     of "macosx":
       "libDOtherSide.dylib"
     else:
-      "libDOtherSide.so.0.7"
+      "libDOtherSide.so.0.8"
 
 type
   NimQObject = pointer
   NimQAbstractItemModel = pointer
   NimQAbstractListModel = pointer
   NimQAbstractTableModel = pointer
+  NimQThread = pointer
   DosQMetaObject = distinct pointer
   DosQObject = distinct pointer
   DosQObjectWrapper = distinct pointer
@@ -30,6 +31,9 @@ type
   DosQAbstractItemModel = distinct pointer
   DosQAbstractTableModel = distinct pointer
   DosQAbstractListModel = distinct pointer
+  DosQThread = distinct pointer
+  DosQThreadId = distinct pointer
+  DosQMetaObjectConnection = distinct pointer
 
   DosParameterDefinition = object
     name: cstring
@@ -106,6 +110,17 @@ type
     canFetchMore: DosCanFetchMoreCallback
     fetchMore: DosFetchMoreCallback
 
+  DosQThreadStartedCallback = proc(thread: NimQThread) {.cdecl.}
+  DosQThreadFinishedCallback = proc(thread: NimQThread) {.cdecl.}
+  DosQThreadRunCallback = proc(thread: NimQThread) {.cdecl.}
+
+  DosQThreadCallbacks = object
+     started: DosQThreadStartedCallback
+     finished: DosQThreadFinishedCallback
+     run: DosQThreadRunCallback
+
+  DosQObjectConnectLambdaCallback = proc(data: pointer, numArguments: cint, arguments: ptr DosQVariantArray) {.cdecl.}
+  DosQMetaObjectInvokeMethodCallback = proc(data: pointer) {.cdecl.}
 
 # Conversion
 proc resetToNil[T](x: var T) = x = nil.pointer.T
@@ -117,9 +132,10 @@ proc isNil(x: DosQUrl): bool = x.pointer.isNil
 proc isNil(x: DosQQuickView): bool = x.pointer.isNil
 proc isNil(x: DosQHashIntByteArray): bool = x.pointer.isNil
 proc isNil(x: DosQModelIndex): bool = x.pointer.isNil
+proc isNil(x: DosQMetaObjectConnection): bool = x.pointer.isNil
 
 # CharArray
-proc dos_chararray_delete(str: cstring) {.cdecl, dynlib: dynLibName, importc.}
+proc dos_chararray_delete*(str: cstring) {.cdecl, dynlib: dynLibName, importc.}
 
 # QCoreApplication
 proc dos_qcoreapplication_application_dir_path(): cstring {.cdecl, dynlib: dynLibName, importc.}
@@ -168,7 +184,7 @@ proc dos_qvariant_setInt(variant: DosQVariant, value: cint) {.cdecl, dynlib: dyn
 proc dos_qvariant_setBool(variant: DosQVariant, value: bool) {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qvariant_setString(variant: DosQVariant, value: cstring) {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qvariant_assign(leftValue: DosQVariant, rightValue: DosQVariant) {.cdecl, dynlib: dynLibName, importc.}
-proc dos_qvariant_setFloat(variant: DosQVariant, value: float) {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qvariant_setFloat(variant: DosQVariant, value: cfloat) {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qvariant_setDouble(variant: DosQVariant, value: cdouble) {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qvariant_setQObject(variant: DosQVariant, value: DosQObject) {.cdecl, dynlib: dynLibName, importc.}
 
@@ -177,8 +193,20 @@ proc dos_qobject_qmetaobject(): DosQMetaObject {.cdecl, dynlib: dynLibName, impo
 proc dos_qobject_create(nimobject: NimQObject, metaObject: DosQMetaObject, dosQObjectCallback: DosQObjectCallBack): DosQObject {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qobject_objectName(qobject: DosQObject): cstring {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qobject_setObjectName(qobject: DosQObject, name: cstring) {.cdecl, dynlib: dynLibName, importc.}
-proc dos_qobject_signal_emit(qobject: DosQObject, signalName: cstring, argumentsCount: cint, arguments: ptr DosQVariantArray) {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qobject_signal_emit(qobject: DosQObject, signalName: cstring, argumentsCount: cint, arguments: ptr DosQVariantArray)  {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qobject_connect_static(sender: DosQObject, senderFunc: cstring, receiver: DosQObject, receiverFunc: cstring, connectionType: cint): DosQMetaObjectConnection {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qobject_connect_lambda_static(sender: DosQObject, senderFunc: cstring, callback: DosQObjectConnectLambdaCallback, data: pointer, connectionType: cint): DosQMetaObjectConnection {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qobject_connect_lambda_with_context_static(sender: DosQObject, senderFunc: cstring, context: DosQObject, callback: DosQObjectConnectLambdaCallback, data: pointer, connectionType: cint): DosQMetaObjectConnection {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qobject_disconnect_static(sender: DosQObject, senderFunc: cstring, receiver: DosQObject, receiverFunc: cstring) {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qobject_disconnect_with_connection_static(connection: DosQMetaObjectConnection) {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qobject_delete(qobject: DosQObject) {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qobject_deleteLater(qobject: DosQObject) {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qobject_moveToThread(qobject: DosQObject, thread: DosQThread) {.cdecl, dynlib: dynLibName, importc.}
+proc dos_signal_macro*(name: cstring): cstring {.cdecl, dynlib: dynLibName, importc.}
+proc dos_slot_macro*(name: cstring): cstring {.cdecl, dynlib: dynLibName, importc.}
+
+# QMetaObject::Connection
+proc dos_qmetaobject_connection_delete(connection: DosQMetaObjectConnection) {.cdecl, dynlib: dynLibName, importc.}
 
 # QAbstractItemModel
 proc dos_qabstractitemmodel_qmetaobject(): DosQMetaObject {.cdecl dynlib: dynLibName, importc.}
@@ -190,6 +218,7 @@ proc dos_qmetaobject_create(superclassMetaObject: DosQMetaObject,
                             slotDefinitions: ptr DosSlotDefinitions,
                             propertyDefinitions: ptr DosPropertyDefinitions): DosQMetaObject {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qmetaobject_delete(vptr: DosQMetaObject) {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qmetaobject_invoke_method(context: DosQObject, callback: DosQMetaObjectInvokeMethodCallback, callbackData: pointer, connectionType: cint): bool  {.cdecl, dynlib: dynLibName, importc.}
 
 # QUrl
 proc dos_qurl_create(url: cstring, parsingMode: cint): DosQUrl {.cdecl, dynlib: dynLibName, importc.}
@@ -289,3 +318,16 @@ proc dos_qabstracttablemodel_create(modelPtr: NimQAbstractTableModel,
                                     qaimCallbacks: DosQAbstractItemModelCallbacks): DosQAbstractTableModel {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qabstracttablemodel_parent(modelPtr: DosQAbstractTableModel, index: DosQModelIndex): DosQModelIndex {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qabstracttablemodel_index(modelPtr: DosQAbstractTableModel, row: cint, column: cint, parent: DosQModelIndex): DosQModelIndex {.cdecl, dynlib: dynLibName, importc.}
+
+# QThread
+proc dos_qthread_qmetaobject(): DosQMetaObject {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qthread_currentThread(): DosQThread {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qthread_currentThreadId(): DosQThreadId {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qthread_create(nimobject: NimQObject, metaObject: DosQMetaObject, dosQObjectCallback: DosQObjectCallBack, dosQThreadCallback: DosQThreadCallbacks): DosQThread {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qthread_start(self: DosQThread) {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qthread_quit(self: DosQThread) {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qthread_exit(self: DosQThread, exitCode: cint) {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qthread_exec(self: DosQThread, exitCode: var cint): bool {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qthread_wait_for(self: DosQThread, time: culonglong) {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qthread_wait_forever(self: DosQThread) {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qthread_isRunning(self: DosQThread): bool {.cdecl, dynlib: dynLibName, importc.}

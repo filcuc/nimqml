@@ -18,9 +18,43 @@ proc `objectName=`*(self: QObject, name: string) =
   ## Sets the Qobject name
   dos_qobject_setObjectName(self.vptr, name.cstring)
 
+proc objectNameChanged*(typ: type QObject): string =
+  var str = dos_signal_macro("objectNameChanged(QString)")
+  result = $str
+  dos_chararray_delete(str)
+
 method metaObject*(self: QObject): QMetaObject {.base.} =
   ## Return the metaObject
   QObject.staticMetaObject
+
+proc connect*(typ: type QObject, sender: QObject, senderFunc: string, receiver: QObject, receiverFunc: string, connectionType: ConnectionType = ConnectionType.AutoConnection): QMetaObjectConnection =
+  let conn: DosQMetaObjectConnection = dos_qobject_connect_static(sender.vptr, senderFunc.cstring, receiver.vptr, receiverFunc.cstring, connectionType.cint)
+  result = QMetaObjectConnection.new(conn)
+
+proc connect*(self: QObject, senderFunc: string, receiver: QObject, receiverFunc: string): QMetaObjectConnection =
+  QObject.connect(self, senderFunc, receiver, receiverFunc)
+
+proc connect*[T](typ: type QObject, sender: QObject, senderFunc: string, p: T, connectionType: ConnectionType = ConnectionType.AutoConnection): QMetaObjectConnection =
+  let id = LambdaInvoker.instance.add(p)
+  let conn = dos_qobject_connect_lambda_static(sender.vptr, senderFunc.cstring, lambdaCallback, cast[pointer](id), connectionType.cint)
+  result = QMetaObjectConnection.new(conn)
+
+proc connect*[T](typ: type QObject, sender: QObject, senderFunc: string, context: QObject, p: T, connectionType: ConnectionType = ConnectionType.AutoConnection): QMetaObjectConnection =
+  let id = LambdaInvoker.instance.add(p)
+  let conn = dos_qobject_connect_lambda_with_context_static(sender.vptr, senderFunc.cstring, context.vptr, lambdaCallback, cast[pointer](id), connectionType.cint)
+  result = QMetaObjectConnection.new(conn)
+
+proc disconnect*(typ: type QObject, sender: QObject, senderFunc: string, receiver: QObject, receiverFunc: string) =
+  dos_qobject_disconnect_static(sender.vptr, senderFunc.cstring, receiver.vptr, receiverFunc.cstring)
+
+proc disconnect*(self: QObject, senderFunc: string, receiver: QObject, receiverFunc: string) =
+  QObject.disconnect(self, senderFunc, receiver, receiverFunc)
+
+proc disconnect*(typ: type QObject, connection: QMetaObjectConnection) =
+  dos_qobject_disconnect_with_connection_static(connection.vptr)
+
+proc disconnect*(self: QObject, connection: QMetaObjectConnection) =
+  QObject.disconnect(connection)
 
 proc emit*(qobject: QObject, signalName: string, arguments: openarray[QVariant] = []) =
   ## Emit the signal with the given name and values
@@ -56,15 +90,29 @@ proc setup*(self: QObject) =
   self.owner = true
   self.vptr = dos_qobject_create(addr(self[]), self.metaObject.vptr, qobjectCallback)
 
-
 proc delete*(self: QObject) =
+  debugMsg("QObject", "delete")
   ## Delete a QObject
   if not self.owner or self.vptr.isNil:
     return
   dos_qobject_delete(self.vptr)
   self.vptr.resetToNil
 
-proc newQObject*(): QObject =
+proc deleteLater*(self: QObject) =
+  debugMsg("QObject", "deleteLater")
+  ## Delete a QObject
+  if not self.owner or self.vptr.isNil:
+    return
+  dos_qobject_deleteLater(self.vptr)
+  self.vptr.resetToNil
+
+proc newQObject*(): QObject {.deprecated: "Use QObject.new()".} =
+  QObject.new()
+
+proc new*(typ: type QObject): QObject =
   ## Create a new QObject
   new(result, delete)
   result.setup()
+
+proc moveToThread*(self: QObject, thread: QThread) =
+    dos_qobject_moveToThread(self.vptr, thread.vptr.DosQThread)

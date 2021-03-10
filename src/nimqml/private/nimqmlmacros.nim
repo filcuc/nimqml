@@ -466,11 +466,30 @@ proc generateOnSlotCalled(info: QObjectInfo): NimNode {.compiletime.} =
   str = str & "\n" & body.join("\n")
   result = parseStmt(str % info.name)
 
+proc generateSignature(info: QObjectInfo, slot: ProcInfo, dos_macro: string): string {.compiletime.} =
+  let signature = block:
+    var args: seq[string]
+    for typ in slot.parametersTypes:
+      if typ == "string":
+        args.add("QString")
+      else:
+        args.add(typ)
+    "$1($2)" % [slot.name, args.join(",")]
+  "proc $1*(typ: type $2): string =\n  let str = $3(\"$4\")\n  result = $$str \n  dos_chararray_delete(str)" % [slot.name, info.name, dos_macro, signature]
+
+
+proc generateSignalAndSlotsSignatures(info: QObjectInfo): NimNode {.compiletime.} =
+    var body: seq[string] = @[]
+    for slot in info.slots:
+      body.add(generateSignature(info, slot, "dos_slot_macro"))
+    for signal in info.signals:
+      body.add(generateSignature(info, signal, "dos_signal_macro"))
+    result = parseStmt(body.join("\n"))
+    echo result.repr
 
 macro slot*(s: untyped): untyped =
   ## Do nothing. Used only for tagging
   s
-
 
 macro signal*(s: untyped): untyped =
   ## Generate the signal implementation
@@ -489,7 +508,6 @@ macro signal*(s: untyped): untyped =
   s[s.len - 1] = parseStmt(str)
   s
 
-
 macro QtObject*(body: untyped): untyped =
   ## Generate the QObject stuff
   let info = extractQObjectInfo(body)
@@ -497,3 +515,5 @@ macro QtObject*(body: untyped): untyped =
   result.add(body)
   result.add(generateMetaObject(info))
   result.add(generateOnSlotCalled(info))
+  result.add(generateSignalAndSlotsSignatures(info))
+

@@ -13,6 +13,9 @@ type
   QAbstractTableModel* = ref object of QAbstractItemModel ## \
     ## A QAbstractTableModel
 
+  QThread* = ref object of QObject ## \
+    ## A QThread
+
   QVariant* = ref object of RootObj ## \
     ## A QVariant
     vptr: DosQVariant
@@ -79,6 +82,14 @@ type
     QObjectStar = 39.cint,
     QVariant = 41.cint,
     Void = 43.cint
+
+  ConnectionType* = enum ## \
+    ## Qt connection type
+    AutoConnection = 0.cint,
+    DirectConnnection = 1.cint,
+    QueuedConnection = 2.cint,
+    BlockingQueuedConnnection = 3.cint,
+    UniqueConnection = 0x80.cint
 
   ParameterDefinition* = object
     name*: string

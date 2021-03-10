@@ -12,6 +12,12 @@ proc newQObjectMetaObject*(): QMetaObject =
   new(result, delete)
   result.vptr = dos_qobject_qmetaobject()
 
+proc newQThreadMetaObject*(): QMetaObject =
+  ## Create the QMetaObject of a QThread
+  debugMsg("QMetaObject", "newQThreadMetaObject")
+  new(result, delete)
+  result.vptr = dos_qthread_qmetaobject()
+
 proc newQAbstractItemModelMetaObject*(): QMetaObject =
   ## Create the QMetaObject of QAbstractItemModel
   debugMsg("QMetaObject", "newQAbstractItemModelMetaObject")
@@ -84,3 +90,7 @@ proc newQMetaObject*(superClass: QMetaObject, className: string,
   let properties = DosPropertyDefinitions(count: dosProperties.len.cint, definitions: if dosProperties.len > 0: dosProperties[0].unsafeAddr else: nil)
 
   result.vptr = dos_qmetaobject_create(superClass.vptr, className.cstring, signals.unsafeAddr, slots.unsafeAddr, properties.unsafeAddr)
+
+proc invokeMethod*(typ: type QMetaObject, context: QObject, l: LambdaInvokerProc, connectionType: ConnectionType = ConnectionType.AutoConnection): bool =
+  let id = LambdaInvoker.instance.add(l)
+  result = dos_qmetaobject_invoke_method(context.vptr, lambdaCallback, cast[pointer](id), connectionType.cint)

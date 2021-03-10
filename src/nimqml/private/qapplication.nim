@@ -11,6 +11,11 @@ proc quit*(application: QApplication) =
   ## Quit the Qt event loop
   dos_qapplication_quit()
 
+proc quit*(typ: type QApplication): string =
+  var str = dos_slot_macro("quit()")
+  result = $str
+  dos_chararray_delete(str)
+
 proc delete*(application: QApplication) =
   ## Delete the given QApplication
   if application.deleted:
@@ -21,5 +26,9 @@ proc delete*(application: QApplication) =
 
 proc newQApplication*(): QApplication =
   ## Return a new QApplication
+  QApplication.new
+
+proc new*(c: type QApplication): QApplication =
+  ## Return a new QApplicationp
   new(result, delete)
   result.setup()
