@@ -3,6 +3,7 @@ import macros
 import os
 import sugar
 import strformat
+import strutils
 
 type Temp = object
 type RefTemp = ref object
@@ -18,7 +19,7 @@ QtObject:
 
   proc firstNameChanged*(self: Contact, firstName: string) {.signal.}
 
-  method setFirstName(self: Contact, name: string) {.slot.} =
+  method setFirstName(self: Contact, name: string) {.slot, base.} =
     if self.name != name:
       self.name = name
       self.firstNameChanged(name)
@@ -62,7 +63,7 @@ proc getPragmas(n: NimNode): seq[string] {.compiletime.} =
     return
   let pragma = pragmas[0]
   for c in pragma:
-    doAssert(c.kind == nnkSym)
+    doAssert(c.kind in {nnkSym, nnkIdent})
     result.add($c)
 
 proc isSlot(n: NimNode): bool {.compiletime.} =
@@ -117,32 +118,41 @@ proc extractQObjectSignalsAndSlots(procDefs: seq[NimNode]): seq[MyProcInfo] =
     procInfo.isSignal = procIsSignal
     result.add(procInfo)
 
-macro foo(node: typed): void =
-  var procDefs: seq[NimNode] = @[]
+proc extractProcDefs(node: NimNode): seq[NimNode] {.compileTime.} =
   if node.kind == nnkSym:
     let impl = node.getImpl
-    impl.expectKind(nnkProcDef)
-    procDefs.add(impl)
+    impl.expectKind({nnkProcDef, nnkMethodDef})
+    result.add(impl)
   elif node.kind == nnkClosedSymChoice:
     for sym in node.children:
       let impl = sym.getImpl
       impl.expectKind({nnkProcDef, nnkMethodDef})
-      procDefs.add(impl)
+      result.add(impl)
   else:
     raiseAssert("Invalid Node")
-  
-  let procAndSignalsInfo = extractQObjectSignalsAndSlots(procDefs)
-  for info in procAndSignalsInfo:
-    echo fmt"Name {info.name} is slot {info.isSlot} is signal {info.isSignal}"
 
-    
+proc generateSignature(info: MyProcInfo): string {.compileTime.} =
+  let name = info.name
+  let params = info.params[1 .. ^1].join(",")
+  return fmt"{info.name}({params})"
+  
+
+macro generateSlotOrSignalSignature(node: typed): untyped =
+  let defs: seq[NimNode] = extractProcDefs(node)
+  let infos: seq[MyProcInfo] = extractQObjectSignalsAndSlots(defs)
+  doAssert(infos.len == 1, "Expected at least one signal or slot")
+  let signature = generateSignature(infos[0])
+  echo signature
+  return newLit(signature)
+
 proc intproc(i: RefTemp) = discard
 proc intproc(i: Contact) {.compiletime.} = discard
 proc intproc(i: QObject) = discard
 proc intproc(i: int) = discard
 
 proc main() =
-  foo(firstNameChanged)
+  discard generateSlotOrSignalSignature(setFirstName)
+
 
 
 if isMainModule:
