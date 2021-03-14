@@ -4,6 +4,7 @@ import os
 import sugar
 import strformat
 import strutils
+import sequtils
 
 type Temp = object
 type RefTemp = ref object
@@ -131,19 +132,28 @@ proc extractProcDefs(node: NimNode): seq[NimNode] {.compileTime.} =
   else:
     raiseAssert("Invalid Node")
 
+proc mapTypes(name: string): string =
+  if name == "string": "QString" else: name
+
 proc generateSignature(info: MyProcInfo): string {.compileTime.} =
   let name = info.name
-  let params = info.params[1 .. ^1].join(",")
-  return fmt"{info.name}({params})"
+  let params = info.params[1 .. ^1].map(mapTypes).join(",")
+  let prefix = if info.isSlot: "1" else: "2"
+  return fmt"{prefix}{info.name}({params})"
   
-
 macro generateSlotOrSignalSignature(node: typed): untyped =
   let defs: seq[NimNode] = extractProcDefs(node)
   let infos: seq[MyProcInfo] = extractQObjectSignalsAndSlots(defs)
   doAssert(infos.len == 1, "Expected at least one signal or slot")
   let signature = generateSignature(infos[0])
-  echo signature
-  return newLit(signature)
+  result = newLit(signature)
+
+macro generateSignalSignature(node: typed): untyped =
+  let defs: seq[NimNode] = extractProcDefs(node)
+  let infos: seq[MyProcInfo] = extractQObjectSignalsAndSlots(defs)
+  doAssert(infos.len == 1 and infos[0].isSignal, "Expected at least one signal")
+  let signature = generateSignature(infos[0])
+  result = newLit(signature)
 
 proc intproc(i: RefTemp) = discard
 proc intproc(i: Contact) {.compiletime.} = discard
