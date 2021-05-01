@@ -80,6 +80,14 @@ type
     QVariant = 41.cint,
     Void = 43.cint
 
+  ConnectionType* = enum ## \
+    ## Qt connection type
+    AutoConnection = 0.cint,
+    DirectConnnection = 1.cint,
+    QueuedConnection = 2.cint,
+    BlockingQueuedConnnection = 3.cint,
+    UniqueConnection = 0x80.cint
+
   ParameterDefinition* = object
     name*: string
     metaType*: QMetaType

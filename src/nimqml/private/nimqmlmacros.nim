@@ -31,7 +31,6 @@ type
     signals: seq[ProcInfo]
     properties: seq[PropertyInfo]
 
-
 proc childPos(node: NimNode, child: NimNode): int =
   ## Return the position of the given child or -1
   var i = 0
@@ -41,7 +40,6 @@ proc childPos(node: NimNode, child: NimNode): int =
     inc(i)
   return -1
 
-
 proc removeChild(node: NimNode, child: NimNode): bool =
   ## Remove the child from a node
   let pos = node.childPos(child)
@@ -49,27 +47,22 @@ proc removeChild(node: NimNode, child: NimNode): bool =
   node.del(pos)
   return true
 
-
 proc toString(info: ProcInfo): string {.compiletime.} =
   ## Convert a ProcInfo to string
   let str = "ProcInfo {\n  Name:\"$1\",\n  Return Type:$2,\n  Param Types:[$3],\n  Param Names:[$4]\n}"
   str % [info.name, info.returnType, info.parametersTypes.join(","), info.parametersNames.join(",")]
 
-
 proc display(info: ProcInfo) {.compiletime.} =
   ## Display a ProcInfo
   echo info.toString
-
 
 proc toString(info: PropertyInfo): string {.compiletime.} =
   ## Convert a PropertyInfo to string
   "PropertyInfo {\"$1\", \"$2\", \"$3\", \"$4\", \"$5\"}" % [info.name, info.typ, info.read, info.write, info.notify]
 
-
 proc display(info: PropertyInfo) {.compiletime.} =
   ## Display a PropertyInfo
   echo info.toString
-
 
 proc toString(info: QObjectInfo): string {.compiletime.} =
   ## Convert a QObjectInfo to string
@@ -78,11 +71,9 @@ proc toString(info: QObjectInfo): string {.compiletime.} =
   let properties = info.properties.map(proc(x: auto): auto = x.toString)
   "QObjectInfo {\"$1\", \"$2\", [\"$3\"], [\"$4\"], [\"$5\"]}" % [info.name, info.superType, slots.join(", "), signals.join(", "), properties.join(", ")]
 
-
 proc display(info: QObjectInfo) {.compiletime.} =
   ## Display a QObjectInfo
   echo info.toString
-
 
 proc fromQVariantConversion(x: string): string {.compiletime.} =
   ## Return the correct conversion call from a QVariant
@@ -96,7 +87,6 @@ proc fromQVariantConversion(x: string): string {.compiletime.} =
   of "QObject": result = "qobjectVal"
   of "QVariant": result = ""
   else: error("Unsupported conversion from QVariant to $1" % x)
-
 
 proc toMetaType(x: string): string {.compiletime.} =
   ## Convert a nim type to QMetaType
@@ -114,13 +104,11 @@ proc toMetaType(x: string): string {.compiletime.} =
   else: error("Unsupported conversion of $1 to metatype" % x)
   result = "QMetaType.$1" % result
 
-
 proc toMetaType(types: seq[string]): seq[string] {.compiletime.} =
   ## Convert a sequence of nim types to a sequence of QMetaTypes
   result = @[]
   for t in types:
     result.add(t.toMetaType)
-
 
 proc childrenOfKind(n: NimNode, kind: NimNodeKind): seq[NimNode] {.compiletime.} =
   ## Return the sequence of child nodes of the given kind
@@ -133,7 +121,6 @@ proc numChildrenOfKind(n: NimNode, kind: NimNodeKind): int {.compiletime.} =
   ## Return the number of child nodes of the given kind
   childrenOfKind(n, kind).len
 
-
 proc getPragmas(n: NimNode): seq[string] {.compiletime.} =
   ## Return the pragmas of a node
   result = @[]
@@ -142,9 +129,8 @@ proc getPragmas(n: NimNode): seq[string] {.compiletime.} =
     return
   let pragma = pragmas[0]
   for c in pragma:
-    doAssert(c.kind == nnkIdent)
+    doAssert(c.kind in {nnkSym, nnkIdent})
     result.add($c)
-
 
 proc extractQObjectTypeDef(head: NimNode): FindQObjectTypeResult {.compiletime.} =
   ## Extract the first type section and extract the first type Name and SuperType
@@ -297,11 +283,25 @@ proc extractPropertyInfo(node: NimNode): tuple[ok: bool, info: PropertyInfo] {.c
   result.ok = true
 
 
+proc isLambdaSymbol(n: NimNode): bool =
+  if n.kind != nnkSym:
+    return false
+  let impl = n.getImpl
+  if impl.kind != nnkIdentDefs:
+    return false
+  return impl[2].kind == nnkLambda
+
+proc isProcOrMethod(n: NimNode): bool {.compiletime.} =
+  n.kind in {nnkProcDef, nnkMethodDef} 
+
 proc isSlot(n: NimNode): bool {.compiletime.} =
-  n.kind in {nnkProcDef, nnkMethodDef} and "slot" in n.getPragmas
+  isProcOrMethod(n) and "slot" in n.getPragmas
 
 proc isSignal(n: NimNode): bool {.compiletime.} =
-  n.kind in {nnkProcDef, nnkMethodDef} and "signal" in n.getPragmas
+  isProcOrMethod(n) and "signal" in n.getPragmas
+
+proc isSignalOrSlot(n: NimNode): bool =
+  isSignal(n) or isSlot(n)
 
 proc isProperty(node: NimNode): bool {.compiletime.} =
   if node.kind != nnkCommand or
@@ -400,7 +400,7 @@ proc generateMetaObjectInitializer(info: QObjectInfo): NimNode {.compiletime.} =
   let slots = generateMetaObjectSlotsDefinitions(info.slots)
   let properties = generateMetaObjectPropertiesDefinitions(info.properties)
 
-  var lines = @["proc initializeMetaObjectInstance(): QMetaObject ="
+  var lines = @["proc initializeMetaObjectInstance(typ: type $1): QMetaObject =".format([info.name])
     , "  var signals: seq[SignalDefinition] = @[]"
     , "  var slots: seq[SlotDefinition] = @[]"
     , "  var properties: seq[PropertyDefinition] = @[]"]
@@ -413,10 +413,10 @@ proc generateMetaObjectInitializer(info: QObjectInfo): NimNode {.compiletime.} =
 
 proc generateMetaObjectAccessors(info: QObjectInfo): NimNode {.compiletime.} =
   ## Generate the metaObject instance and accessors
-  let str = ["let staticMetaObjectInstance: QMetaObject = initializeMetaObjectInstance()"
-    , "proc staticMetaObject*(c: type $1): QMetaObject = staticMetaObjectInstance"
-    , "proc staticMetaObject*(self: $1): QMetaObject = staticMetaObjectInstance"
-    , "method metaObject*(self: $1): QMetaObject = staticMetaObjectInstance"].join("\n")
+  let str = ["let $1StaticMetaObjectInstance: QMetaObject = $1.initializeMetaObjectInstance()".format([info.name])
+    , "proc staticMetaObject*(c: type $1): QMetaObject = $1StaticMetaObjectInstance".format([info.name])
+    , "proc staticMetaObject*(self: $1): QMetaObject = $1StaticMetaObjectInstance".format([info.name])
+    , "method metaObject*(self: $1): QMetaObject = $1StaticMetaObjectInstance".format([info.name])].join("\n")
   result = parseStmt(str % info.name)
 
 
@@ -466,13 +466,7 @@ proc generateOnSlotCalled(info: QObjectInfo): NimNode {.compiletime.} =
   str = str & "\n" & body.join("\n")
   result = parseStmt(str % info.name)
 
-
-macro slot*(s: untyped): untyped =
-  ## Do nothing. Used only for tagging
-  s
-
-
-macro signal*(s: untyped): untyped =
+proc generateSignalDefinition(s: NimNode): NimNode =
   ## Generate the signal implementation
   let info = extractProcInfo(s)
 
@@ -489,11 +483,135 @@ macro signal*(s: untyped): untyped =
   s[s.len - 1] = parseStmt(str)
   s
 
+template slot* {.pragma.}
+
+template signal* {.pragma.}
 
 macro QtObject*(body: untyped): untyped =
   ## Generate the QObject stuff
   let info = extractQObjectInfo(body)
   result = newStmtList()
-  result.add(body)
+  for n in body.children:
+    if isSignal(n):
+      result.add generateSignalDefinition(n)
+    else:
+      result.add n
   result.add(generateMetaObject(info))
   result.add(generateOnSlotCalled(info))
+
+type MyProcInfo = object
+  name: string
+  params: seq[string]
+  isSlot: bool
+  isSignal: bool
+
+proc superClass(n: NimNode): NimNode {.compileTime.} =
+  ## Return the superclass of an object or Empty
+  let inherit = n[2][0][1]
+  if inherit.kind == nnkOfInherit:
+    return inherit[0].getImpl()
+  return newNimNode(nnkEmpty)
+
+proc isQObject(impl: NimNode): bool {.compileTime.} =
+  ## Return true if the type is a QObject
+  var typ = impl
+  while typ.kind == nnkTypeDef:
+    let name = typ[0]
+    if $name == "QObject":
+      return true
+    typ = superClass(typ)
+  return false
+
+proc extractQObjectSignalsAndSlots(procDefs: seq[NimNode]): seq[MyProcInfo] =
+  for def in procDefs:
+    # Check if slot is a signal or slot
+    let procIsSlot = isSlot(def)
+    let procIsSignal = isSignal(def)
+    if not procIsSlot and not procIsSignal:
+      continue
+
+    # Check that we have at least the return type and a first argument
+    let procName = def[0]
+    let procParams = def[3]
+    let procParamsCount = procParams.len
+    if procParamsCount < 2:
+      continue
+
+    # Check first arguments to be a ref type
+    let procReturnType = procParams[0]
+    let procFirstParam = procParams[1]
+    let procFirstParamName = procFirstParam[0]
+    let procFirstParamTypeSym = procFirstParam[1]
+    if procFirstParamTypeSym.typeKind != ntyRef:
+      continue
+
+    # Check first type to be a QObject
+    let procFirstParamTypeDef = procFirstParamTypeSym.getImpl
+    if not isQObject(procFirstParamTypeDef):
+      continue
+
+    # Collect info
+    var procInfo = MyProcInfo(name: "", params: @[], isSlot: false, isSignal: false)
+    procInfo.name = $procName
+    for param in procParams[1 .. ^1]:
+      procInfo.params.add($param[1])
+    procInfo.isSlot = procIsSlot
+    procInfo.isSignal = procIsSignal
+    result.add(procInfo)
+
+proc extractProcDefs(node: NimNode): seq[NimNode] {.compileTime.} =
+  if node.kind == nnkSym:
+    let impl = node.getImpl
+    assert(isProcOrMethod(impl))
+    result.add(impl)
+  elif node.kind == nnkClosedSymChoice:
+    for sym in node.children:
+      let impl = sym.getImpl
+      assert(isProcOrMethod(impl))
+      result.add(impl)
+  else:
+    raiseAssert("Invalid Node")
+
+proc generateSignature(info: MyProcInfo): string {.compileTime.} =
+  let mapTypes = proc(name: string): string =
+      if name == "string": 
+        "QString" 
+      else: 
+        name
+  let name = info.name
+  let params = info.params[1 .. ^1].map(mapTypes).join(",")
+  let prefix = if info.isSlot: "1" else: "2"
+  return $prefix & $info.name & "(" & $params & ")"
+  
+proc generateSignature(node: NimNode): string {.compileTime.} =
+  let defs: seq[NimNode] = extractProcDefs(node)
+  let infos: seq[MyProcInfo] = extractQObjectSignalsAndSlots(defs)
+  doAssert(infos.len == 1, "Expected at least one signal or slot")
+  return generateSignature(infos[0])
+
+proc findOverload(self: NimNode, overloads: NimNode): NimNode =
+  # Handle simple case with just a simple proc
+  if overloads.kind == nnkSym:
+    if overloads.getImpl.kind == nnkProcDef:
+      return overloads
+  elif overloads.kind == nnkClosedSymChoice:
+    # Find out expected param type name
+    self.expectKind(nnkSym)
+    var selfTypeDef = self.getTypeInst.getImpl
+    while selfTypeDef.kind == nnkTypeDef:
+      let selfTypeSym = selfTypeDef[0]
+      for procSym in overloads:
+        let procImpl = procSym.getImpl
+        procImpl.expectKind(nnkProcDef)
+        procImpl.expectMinLen(4)
+        let procParams = procImpl[3]
+        procParams.expectKind(nnkFormalParams)
+        if procParams.len >= 2:
+          let param = procParams[1]
+          param.expectKind(nnkIdentDefs)
+          param.expectLen(3)
+          let paramTypeSym = param[1]
+          if paramTypeSym.kind == nnkSym and paramTypeSym == selfTypeSym:
+            return procSym
+      selfTypeDef = superClass(selfTypeDef)
+    return newEmptyNode()
