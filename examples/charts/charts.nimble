@@ -7,5 +7,5 @@ description   = "charts"
 license       = "MIT"
 
 [Deps]
-Requires: "nim >= 1.0.0, nimqml >= 0.8.0"
+Requires: "nim >= 1.2.0, nimqml >= 0.9.0"
 

@@ -10,10 +10,13 @@ template debugMsg(typeName: string, procName: string) =
     message &= procName
     debugMsg(message)
 
+include "nimqml/private/nimqmlmacros.nim"
 include "nimqml/private/dotherside.nim"
 include "nimqml/private/nimqmltypes.nim"
-include "nimqml/private/qmetaobject.nim"
 include "nimqml/private/qvariant.nim"
+include "nimqml/private/lambdainvoker.nim"
+include "nimqml/private/qmetaobjectconnection.nim"
+include "nimqml/private/qmetaobject.nim"
 include "nimqml/private/qobject.nim"
 include "nimqml/private/qqmlapplicationengine.nim"
 include "nimqml/private/qcoreapplication.nim"
@@ -28,4 +31,4 @@ include "nimqml/private/qabstractlistmodel.nim"
 include "nimqml/private/qabstracttablemodel.nim"
 include "nimqml/private/qresource.nim"
 include "nimqml/private/qdeclarative.nim"
-include "nimqml/private/nimqmlmacros.nim"
+

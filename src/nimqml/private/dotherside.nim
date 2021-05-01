@@ -7,7 +7,7 @@ const dynLibName =
     of "macosx":
       "libDOtherSide.dylib"
     else:
-      "libDOtherSide.so.0.7"
+      "libDOtherSide.so.0.8"
 
 type
   NimQObject = pointer
@@ -15,7 +15,7 @@ type
   NimQAbstractListModel = pointer
   NimQAbstractTableModel = pointer
   DosQMetaObject = distinct pointer
-  DosQObject = distinct pointer
+  DosQObject* = distinct pointer
   DosQObjectWrapper = distinct pointer
   DosQVariant = distinct pointer
   DosQQmlContext = distinct pointer
@@ -30,6 +30,7 @@ type
   DosQAbstractItemModel = distinct pointer
   DosQAbstractTableModel = distinct pointer
   DosQAbstractListModel = distinct pointer
+  DosQMetaObjectConnection = distinct pointer
 
   DosParameterDefinition = object
     name: cstring
@@ -106,6 +107,8 @@ type
     canFetchMore: DosCanFetchMoreCallback
     fetchMore: DosFetchMoreCallback
 
+  DosQObjectConnectLambdaCallback = proc(data: pointer, numArguments: cint, arguments: ptr DosQVariantArray) {.cdecl.}
+  DosQMetaObjectInvokeMethodCallback = proc(data: pointer) {.cdecl.}
 
 # Conversion
 proc resetToNil[T](x: var T) = x = nil.pointer.T
@@ -117,6 +120,7 @@ proc isNil(x: DosQUrl): bool = x.pointer.isNil
 proc isNil(x: DosQQuickView): bool = x.pointer.isNil
 proc isNil(x: DosQHashIntByteArray): bool = x.pointer.isNil
 proc isNil(x: DosQModelIndex): bool = x.pointer.isNil
+proc isNil(x: DosQMetaObjectConnection): bool = x.pointer.isNil
 
 # CharArray
 proc dos_chararray_delete(str: cstring) {.cdecl, dynlib: dynLibName, importc.}
@@ -177,8 +181,19 @@ proc dos_qobject_qmetaobject(): DosQMetaObject {.cdecl, dynlib: dynLibName, impo
 proc dos_qobject_create(nimobject: NimQObject, metaObject: DosQMetaObject, dosQObjectCallback: DosQObjectCallBack): DosQObject {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qobject_objectName(qobject: DosQObject): cstring {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qobject_setObjectName(qobject: DosQObject, name: cstring) {.cdecl, dynlib: dynLibName, importc.}
-proc dos_qobject_signal_emit(qobject: DosQObject, signalName: cstring, argumentsCount: cint, arguments: ptr DosQVariantArray) {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qobject_signal_emit(qobject: DosQObject, signalName: cstring, argumentsCount: cint, arguments: ptr DosQVariantArray)  {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qobject_connect_static(sender: DosQObject, senderFunc: cstring, receiver: DosQObject, receiverFunc: cstring, connectionType: cint): DosQMetaObjectConnection {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qobject_connect_lambda_static(sender: DosQObject, senderFunc: cstring, callback: DosQObjectConnectLambdaCallback, data: pointer, connectionType: cint): DosQMetaObjectConnection {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qobject_connect_lambda_with_context_static(sender: DosQObject, senderFunc: cstring, context: DosQObject, callback: DosQObjectConnectLambdaCallback, data: pointer, connectionType: cint): DosQMetaObjectConnection {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qobject_disconnect_static(sender: DosQObject, senderFunc: cstring, receiver: DosQObject, receiverFunc: cstring) {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qobject_disconnect_with_connection_static(connection: DosQMetaObjectConnection) {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qobject_delete(qobject: DosQObject) {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qobject_deleteLater(qobject: DosQObject) {.cdecl, dynlib: dynLibName, importc.}
+proc dos_signal_macro*(name: cstring): cstring {.cdecl, dynlib: dynLibName, importc.}
+proc dos_slot_macro*(name: cstring): cstring {.cdecl, dynlib: dynLibName, importc.}
+
+# QMetaObject::Connection
+proc dos_qmetaobject_connection_delete(connection: DosQMetaObjectConnection) {.cdecl, dynlib: dynLibName, importc.}
 
 # QAbstractItemModel
 proc dos_qabstractitemmodel_qmetaobject(): DosQMetaObject {.cdecl dynlib: dynLibName, importc.}
@@ -190,6 +205,7 @@ proc dos_qmetaobject_create(superclassMetaObject: DosQMetaObject,
                             slotDefinitions: ptr DosSlotDefinitions,
                             propertyDefinitions: ptr DosPropertyDefinitions): DosQMetaObject {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qmetaobject_delete(vptr: DosQMetaObject) {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qmetaobject_invoke_method(context: DosQObject, callback: DosQMetaObjectInvokeMethodCallback, callbackData: pointer, connectionType: cint): bool  {.cdecl, dynlib: dynLibName, importc.}
 
 # QUrl
 proc dos_qurl_create(url: cstring, parsingMode: cint): DosQUrl {.cdecl, dynlib: dynLibName, importc.}
