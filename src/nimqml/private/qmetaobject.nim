@@ -35,7 +35,7 @@ proc newQMetaObject*(superClass: QMetaObject, className: string,
                      slots: seq[SlotDefinition],
                      properties: seq[PropertyDefinition]): QMetaObject =
   ## Create a new QMetaObject
-  debugMsg("QMetaObject", "newQMetaObject")
+  debugMsg("QMetaObject", "newQMetaObject" & className)
   new(result, delete)
   result.signals = signals
   result.slots = slots
@@ -50,8 +50,8 @@ proc newQMetaObject*(superClass: QMetaObject, className: string,
     var parameters: seq[DosParameterDefinition] = @[]
     for p in signals[i].parameters:
       parameters.add(DosParameterDefinition(name: p.name.cstring, metaType: p.metaType.cint))
-    dosParameters.add(parameters)
     let dosSignal = DosSignalDefinition(name: name, parametersCount: parametersCount, parameters: if parameters.len > 0: parameters[0].unsafeAddr else: nil)
+    dosParameters.add(parameters)
     dosSignals.add(dosSignal)
 
   var dosSlots: seq[DosSlotDefinition] = @[]
@@ -62,9 +62,9 @@ proc newQMetaObject*(superClass: QMetaObject, className: string,
     var parameters: seq[DosParameterDefinition] = @[]
     for p in slots[i].parameters:
       parameters.add(DosParameterDefinition(name: p.name.cstring, metaType: p.metaType.cint))
-    dosParameters.add(parameters)
     let dosSlot = DosSlotDefinition(name: name, returnMetaType: returnMetaType,
                                     parametersCount: parametersCount, parameters: if parameters.len > 0: parameters[0].unsafeAddr else: nil)
+    dosParameters.add(parameters)
     dosSlots.add(dosSlot)
 
   var dosProperties: seq[DosPropertyDefinition] = @[]
@@ -83,6 +83,7 @@ proc newQMetaObject*(superClass: QMetaObject, className: string,
   let slots = DosSlotDefinitions(count: dosSlots.len.cint, definitions: if dosSlots.len > 0: dosSlots[0].unsafeAddr else: nil)
   let properties = DosPropertyDefinitions(count: dosProperties.len.cint, definitions: if dosProperties.len > 0: dosProperties[0].unsafeAddr else: nil)
 
+  echo superClass.vptr.isNil
   result.vptr = dos_qmetaobject_create(superClass.vptr, className.cstring, signals.unsafeAddr, slots.unsafeAddr, properties.unsafeAddr)
 
 proc invokeMethod*(typ: type QMetaObject, context: QObject, l: LambdaInvokerProc, connectionType: ConnectionType = ConnectionType.AutoConnection): bool =

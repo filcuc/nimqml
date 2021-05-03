@@ -5,10 +5,7 @@ template debugMsg(message: string) =
 
 template debugMsg(typeName: string, procName: string) =
   when defined(debug):
-    var message = typeName
-    message &= ": "
-    message &= procName
-    debugMsg(message)
+    debugMsg(typeName & ": " & procName)
 
 include "nimqml/private/nimqmlmacros.nim"
 include "nimqml/private/dotherside.nim"
