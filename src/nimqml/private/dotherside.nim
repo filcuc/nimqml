@@ -129,7 +129,7 @@ proc dos_qapplication_enable_hdpi() {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qapplication_initialize_opengl() {.cdecl, dynlib: dynLibName, importc.}
 
 # QApplication
-proc dos_qapplication_create(appName: cstring) {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qapplication_create() {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qapplication_exec() {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qapplication_quit() {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qapplication_icon(filename: cstring) {.cdecl, dynlib: dynLibName, importc.}
@@ -141,7 +141,9 @@ proc dos_qapplication_installEventFilter(engine: DosQQmlApplicationEngine) {.cde
 proc dos_qguiapplication_create() {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qguiapplication_exec() {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qguiapplication_quit() {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qguiapplication_icon(filename: cstring) {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qguiapplication_delete() {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qguiapplication_installEventFilter(engine: DosQQmlApplicationEngine) {.cdecl, dynlib: dynLibName, importc.}
 
 # QQmlContext
 proc dos_qqmlcontext_setcontextproperty(context: DosQQmlContext, propertyName: cstring, propertyValue: DosQVariant) {.cdecl, dynlib: dynLibName, importc.}
