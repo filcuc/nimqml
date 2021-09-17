@@ -32,9 +32,11 @@ type
   DosQAbstractItemModel = distinct pointer
   DosQAbstractTableModel = distinct pointer
   DosQAbstractListModel = distinct pointer
-  DosStatusEventObject = distinct pointer
-  DosStatusOSNotificationObject = DosQObject
-
+  DosStatusEvent = distinct pointer
+  DosStatusOSNotification = DosQObject
+  DosQSettings = DosQObject
+  DosStatusKeychainManager = DosQObject
+  
   DosParameterDefinition = object
     name: cstring
     metaType: cint
@@ -137,7 +139,7 @@ proc dos_qapplication_quit() {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qapplication_icon(filename: cstring) {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qapplication_delete() {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qapplication_clipboard_setText(content: cstring) {.cdecl, dynlib: dynLibName, importc.}
-proc dos_qapplication_installEventFilter(engine: DosStatusEventObject) {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qapplication_installEventFilter(engine: DosStatusEvent) {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qapplication_clipboard_setImage(content: cstring) {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qapplication_download_image(imageSource: cstring, filePath: cstring) {.cdecl, dynlib: dynLibName, importc.}
 
@@ -147,7 +149,7 @@ proc dos_qguiapplication_exec() {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qguiapplication_quit() {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qguiapplication_icon(filename: cstring) {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qguiapplication_delete() {.cdecl, dynlib: dynLibName, importc.}
-proc dos_qguiapplication_installEventFilter(engine: DosStatusEventObject) {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qguiapplication_installEventFilter(engine: DosStatusEvent) {.cdecl, dynlib: dynLibName, importc.}
 
 # QQmlContext
 proc dos_qqmlcontext_setcontextproperty(context: DosQQmlContext, propertyName: cstring, propertyValue: DosQVariant) {.cdecl, dynlib: dynLibName, importc.}
@@ -342,18 +344,47 @@ proc dos_singleinstance_create(uniqueName: cstring, eventStr: cstring): DosQObje
 proc dos_singleinstance_isfirst(vptr: DosQObject): bool {.cdecl, dynlib: dynLibName, importc.}
 proc dos_singleinstance_delete(vptr: DosQObject) {.cdecl, dynlib: dynLibName, importc.}
 
-# DosStatusEventObject
-proc dos_statusevent_create_showAppEvent(engine: DosQQmlApplicationEngine): DosStatusEventObject {.cdecl, dynlib: dynLibName, importc.}
-proc dos_statusevent_create_osThemeEvent(engine: DosQQmlApplicationEngine): DosStatusEventObject {.cdecl, dynlib: dynLibName, importc.}
-proc dos_statusevent_delete(vptr: DosStatusEventObject) {.cdecl, dynlib: dynLibName, importc.}
+# DosStatusEvent
+proc dos_event_create_showAppEvent(engine: DosQQmlApplicationEngine): DosStatusEvent {.cdecl, dynlib: dynLibName, importc.}
+proc dos_event_create_osThemeEvent(engine: DosQQmlApplicationEngine): DosStatusEvent {.cdecl, dynlib: dynLibName, importc.}
+proc dos_event_delete(vptr: DosStatusEvent) {.cdecl, dynlib: dynLibName, importc.}
 
-# DosStatusOSNotificationObject
-proc dos_statusosnotification_create(): DosStatusOSNotificationObject
+# DosStatusOSNotification
+proc dos_osnotification_create(): DosStatusOSNotification 
   {.cdecl, dynlib: dynLibName, importc.}
-proc dos_statusosnotification_show_notification(vptr: DosStatusOSNotificationObject,
-  title: cstring, messsage: cstring, identifier: cstring)
+proc dos_osnotification_show_notification(vptr: DosStatusOSNotification,
+  title: cstring, messsage: cstring, identifier: cstring) 
   {.cdecl, dynlib: dynLibName, importc.}
-proc dos_statusosnotification_delete(vptr: DosStatusOSNotificationObject)
+proc dos_osnotification_delete(vptr: DosStatusOSNotification) 
+  {.cdecl, dynlib: dynLibName, importc.}
+
+# QSettings
+proc dos_qsettings_create(fileName: cstring, format: int): DosQSettings 
+  {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qsettings_value(vptr: DosQSettings, key: cstring, 
+  defaultValue: DosQVariant): DosQVariant
+  {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qsettings_set_value(vptr: DosQSettings, key: cstring, 
+    value: DosQVariant)
+  {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qsettings_remove(vptr: DosQSettings, key: cstring)
+  {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qsettings_delete(vptr: DosQSettings) 
+  {.cdecl, dynlib: dynLibName, importc.}
+
+# DosStatusKeychainManager
+proc dos_keychainmanager_create(service: cstring, authenticationReason: cstring): 
+  DosStatusKeychainManager
+  {.cdecl, dynlib: dynLibName, importc.}
+proc dos_keychainmanager_read_data_sync(vptr: DosStatusKeychainManager,
+  key: cstring): string {.cdecl, dynlib: dynLibName, importc.}
+proc dos_keychainmanager_read_data_async(vptr: DosStatusKeychainManager,
+  key: cstring) {.cdecl, dynlib: dynLibName, importc.}
+proc dos_keychainmanager_store_data_async(vptr: DosStatusKeychainManager,
+  key: cstring, data: cstring) {.cdecl, dynlib: dynLibName, importc.}
+proc dos_keychainmanager_delete_data_async(vptr: DosStatusKeychainManager,
+  key: cstring) {.cdecl, dynlib: dynLibName, importc.}
+proc dos_keychainmanager_delete(vptr: DosStatusKeychainManager) 
   {.cdecl, dynlib: dynLibName, importc.}
 
 proc dos_to_local_file(fileUrl: cstring): cstring

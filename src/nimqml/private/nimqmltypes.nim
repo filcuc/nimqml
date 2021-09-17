@@ -44,6 +44,8 @@ type
   QResource* = ref object of RootObj ## \
     # A QResource
 
+  QSettings* = ref object of QObject ## \
+
   QtItemFlag*{.pure, size: sizeof(cint).} = enum ## \
     ## Item flags
     ##
@@ -132,11 +134,13 @@ type
 
   SingleInstance* = ref object of QObject
 
-  StatusEventObject* = ref object of RootObj ## \
-    ## A StatusEventObject
-    vptr: DosStatusEventObject
+  StatusEvent* = ref object of RootObj ## \
+    ## A StatusEvent
+    vptr: DosStatusEvent
 
-  StatusOSNotificationObject* = ref object of QObject 
+  StatusOSNotification* = ref object of QObject 
+
+  StatusKeychainManager* = ref object of QObject
     
 const
   UserRole* = 0x100
