@@ -14,16 +14,6 @@ proc delete*(self: QModelIndex) =
   dos_qmodelindex_delete(self.vptr)
   self.vptr.resetToNil
 
-proc newQModelIndex*(): QModelIndex =
-  ## Return a new QModelIndex
-  new(result, delete)
-  result.setup()
-
-proc newQModelIndex(vptr: DosQModelIndex, takeOwnership: Ownership): QModelIndex =
-  ## Return a new QModelIndex given a raw index
-  new(result, delete)
-  result.setup(vptr, takeOwnership)
-
 proc row*(self: QModelIndex): int =
   ## Return the index row
   dos_qmodelindex_row(self.vptr).int

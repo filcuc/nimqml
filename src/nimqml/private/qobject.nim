@@ -138,14 +138,6 @@ proc setup*(self: QObject) =
   self.owner = true
   self.vptr = dos_qobject_create(addr(self[]), self.metaObject.vptr, qobjectCallback)
 
-proc delete*(self: QObject) =
-  debugMsg("QObject", "delete")
-  ## Delete a QObject
-  if not self.owner or self.vptr.isNil:
-    return
-  dos_qobject_delete(self.vptr)
-  self.vptr.resetToNil
-
 proc deleteLater*(self: QObject) =
   debugMsg("QObject", "deleteLater")
   ## Delete a QObject
@@ -153,11 +145,6 @@ proc deleteLater*(self: QObject) =
     return
   dos_qobject_deleteLater(self.vptr)
   self.vptr.resetToNil
-
-proc newQObject*(): QObject =
-  ## Return a new QObject
-  new(result, delete)
-  result.setup()
 
 proc objectNameChanged*(self: QObject, objectName: string) {.signal.} = 
   ## Emit the object name changed signal

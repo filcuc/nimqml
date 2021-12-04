@@ -6,41 +6,11 @@ proc delete*(metaObject: QMetaObject) =
   dos_qmetaobject_delete(metaObject.vptr)
   metaObject.vptr.resetToNil
 
-proc newQObjectMetaObject*(): QMetaObject =
-  ## Create the QMetaObject of QObject
-  debugMsg("QMetaObject", "newQObjectMetaObject")
-  new(result, delete)
-  result.vptr = dos_qobject_qmetaobject()
-
-proc newQAbstractItemModelMetaObject*(): QMetaObject =
-  ## Create the QMetaObject of QAbstractItemModel
-  debugMsg("QMetaObject", "newQAbstractItemModelMetaObject")
-  new(result, delete)
-  result.vptr = dos_qabstractitemmodel_qmetaobject()
-
-proc newQAbstractListModelMetaObject*(): QMetaObject =
-  ## Create the QMetaObject of QAbstractListModel
-  debugMsg("QMetaObject", "newQAbstractListModelMetaObject")
-  new(result, delete)
-  result.vptr = dos_qabstractlistmodel_qmetaobject()
-
-proc newQAbstractTableModelMetaObject*(): QMetaObject =
-  ## Create the QMetaObject of QAbstractTableModel
-  debugMsg("QMetaObject", "newQAbstractItemTableMetaObject")
-  new(result, delete)
-  result.vptr = dos_qabstracttablemodel_qmetaobject()
-
-proc newQMetaObject*(superClass: QMetaObject, className: string,
-                     signals: seq[SignalDefinition],
-                     slots: seq[SlotDefinition],
-                     properties: seq[PropertyDefinition]): QMetaObject =
-  ## Create a new QMetaObject
-  debugMsg("QMetaObject", "newQMetaObject" & className)
-  new(result, delete)
-  result.signals = signals
-  result.slots = slots
-  result.properties = properties
-
+proc setup(superClass: QMetaObject,
+           className: string,
+           signals: seq[SignalDefinition],
+           slots: seq[SlotDefinition],
+           properties: seq[PropertyDefinition]): DosQMetaObject =
   var dosParameters: seq[seq[DosParameterDefinition]] = @[]
 
   var dosSignals: seq[DosSignalDefinition] = @[]
@@ -83,7 +53,7 @@ proc newQMetaObject*(superClass: QMetaObject, className: string,
   let slots = DosSlotDefinitions(count: dosSlots.len.cint, definitions: if dosSlots.len > 0: dosSlots[0].unsafeAddr else: nil)
   let properties = DosPropertyDefinitions(count: dosProperties.len.cint, definitions: if dosProperties.len > 0: dosProperties[0].unsafeAddr else: nil)
 
-  result.vptr = dos_qmetaobject_create(superClass.vptr, className.cstring, signals.unsafeAddr, slots.unsafeAddr, properties.unsafeAddr)
+  return dos_qmetaobject_create(superClass.vptr, className.cstring, signals.unsafeAddr, slots.unsafeAddr, properties.unsafeAddr)
 
 proc invokeMethod*(typ: type QMetaObject, context: QObject, l: LambdaInvokerProc, connectionType: ConnectionType = ConnectionType.AutoConnection): bool =
   let id = LambdaInvoker.instance.add(l)

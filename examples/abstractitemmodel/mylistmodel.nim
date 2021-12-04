@@ -9,16 +9,18 @@ QtObject:
     MyListModel* = ref object of QAbstractListModel
       names*: seq[string]
 
+  proc delete(self: MyListModel)
+  proc setup(self: MyListModel)
+  proc newMyListModel*(): MyListModel =
+    new(result, delete)
+    result.names = @["John", "Max", "Paul", "Anna"]
+    result.setup
+
   proc delete(self: MyListModel) =
     self.QAbstractListModel.delete
 
   proc setup(self: MyListModel) =
     self.QAbstractListModel.setup
-
-  proc newMyListModel*(): MyListModel =
-    new(result, delete)
-    result.names = @["John", "Max", "Paul", "Anna"]
-    result.setup
 
   method rowCount(self: MyListModel, index: QModelIndex = nil): int =
     return self.names.len

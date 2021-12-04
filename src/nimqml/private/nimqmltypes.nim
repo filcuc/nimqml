@@ -126,5 +126,14 @@ type
     Take,                   # The ownership is passed to the wrapper
     Clone                   # The node should be cloned
 
+  QMetaObjectConnection = ref object
+    vptr: DosQMetaObjectConnection
+
+  LambdaInvokerProc = proc(arguments: seq[QVariant]) {.closure.}
+  LambdaInvoker = ref object
+    id: int
+    lock: Lock
+    lambdas: Table[int, LambdaInvokerProc]
+
 const
   UserRole* = 0x100

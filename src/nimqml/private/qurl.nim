@@ -10,11 +10,6 @@ proc delete*(self: QUrl) =
   dos_qurl_delete(self.vptr)
   self.vptr.resetToNil
 
-proc newQUrl*(url: string, mode: QUrlParsingMode = QUrlParsingMode.Tolerant): QUrl =
-  ## Create a new QUrl
-  new(result, delete)
-  result.setup(url, mode)
-
 proc toString*(self: QUrl): string =
   ## Return the url string
   let str: cstring = dos_qurl_to_string(self.vptr)

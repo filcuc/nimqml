@@ -10,19 +10,21 @@ QtObject:
     ContactList* = ref object of QAbstractListModel
       contacts*: seq[Contact]
 
+  proc delete(self: ContactList)
+  proc setup(self: ContactList)
+  proc newContactList*(): ContactList =
+    new(result, delete)
+    result.contacts = @[]
+    result.setup
+
+  proc setup(self: ContactList) =
+    self.QAbstractListModel.setup
+
   proc delete(self: ContactList) =
     self.QAbstractListModel.delete
     for contact in self.contacts:
       contact.delete
     self.contacts = @[]
-
-  proc setup(self: ContactList) =
-    self.QAbstractListModel.setup
-
-  proc newContactList*(): ContactList =
-    new(result, delete)
-    result.contacts = @[]
-    result.setup
 
   method rowCount(self: ContactList, index: QModelIndex = nil): int =
     return self.contacts.len

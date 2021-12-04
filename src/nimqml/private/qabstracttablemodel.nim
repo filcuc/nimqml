@@ -37,12 +37,6 @@ proc delete*(self: QAbstractTableModel) =
   debugMsg("QAbstractItemModel", "delete")
   self.QObject.delete()
 
-proc newQAbstractTableModel*(): QAbstractTableModel =
-  ## Return a new QAbstractTableModel
-  debugMsg("QAbstractTableModel", "new")
-  new(result, delete)
-  result.setup()
-
 method parent(self: QAbstractTableModel, child: QModelIndex): QModelIndex =
   let indexPtr = dos_qabstracttablemodel_parent(self.vptr.DosQAbstractTableModel, child.vptr.DosQModelIndex)
   result = newQModelIndex(indexPtr, Ownership.Take)

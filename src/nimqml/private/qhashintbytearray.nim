@@ -10,11 +10,6 @@ proc delete*(self: QHashIntByteArray) =
   dos_qhash_int_qbytearray_delete(self.vptr)
   self.vptr.resetToNil
 
-proc newQHashIntQByteArray*(): QHashIntByteArray =
-  ## Create a new QHashIntQByteArray
-  new(result, delete)
-  result.setup()
-
 proc insert*(self: QHashIntByteArray, key: int, value: cstring) =
   ## Insert the value at the given key
   dos_qhash_int_qbytearray_insert(self.vptr, key, value)
