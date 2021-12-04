@@ -1,22 +1,3 @@
-import locks
-import tables
-
-type
-  LambdaInvokerProc = proc(arguments: seq[QVariant]) {.closure.}
-  LambdaInvoker = ref object
-    id: int
-    lock: Lock
-    lambdas: Table[int, LambdaInvokerProc]
-
-
-proc new(typ: type LambdaInvoker): LambdaInvoker =
-  ## Create the lambda invoker
-  new(result)
-  result.id = 0
-  result.lock.initLock()
-  result.lambdas = initTable[int, LambdaInvokerProc]()
-
-
 proc add(self: LambdaInvoker, l: LambdaInvokerProc): int =
   ## Add a lambda and return its id
   self.lock.acquire()

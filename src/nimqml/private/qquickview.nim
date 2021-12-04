@@ -10,11 +10,6 @@ proc delete*(self: QQuickView) =
   dos_qquickview_delete(self.vptr)
   self.vptr.resetToNil
 
-proc newQQuickView*(): QQuickView =
-  ## Return a new QQuickView
-  new(result, delete)
-  result.setup()
-
 proc source*(self: QQuickView): string =
   ## Return the source Qml file loaded by the view
   let str = dos_qquickview_source(self.vptr)

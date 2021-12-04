@@ -44,46 +44,6 @@ proc delete*(variant: QVariant) =
   dos_qvariant_delete(variant.vptr)
   variant.vptr.resetToNil
 
-proc newQVariant*(): QVariant =
-  ## Return a new QVariant
-  new(result, delete)
-  result.setup()
-
-proc newQVariant*(value: int): QVariant =
-  ## Return a new QVariant given a cint
-  new(result, delete)
-  result.setup(value)
-
-proc newQVariant*(value: bool): QVariant =
-  ## Return a new QVariant given a bool
-  new(result, delete)
-  result.setup(value)
-
-proc newQVariant*(value: string): QVariant =
-  ## Return a new QVariant given a string
-  new(result, delete)
-  result.setup(value)
-
-proc newQVariant*(value: QObject): QVariant =
-  ## Return a new QVariant given a QObject
-  new(result, delete)
-  result.setup(value)
-
-proc newQVariant(value: DosQVariant, takeOwnership: Ownership): QVariant =
-  ## Return a new QVariant given a raw QVariant pointer
-  new(result, delete)
-  result.setup(value, takeOwnership)
-
-proc newQVariant*(value: QVariant): QVariant =
-  ## Return a new QVariant given another QVariant
-  new(result, delete)
-  result.setup(value)
-
-proc newQVariant*(value: cfloat): QVariant =
-  ## Return a new QVariant given a float
-  new(result, delete)
-  result.setup(value)
-
 proc isNull*(variant: QVariant): bool =
   ## Return true if the QVariant value is null, false otherwise
   dos_qvariant_isnull(variant.vptr)

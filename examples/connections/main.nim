@@ -5,16 +5,18 @@ QtObject:
   type Contact* = ref object of QObject
     name: string
 
+  proc delete*(self: Contact)
+  proc setup(self: Contact)
+  proc newContact(): Contact =
+    new(result, delete)
+    result.name = ""
+    result.setup
+
   proc delete*(self: Contact) =
     self.QObject.delete
 
   proc setup(self: Contact) =
     self.QObject.setup
-
-  proc newContact(): Contact =
-    new(result, delete)
-    result.name = ""
-    result.setup
 
   proc name*(self: Contact): string {.slot.} =
     result = self.name

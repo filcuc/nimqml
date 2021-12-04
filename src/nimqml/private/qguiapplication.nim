@@ -11,11 +11,6 @@ proc delete*(self: QGuiApplication) =
   dos_qguiapplication_delete()
   self.deleted = true
 
-proc newQGuiApplication*(): QGuiApplication =
-  ## Return a new QApplication
-  new(result, delete)
-  result.setup()
-
 proc exec*(self: QGuiApplication) =
   ## Start the Qt event loop
   dos_qguiapplication_exec()

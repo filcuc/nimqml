@@ -1,3 +1,6 @@
+import locks
+import tables
+
 ## NimQml aims to provide binding to the QML for the Nim programming language
 
 template debugMsg(message: string) =
@@ -10,6 +13,7 @@ template debugMsg(typeName: string, procName: string) =
 include "nimqml/private/nimqmlmacros.nim"
 include "nimqml/private/dotherside.nim"
 include "nimqml/private/nimqmltypes.nim"
+include "nimqml/private/constructors.nim"
 include "nimqml/private/qvariant.nim"
 include "nimqml/private/lambdainvoker.nim"
 include "nimqml/private/qmetaobjectconnection.nim"

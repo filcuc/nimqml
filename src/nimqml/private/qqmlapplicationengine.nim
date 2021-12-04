@@ -30,8 +30,3 @@ proc delete*(self: QQmlApplicationEngine) =
     return
   dos_qqmlapplicationengine_delete(self.vptr)
   self.vptr.resetToNil
-
-proc newQQmlApplicationEngine*(): QQmlApplicationEngine =
-  ## Return a new QQmlApplicationEngine
-  new(result, delete)
-  result.setup()

@@ -165,12 +165,6 @@ proc delete*(self: QAbstractItemModel) =
   debugMsg("QAbstractItemModel", "delete")
   self.QObject.delete()
 
-proc newQAbstractItemModel*(): QAbstractItemModel =
-  ## Return a new QAbstractItemModel
-  debugMsg("QAbstractItemModel", "new")
-  new(result, delete)
-  result.setup()
-
 proc hasIndex*(self: QAbstractItemModel, row: int, column: int, parent: QModelIndex): bool =
   debugMsg("QAbstractItemModel", "hasIndex")
   dos_qabstractitemmodel_hasIndex(self.vptr.DosQAbstractItemModel, row.cint, column.cint, parent.vptr.DosQModelIndex)

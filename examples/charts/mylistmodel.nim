@@ -1,4 +1,4 @@
-import NimQml, Tables, random
+import NimQml, Tables, std/random
 
 type
   Point = object
@@ -12,11 +12,11 @@ QtObject:
       maxX: int
       maxY: int
 
-  proc delete(self: MyListModel) =
-    self.QAbstractTableModel.delete
-
-  proc setup(self: MyListModel) =
-    self.QAbstractTableModel.setup
+  proc delete(self: MyListModel)
+  proc setup(self: MyListModel)
+  proc newMyListModel*(): MyListModel =
+    new(result, delete)
+    result.setup
 
   method rowCount(self: MyListModel, index: QModelIndex = nil): int =
     return self.points.len
@@ -57,7 +57,7 @@ QtObject:
     let pos = self.points.len
     self.beginInsertRows(newQModelIndex(), pos, pos)
     let x = self.maxX + 1
-    let y = random(50)
+    let y = rand(50)
     if x > self.maxX:
       self.maxX = x
       self.maxXChanged(x)
@@ -67,10 +67,12 @@ QtObject:
     self.points.add(Point(x: x, y: y))
     self.endInsertRows()
 
-  proc newMyListModel*(): MyListModel =
-    new(result, delete)
-    result.setup
-    result.points = @[]
-    result.maxX = 0
-    result.maxY = 50
-    result.addRandomPoint()
+  proc delete(self: MyListModel) =
+    self.QAbstractTableModel.delete
+
+  proc setup(self: MyListModel) =
+    self.QAbstractTableModel.setup
+    self.points = @[]
+    self.maxX = 0
+    self.maxY = 50
+    self.addRandomPoint()
