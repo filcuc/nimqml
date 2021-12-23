@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.9.0"
+version       = "0.9.1"
 author        = "Filippo Cucchetto"
 description   = "QML bindings for Nim"
 license       = "LGPLv3"
