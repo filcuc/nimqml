@@ -175,6 +175,7 @@ proc dos_qvariant_assign(leftValue: DosQVariant, rightValue: DosQVariant) {.cdec
 proc dos_qvariant_setFloat(variant: DosQVariant, value: float) {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qvariant_setDouble(variant: DosQVariant, value: cdouble) {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qvariant_setQObject(variant: DosQVariant, value: DosQObject) {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qvariant_setArray(variant: DosQVariant, size: cint, array: ptr DosQVariantArray) {.cdecl, dynlib: dynLibName, importc.}
 
 # QObject
 proc dos_qobject_qmetaobject(): DosQMetaObject {.cdecl, dynlib: dynLibName, importc.}
