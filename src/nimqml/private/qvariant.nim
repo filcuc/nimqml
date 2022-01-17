@@ -105,7 +105,7 @@ proc toQVariantSequence(a: ptr DosQVariantArray, length: cint, takeOwnership: Ow
   for i in 0..<length:
     result.add(newQVariant(a[i], takeOwnership))
 
-proc toQVariant*(sequence: seq[QVariant]): QVariant =
+proc toQVariant*(sequence: openArray[QVariant]): QVariant =
   result = newQVariant()
   var arr = newSeqOfCap[DosQVariant](sequence.len)
   for e in sequence:
