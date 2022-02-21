@@ -35,6 +35,7 @@ include "nimqml/private/singleinstance.nim"
 include "nimqml/private/status/statusevent.nim"
 include "nimqml/private/status/statusosnotification.nim"
 include "nimqml/private/status/statuskeychainmanager.nim"
+include "nimqml/private/status/statussoundmanager.nim"
 
 proc signal_handler*(receiver: pointer, signal: cstring, slot: cstring) =
   var dosqobj = cast[DosQObject](receiver)
@@ -65,3 +66,8 @@ proc url_toLocalFile*(fileUrl: string): string =
 
 proc url_fromLocalFile*(filePath: string): string =
   result = $(dos_from_local_file(filePath.cstring))
+
+proc app_isActive*(engine: QQmlApplicationEngine): bool =
+  result = dos_app_is_active(engine.vptr)
+proc app_makeItActive*(engine: QQmlApplicationEngine) =
+  dos_app_make_it_active(engine.vptr)
