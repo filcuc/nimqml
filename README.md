@@ -3,7 +3,7 @@
 QML binding for the Nim programming language
 
 ## Requirements
-* [DOtherside](https://github.com/filcuc/DOtherSide) 0.8.X
+* [DOtherside](https://github.com/filcuc/DOtherSide) 0.8.X or 0.9.X
 * [Nim](http://nim-lang.org/) 1.2.0 or higher
 
 ## Build instructions
