@@ -1,7 +1,7 @@
 import QtQuick 2.3
-import QtQuick.Controls 1.3
 import QtQuick.Controls 2.3
 import QtQuick.Layouts 1.3
+import Qt.labs.qmlmodels 1.0
 
 ApplicationWindow {
     width: 500
@@ -18,63 +18,43 @@ ApplicationWindow {
         }
     }
 
+    Label {
+	anchors.centerIn: parent
+	visible: view.count <= 0
+	text: "No contacts inserted yet.. :("
+    }
+
     ColumnLayout {
         anchors.fill: parent
 
-        Component {
-            id: tableTextDelegate
-            Label {
-                id: tableTextDelegateInstance
-                property var styleData: undefined
-                states: State {
-                    when: styleData !== undefined
-                    PropertyChanges {
-                        target: tableTextDelegateInstance;
-                        text: styleData.value;
-                        color: styleData.textColor
-                    }
-                }
-            }
-        }
-
-        Component {
-            id: tableButtonDelegate
-            Button {
-                id: tableButtonDelegateInstance
-                property var styleData: undefined
-                text: "Delete"
-                onClicked: logic.contactList.del(styleData.row)
-            }
-        }
-
-        Component {
-            id: tableItemDelegate
-            Loader {
-                id: tableItemDelegateInstance
-                sourceComponent: {
-                    if (styleData.column === 0 || styleData.column === 1)
-                        return tableTextDelegate
-                    else if (styleData.column === 2)
-                        return tableButtonDelegate
-                    else
-                        return tableTextDelegate
-                }
-                Binding {
-                    target: tableItemDelegateInstance.item
-                    property: "styleData"
-                    value: styleData
-                }
-            }
-        }
-
-        TableView {
+        ListView {
+	    id: view
             model: logic.contactList
             Layout.fillWidth: true
             Layout.fillHeight: true
-            TableViewColumn { role: "firstName"; title: "FirstName"; width: 200 }
-            TableViewColumn { role: "surname"; title: "LastName"; width: 200}
-            TableViewColumn { width: 100; }
-            itemDelegate: tableItemDelegate
+            delegate: Item {
+		implicitHeight: 30
+		width: ListView.view.width
+		Label {
+		    id: firstNameLabel
+		    anchors { left: parent.left; top: parent.top; bottom: parent.bottom; }
+		    width: (parent.width - deleteButton.width) / 2 
+		    text: firstName
+		}
+		Label {
+		    id: lastNameLabel
+		    anchors { left: firstNameLabel.right; top: parent.top; bottom: parent.bottom; }
+		    width: firstNameLabel.width
+		    text: lastName
+		}
+		Button {
+		    id: deleteButton
+		    anchors { top: parent.top; bottom: parent.bottom; right: parent.right }
+		    width: 100
+		    text: "Delete"
+		    onClicked: logic.contactList.del(index)
+		}
+	    }
         }
 
         RowLayout {

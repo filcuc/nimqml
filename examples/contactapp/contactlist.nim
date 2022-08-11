@@ -3,7 +3,7 @@ import NimQml, contact, Tables
 type
   ContactRoles {.pure.} = enum
     FirstName = UserRole + 1
-    Surname = UserRole + 2
+    LastName = UserRole + 2
 
 QtObject:
   type
@@ -38,11 +38,11 @@ QtObject:
     let contactRole = role.ContactRoles
     case contactRole:
     of ContactRoles.FirstName: result = newQVariant(contact.firstName)
-    of ContactRoles.Surname: result = newQVariant(contact.surname)
+    of ContactRoles.LastName: result = newQVariant(contact.surname)
 
   method roleNames(self: ContactList): Table[int, string] =
     { ContactRoles.FirstName.int:"firstName",
-      ContactRoles.Surname.int:"surname"}.toTable
+      ContactRoles.LastName.int:"lastName"}.toTable
 
   proc add*(self: ContactList, name: string, surname: string) {.slot.} =
     let contact = newContact()
