@@ -7,7 +7,7 @@ const dynLibName =
     of "macosx":
       "libDOtherSide.dylib"
     else:
-      "libDOtherSide.so.0.8"
+      "libDOtherSide.so.0.(9|8)"
 
 type
   NimQObject = pointer
