@@ -12,7 +12,7 @@ QtObject:
     self.QObject.setup
 
   proc newContact*(): Contact =
-    new(result)
+    new(result, delete)
     result.name = ""
     result.setup
 

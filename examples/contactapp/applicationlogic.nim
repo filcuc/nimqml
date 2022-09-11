@@ -13,7 +13,7 @@ QtObject:
     self.QObject.setup
 
   proc newApplicationLogic*(app: QApplication): ApplicationLogic =
-    new(result)
+    new(result, delete)
     result.contactList = newContactList()
     result.app = app
     result.setup()
