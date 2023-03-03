@@ -1,5 +1,3 @@
-import tables
-
 let qAbstractItemModelStaticMetaObjectInstance = newQAbstractItemModelMetaObject()
 
 proc staticMetaObject*(c: type QAbstractItemModel): QMetaObject =
@@ -116,21 +114,21 @@ proc parentCallback(modelPtr: pointer, child: DosQModelIndex, result: DosQModelI
   dos_qmodelindex_assign(result, index.vptr)
 
 method hasChildren*(self: QAbstractItemModel, parent: QModelIndex): bool {.base.} =
-  return dos_qabstractitemmodel_hasChildren(self.vptr.DosQAbstractItemModel, parent.vptr.DosQModelIndex)
+  return dos_qabstractitemmodel_hasChildren(self.vptr.DosQAbstractItemModel, parent.vptr)
 
 proc hasChildrenCallback(modelPtr: pointer, parent: DosQModelIndex, result: var bool) {.cdecl, exportc.} =
   let model = cast[QAbstractItemModel](modelPtr)
   result = model.hasChildren(newQModelIndex(parent, Ownership.Clone))
 
 method canFetchMore*(self: QAbstractItemModel, parent: QModelIndex): bool {.base.} =
-  return dos_qabstractitemmodel_canFetchMore(self.vptr.DosQAbstractItemModel, parent.vptr.DosQModelIndex)
+  return dos_qabstractitemmodel_canFetchMore(self.vptr.DosQAbstractItemModel, parent.vptr)
 
 proc canFetchMoreCallback(modelPtr: pointer, parent: DosQModelIndex, result: var bool) {.cdecl, exportc.} =
   let model = cast[QAbstractItemModel](modelPtr)
   result = model.canFetchMore(newQModelIndex(parent, Ownership.Clone))
 
 method fetchMore*(self: QAbstractItemModel, parent: QModelIndex) {.base.} =
-  dos_qabstractitemmodel_fetchMore(self.vptr.DosQAbstractItemModel, parent.vptr.DosQModelIndex)
+  dos_qabstractitemmodel_fetchMore(self.vptr.DosQAbstractItemModel, parent.vptr)
 
 proc fetchMoreCallback(modelPtr: pointer, parent: DosQModelIndex) {.cdecl, exportc.} =
   let model = cast[QAbstractItemModel](modelPtr)
@@ -167,7 +165,7 @@ proc delete*(self: QAbstractItemModel) =
 
 proc hasIndex*(self: QAbstractItemModel, row: int, column: int, parent: QModelIndex): bool =
   debugMsg("QAbstractItemModel", "hasIndex")
-  dos_qabstractitemmodel_hasIndex(self.vptr.DosQAbstractItemModel, row.cint, column.cint, parent.vptr.DosQModelIndex)
+  dos_qabstractitemmodel_hasIndex(self.vptr.DosQAbstractItemModel, row.cint, column.cint, parent.vptr)
 
 proc beginInsertRows*(self: QAbstractItemModel, parentIndex: QModelIndex, first: int, last: int) =
   ## Notify the view that the model is about to inserting the given number of rows

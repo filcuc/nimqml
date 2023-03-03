@@ -1,5 +1,9 @@
 import locks
+import macros
+import strutils
+import sequtils
 import tables
+import typetraits
 
 ## NimQml aims to provide binding to the QML for the Nim programming language
 

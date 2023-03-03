@@ -1,6 +1,4 @@
 import NimQml
-import macros
-import typeinfo
 
 proc mainProc() =
   var app = newQApplication()

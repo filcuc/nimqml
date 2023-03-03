@@ -1,5 +1,3 @@
-import strutils
-
 const dynLibName =
   case system.hostOS:
     of "windows":

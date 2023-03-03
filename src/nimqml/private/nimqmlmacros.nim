@@ -1,11 +1,5 @@
 ## Contains helper macros for NimQml
 
-import macros
-import strutils
-import sequtils
-import typetraits
-
-
 type
   FindQObjectTypeResult = tuple
     typeIdent: NimNode
@@ -154,7 +148,6 @@ proc extractQObjectTypeDef(head: NimNode): FindQObjectTypeResult {.compiletime.}
   let def = definitions[0]
 
   var name = def[0] # type Object = ... <---
-  let pragma = def[1] # type Object {.something.} = ... <---
   let typeKind = def[2] # .. = ref/distinct/object ..
 
   if name.kind == nnkPostFix:
@@ -336,8 +329,8 @@ proc extractQObjectInfo(node: NimNode): QObjectInfo {.compiletime.} =
         error("Slot $1 must have at least an argument" % info.name)
       if info.parametersTypes[0] != $typeNode:
         error("Slot $1 first arguments must be $2" % [info.name, $typeNode])
-      info.parametersTypes.delete(0, 0)
-      info.parametersNames.delete(0, 0)
+      delete(info.parametersTypes, 0)
+      delete(info.parametersNames, 0)
       result.slots.add(info)
     # Extract signal
     if c.isSignal:
@@ -346,8 +339,8 @@ proc extractQObjectInfo(node: NimNode): QObjectInfo {.compiletime.} =
         error("Signal $1 must have at least an argument" % info.name)
       if info.parametersTypes[0] != $typeNode:
         error("Signal $1 first arguments must be $2" % [info.name, $typeNode])
-      info.parametersTypes.delete(0, 0)
-      info.parametersNames.delete(0, 0)
+      delete(info.parametersTypes, 0)
+      delete(info.parametersNames, 0)
       result.signals.add(info)
 
   # Extract properties infos and remove them

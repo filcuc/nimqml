@@ -38,13 +38,13 @@ proc delete*(self: QAbstractListModel) =
   self.QObject.delete()
 
 method columnCount(self: QAbstractListModel, index: QModelIndex): int =
-  return dos_qabstractlistmodel_columnCount(self.vptr.DosQAbstractListModel, index.vptr.DosQModelIndex)
+  return dos_qabstractlistmodel_columnCount(self.vptr.DosQAbstractListModel, index.vptr)
 
 method parent(self: QAbstractListModel, child: QModelIndex): QModelIndex =
-  let indexPtr = dos_qabstractlistmodel_parent(self.vptr.DosQAbstractListModel, child.vptr.DosQModelIndex)
+  let indexPtr = dos_qabstractlistmodel_parent(self.vptr.DosQAbstractListModel, child.vptr)
   result = newQModelIndex(indexPtr, Ownership.Take)
 
 method index*(self: QAbstractListModel, row: int, column: int, parent: QModelIndex): QModelIndex =
-  let indexPtr = dos_qabstractlistmodel_index(self.vptr.DosQAbstractListModel, row.cint, column.cint, parent.vptr.DosQModelIndex)
+  let indexPtr = dos_qabstractlistmodel_index(self.vptr.DosQAbstractListModel, row.cint, column.cint, parent.vptr)
   result = newQModelIndex(indexPtr, Ownership.Take)
 
