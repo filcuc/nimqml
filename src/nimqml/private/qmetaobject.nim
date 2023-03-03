@@ -12,16 +12,17 @@ proc setup(superClass: QMetaObject,
            slots: seq[SlotDefinition],
            properties: seq[PropertyDefinition]): DosQMetaObject =
   var dosParameters: seq[seq[DosParameterDefinition]] = @[]
-
-  var dosSignals: seq[DosSignalDefinition] = @[]
   for i in 0..<signals.len:
-    let name = signals[i].name.cstring
-    let parametersCount = signals[i].parameters.len.cint
     var parameters: seq[DosParameterDefinition] = @[]
     for p in signals[i].parameters:
       parameters.add(DosParameterDefinition(name: p.name.cstring, metaType: p.metaType.cint))
-    let dosSignal = DosSignalDefinition(name: name, parametersCount: parametersCount, parameters: if parameters.len > 0: parameters[0].unsafeAddr else: nil)
     dosParameters.add(parameters)
+
+  var dosSignals: seq[DosSignalDefinition] = @[]
+  for i in 0..<signals.len:
+    let parametersCount = dosParameters[i].len.cint
+    let name = signals[i].name.cstring
+    let dosSignal = DosSignalDefinition(name: name, parametersCount: parametersCount, parameters: if parametersCount > 0: dosParameters[i][0].unsafeAddr else: nil)
     dosSignals.add(dosSignal)
 
   var dosSlots: seq[DosSlotDefinition] = @[]

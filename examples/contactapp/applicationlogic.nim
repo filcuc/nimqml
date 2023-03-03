@@ -5,18 +5,21 @@ QtObject:
     contactList: ContactList
     app: QApplication
 
-  proc delete*(self: ApplicationLogic) =
-    self.QObject.delete
-    self.contactList.delete
-
-  proc setup(self: ApplicationLogic) =
-    self.QObject.setup
+  proc setup(self: ApplicationLogic)
+  proc delete*(self: ApplicationLogic)
 
   proc newApplicationLogic*(app: QApplication): ApplicationLogic =
     new(result, delete)
     result.contactList = newContactList()
     result.app = app
     result.setup()
+
+  proc delete*(self: ApplicationLogic) =
+    self.QObject.delete
+    self.contactList.delete
+
+  proc setup(self: ApplicationLogic) =
+    self.QObject.setup
 
   proc getContactList(self: ApplicationLogic): QVariant {.slot.} =
     return newQVariant(self.contactList)
