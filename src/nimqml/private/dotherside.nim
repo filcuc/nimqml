@@ -279,6 +279,10 @@ proc dos_qabstractitemmodel_beginRemoveRows(model: DosQAbstractItemModel,
                                             first: cint,
                                             last: cint) {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qabstractitemmodel_endRemoveRows(model: DosQAbstractItemModel) {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qabstractitemmodel_beginMoveRows(model: DosQAbstractItemModel,
+                                            sourceParentIndex: DosQModelIndex, sourceFirst: cint, sourceLast: cint,
+                                            destParentIndex: DosQModelIndex, destinationChild: cint) {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qabstractitemmodel_endMoveRows(model: DosQAbstractItemModel) {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qabstractitemmodel_beginInsertColumns(model: DosQAbstractItemModel,
                                                parentIndex: DosQModelIndex,
                                                first: cint,

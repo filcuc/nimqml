@@ -195,6 +195,16 @@ proc endRemoveRows*(self: QAbstractItemModel) =
   debugMsg("QAbstractItemModel", "endRemoveRows")
   dos_qabstractitemmodel_endRemoveRows(self.vptr.DosQAbstractItemModel)
 
+proc beginMoveRows*(self: QAbstractItemModel, sourceParentIndex: QModelIndex, sourceFirst: int, sourceLast: int, destParentIndex: QModelIndex, destinationChild: int) =
+  ## Notify the view that the model is about to move rows
+  debugMsg("QAbstractItemModel", "beginMoveRows")
+  dos_qabstractitemmodel_beginMoveRows(self.vptr.DosQAbstractItemModel, sourceParentIndex.vptr, sourceFirst.cint, sourceLast.cint, destParentIndex.vptr, destinationChild.cint)
+
+proc endMoveRows*(self: QAbstractItemModel) =
+  ## Notify the view that the rows have been moved
+  debugMsg("QAbstractItemModel", "endMoveRows")
+  dos_qabstractitemmodel_endMoveRows(self.vptr.DosQAbstractItemModel)
+
 proc beginInsertColumns*(self: QAbstractItemModel, parentIndex: QModelIndex, first: int, last: int) =
   ## Notify the view that the model is about to inserting the given number of columns
   debugMsg("QAbstractItemModel", "beginInsertColumns")
