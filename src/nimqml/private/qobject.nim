@@ -23,6 +23,9 @@ method metaObject*(self: QObject): QMetaObject {.base.} =
   QObject.staticMetaObject
 
 proc emit*(qobject: QObject, signalName: string, arguments: openarray[QVariant] = []) =
+  if qobject.vptr.isNil:
+    return
+
   ## Emit the signal with the given name and values
   var dosArguments: seq[DosQVariant] = @[]
   for argument in arguments:
