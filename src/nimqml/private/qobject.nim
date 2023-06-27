@@ -64,7 +64,7 @@ proc delete*(self: QObject) =
   ## Delete a QObject
   if not self.owner or self.vptr.isNil:
     return
-  dos_qobject_deleteLater(self.vptr)
+  dos_qobject_delete(self.vptr)
   self.vptr.resetToNil
 
 proc newQObject*(): QObject =

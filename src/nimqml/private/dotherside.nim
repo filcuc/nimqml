@@ -204,7 +204,6 @@ proc dos_qobject_objectName(qobject: DosQObject): cstring {.cdecl, dynlib: dynLi
 proc dos_qobject_setObjectName(qobject: DosQObject, name: cstring) {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qobject_signal_emit(qobject: DosQObject, signalName: cstring, argumentsCount: cint, arguments: ptr DosQVariantArray) {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qobject_delete(qobject: DosQObject) {.cdecl, dynlib: dynLibName, importc.}
-proc dos_qobject_deleteLater(qobject: DosQObject) {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qobject_signal_connect(sender: DosQObject, signalName: cstring, receiver: DosQObject, slot: cstring, signalType: cint) {.cdecl, dynlib: dynLibName, importc.}
 
 # QAbstractItemModel
