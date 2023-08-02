@@ -347,7 +347,6 @@ proc dos_singleinstance_isfirst(vptr: DosQObject): bool {.cdecl, dynlib: dynLibN
 proc dos_singleinstance_delete(vptr: DosQObject) {.cdecl, dynlib: dynLibName, importc.}
 
 # DosStatusEvent
-proc dos_event_create_showAppEvent(engine: DosQQmlApplicationEngine): DosStatusEvent {.cdecl, dynlib: dynLibName, importc.}
 proc dos_event_create_osThemeEvent(engine: DosQQmlApplicationEngine): DosStatusEvent {.cdecl, dynlib: dynLibName, importc.}
 proc dos_event_create_urlSchemeEvent(): DosStatusEvent {.cdecl, dynlib: dynLibName, importc.}
 proc dos_event_delete(vptr: DosStatusEvent) {.cdecl, dynlib: dynLibName, importc.}
