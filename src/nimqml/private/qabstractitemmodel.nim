@@ -238,11 +238,15 @@ proc endResetModel*(self: QAbstractItemModel) =
 proc dataChanged*(self: QAbstractItemModel,
                  topLeft: QModelIndex,
                  bottomRight: QModelIndex,
-                 roles: openArray[int]) =
+                 roles: openArray[int] = []) =
   ## Notify the view that the model data changed
   debugMsg("QAbstractItemModel", "dataChanged")
-  var copy: seq[cint]
-  for i in roles:
-    copy.add(i.cint)
-  dos_qabstractitemmodel_dataChanged(self.vptr.DosQAbstractItemModel, topLeft.vptr,
-                                     bottomRight.vptr, copy[0].addr, copy.len.cint)
+  if roles.len == 0:
+    dos_qabstractitemmodel_dataChanged(self.vptr.DosQAbstractItemModel, topLeft.vptr,
+                                       bottomRight.vptr, nil, 0)
+  else:
+    var copy: seq[cint]
+    for i in roles:
+      copy.add(i.cint)
+    dos_qabstractitemmodel_dataChanged(self.vptr.DosQAbstractItemModel, topLeft.vptr,
+                                       bottomRight.vptr, copy[0].addr, copy.len.cint)
