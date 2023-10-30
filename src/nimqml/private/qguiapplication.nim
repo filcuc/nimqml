@@ -61,9 +61,12 @@ proc enableHDPI*(uiScaleFilePath: string) =
 proc initializeOpenGL*() =
   dos_qguiapplication_initialize_opengl()
 
+proc initializeWebView*() =
+  dos_qtwebview_initialize()
+
 proc tryEnableThreadedRenderer*() =
   dos_qguiapplication_try_enable_threaded_renderer()
-  
+
 proc applicationDirPath*(app: QGuiApplication): string =
   let str = dos_qguiapplication_application_dir_path()
   result = $str
