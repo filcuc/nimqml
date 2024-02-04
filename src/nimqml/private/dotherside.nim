@@ -137,6 +137,7 @@ proc dos_qguiapplication_try_enable_threaded_renderer() {.cdecl, dynlib: dynLibN
 proc dos_qguiapplication_create() {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qguiapplication_exec() {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qguiapplication_quit() {.cdecl, dynlib: dynLibName, importc.}
+proc dos_qguiapplication_restart() {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qguiapplication_icon(filename: cstring) {.cdecl, dynlib: dynLibName, importc.}
 proc dos_qguiapplication_delete() {.cdecl, dynlib: dynLibName, importc.}
 

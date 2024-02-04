@@ -32,6 +32,10 @@ proc quit*(self: QGuiApplication) =
   ## Quit the Qt event loop
   dos_qguiapplication_quit()
 
+proc restartApplication*() =
+  ## Restart the app
+  dos_qguiapplication_restart()
+
 proc setClipboardText*(text: string = "") =
   dos_qguiapplication_clipboard_setText(text.cstring)
 
