@@ -6,9 +6,9 @@ name: CI
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -17,15 +17,13 @@ jobs:
   test:
     strategy:
       matrix:
-        os: ['windows-latest', 'macos-latest', 'ubuntu-latest']
-        nim: ['devel', 'version-1-6', 'version-1-4', 'version-1-2']
+        os: ["windows-latest", "macos-latest", "ubuntu-latest"]
+        nim: ["devel", "stable", "2.2.0", "2.0.0", "1.6.0", "1.4.0", "1.2.0"]
 
     name: Nim ${{ matrix.nim }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    env:
+      CHOOSENIM_CHOOSE_VERSION: ${{ matrix.nim }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: alaviss/setup-nim@0.1.1
-        with:
-          path: 'nim'
-          version: ${{ matrix.nim }}
+      - run: sh curl https://nim-lang.org/choosenim/init.sh -sSf | sh
       - run: nimble buildExamples
