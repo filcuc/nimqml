@@ -22,8 +22,10 @@ jobs:
 
     name: Nim ${{ matrix.nim }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    env:
-      CHOOSENIM_CHOOSE_VERSION: ${{ matrix.nim }}
     steps:
-      - run: sh curl https://nim-lang.org/choosenim/init.sh -sSf | sh
+      - uses: actions/checkout@v4
+      - uses: nim-lang/setup-nimble-action@v1
+        with:
+          nimble-version: ${{ matrix.nim }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - run: nimble buildExamples
