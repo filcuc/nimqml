@@ -11,31 +11,34 @@ proc setup(superClass: QMetaObject,
            signals: seq[SignalDefinition],
            slots: seq[SlotDefinition],
            properties: seq[PropertyDefinition]): DosQMetaObject =
-  var dosParameters: seq[seq[DosParameterDefinition]] = @[]
+  var dosSignalParameters: seq[seq[DosParameterDefinition]] = @[]
   for i in 0..<signals.len:
     var parameters: seq[DosParameterDefinition] = @[]
     for p in signals[i].parameters:
       parameters.add(DosParameterDefinition(name: p.name.cstring, metaType: p.metaType.cint))
-    dosParameters.add(parameters)
+    dosSignalParameters.add(parameters)
 
   var dosSignals: seq[DosSignalDefinition] = @[]
   for i in 0..<signals.len:
-    let parametersCount = dosParameters[i].len.cint
+    let parametersCount = dosSignalParameters[i].len.cint
     let name = signals[i].name.cstring
-    let dosSignal = DosSignalDefinition(name: name, parametersCount: parametersCount, parameters: if parametersCount > 0: dosParameters[i][0].unsafeAddr else: nil)
+    let dosSignal = DosSignalDefinition(name: name, parametersCount: parametersCount, parameters: if parametersCount > 0: dosSignalParameters[i][0].unsafeAddr else: nil)
     dosSignals.add(dosSignal)
 
-  var dosSlots: seq[DosSlotDefinition] = @[]
+  var dosSlotParameters: seq[seq[DosParameterDefinition]] = @[]
   for i in 0..<slots.len:
-    let name = slots[i].name.cstring
-    let returnMetaType = slots[i].returnMetaType.cint
-    let parametersCount = slots[i].parameters.len.cint
     var parameters: seq[DosParameterDefinition] = @[]
     for p in slots[i].parameters:
       parameters.add(DosParameterDefinition(name: p.name.cstring, metaType: p.metaType.cint))
+    dosSlotParameters.add(parameters)
+
+  var dosSlots: seq[DosSlotDefinition] = @[]
+  for i in 0..<slots.len:
+    let parametersCount = dosSlotParameters[i].len.cint
+    let name = slots[i].name.cstring
+    let returnMetaType = slots[i].returnMetaType.cint
     let dosSlot = DosSlotDefinition(name: name, returnMetaType: returnMetaType,
-                                    parametersCount: parametersCount, parameters: if parameters.len > 0: parameters[0].unsafeAddr else: nil)
-    dosParameters.add(parameters)
+                                    parametersCount: parametersCount, parameters: if parametersCount > 0: dosSlotParameters[i][0].unsafeAddr else: nil)
     dosSlots.add(dosSlot)
 
   var dosProperties: seq[DosPropertyDefinition] = @[]
