@@ -11,28 +11,28 @@ proc setup(superClass: QMetaObject,
            signals: seq[SignalDefinition],
            slots: seq[SlotDefinition],
            properties: seq[PropertyDefinition]): DosQMetaObject =
-  var dosSignalParameters: seq[seq[DosParameterDefinition]] = @[]
+  var dosSignalParameters = newSeqOfCap[seq[DosParameterDefinition]](signals.len)
   for i in 0..<signals.len:
-    var parameters: seq[DosParameterDefinition] = @[]
+    var parameters = newSeqOfCap[DosParameterDefinition](signals[i].parameters.len)
     for p in signals[i].parameters:
       parameters.add(DosParameterDefinition(name: p.name.cstring, metaType: p.metaType.cint))
     dosSignalParameters.add(parameters)
 
-  var dosSignals: seq[DosSignalDefinition] = @[]
+  var dosSignals = newSeqOfCap[DosSignalDefinition](signals.len)
   for i in 0..<signals.len:
     let parametersCount = dosSignalParameters[i].len.cint
     let name = signals[i].name.cstring
     let dosSignal = DosSignalDefinition(name: name, parametersCount: parametersCount, parameters: if parametersCount > 0: dosSignalParameters[i][0].unsafeAddr else: nil)
     dosSignals.add(dosSignal)
 
-  var dosSlotParameters: seq[seq[DosParameterDefinition]] = @[]
+  var dosSlotParameters = newSeqOfCap[seq[DosParameterDefinition]](slots.len)
   for i in 0..<slots.len:
-    var parameters: seq[DosParameterDefinition] = @[]
+    var parameters = newSeqOfCap[DosParameterDefinition](slots[i].parameters.len)
     for p in slots[i].parameters:
       parameters.add(DosParameterDefinition(name: p.name.cstring, metaType: p.metaType.cint))
     dosSlotParameters.add(parameters)
 
-  var dosSlots: seq[DosSlotDefinition] = @[]
+  var dosSlots = newSeqOfCap[DosSlotDefinition](slots.len)
   for i in 0..<slots.len:
     let parametersCount = dosSlotParameters[i].len.cint
     let name = slots[i].name.cstring
@@ -41,7 +41,7 @@ proc setup(superClass: QMetaObject,
                                     parametersCount: parametersCount, parameters: if parametersCount > 0: dosSlotParameters[i][0].unsafeAddr else: nil)
     dosSlots.add(dosSlot)
 
-  var dosProperties: seq[DosPropertyDefinition] = @[]
+  var dosProperties = newSeqOfCap[DosPropertyDefinition](properties.len)
   for i in 0..<properties.len:
     let name = properties[i].name.cstring
     let propertyMetaType = properties[i].propertyMetaType.cint
